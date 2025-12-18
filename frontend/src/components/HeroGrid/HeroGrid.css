@@ -1,0 +1,102 @@
+/* HeroGrid.css */
+.hero-grid-container {
+  /* background-color: #303030;
+  padding: 8px;
+  border-radius: 0.5rem; */
+}
+/* ========== Grille de héros ========== */
+.hero-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+  gap: 4px;
+}
+
+/* ========== Barre de filtres ========== */
+.hero-grid-filters {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.hero-grid-filter-group {
+  display: flex;
+  gap: 0.5rem;
+}
+
+/* ========== Éléments de filtre ========== */
+.hero-grid-filter-select {
+  background-color: var(--color-primary);
+  border: 1px solid var(--color-primary-darker);
+  border-radius: 0.375rem;
+  padding: 0.25rem 0.75rem;
+  color: white;
+  font-size: 0.875rem;
+  cursor: pointer;
+}
+
+.hero-grid-filter-select:focus {
+  outline: none;
+  border-color: #3b82f6;
+}
+
+.hero-grid-filter-select:hover {
+  border-color: var(--color-primary-darker);
+  background: var(--color-primary-light);
+}
+
+.hero-grid-filter-select option {
+  background-color: var(--color-primary);
+  color: white;
+}
+
+.hero-grid-filter-input {
+  background-color: var(--color-primary);
+  border: 1px solid var(--color-primary-darker);
+  border-radius: 0.375rem;
+  padding: 0.25rem 0.75rem;
+  color: white;
+  font-size: 0.875rem;
+  width: 8rem;
+}
+
+.hero-grid-filter-input:focus {
+  outline: none;
+  border-color: #3b82f6;
+}
+
+.hero-grid-filter-input::placeholder {
+  color: #9ca3af;
+}
+
+/* ========== Loading ========== */
+.hero-grid-loading {
+  text-align: center;
+  padding: 2rem 0;
+}
+
+.hero-grid-loading-text {
+  font-size: 1.25rem;
+  color: white;
+}
+
+/* ========== Compteur ========== */
+.hero-grid-counter {
+  text-align: center;
+  color: #9ca3af;
+  font-size: 0.875rem;
+  margin-top: 1rem;
+}
+
+.hero-grid-counter-highlight {
+  color: #fbbf24;
+  font-weight: 600;
+}
+
+/* ========== Messages d'état ========== */
+.hero-grid-empty {
+  text-align: center;
+  padding: 2rem;
+  color: #9ca3af;
+  grid-column: 1 / -1;
+}

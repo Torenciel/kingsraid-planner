@@ -1,0 +1,28 @@
+/* TeamSlots.css */
+
+/* ========== Conteneur principal ========== */
+.team-slots-container {
+  margin-bottom: 2rem;
+}
+
+/* ========== Grille d'équipe ========== */
+.team-slots-grid {
+  display: flex;
+  justify-content: center;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+    /* background-color: var(--color-primary); */
+}
+
+/* ========== Compteur d'équipe ========== */
+.team-slots-counter {
+  text-align: center;
+  font-size: 0.875rem;
+  color: white;
+  margin-top: 1rem;
+}
+
+.team-slots-counter span {
+  color: white;
+  font-weight: 600;
+}

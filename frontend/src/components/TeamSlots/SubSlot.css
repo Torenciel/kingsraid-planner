@@ -1,0 +1,152 @@
+/* SubSlot.css */
+
+/* ========== Grille de sous-slots ========== */
+.sub-slots-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.25rem;
+}
+
+/* ========== Sous-slot individuel ========== */
+.sub-slot {
+  width: 48px;
+  height: 48px;
+  background: var(--color-primary);
+  border: 2px solid var(--color-primary-darker); 
+  border-radius: 0.4rem;
+  position: relative;
+  cursor: pointer;
+  /* Ensure border is above everything */
+  z-index: 1; /* Keep it above the gradient */
+}
+
+.sub-slot.empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sub-slot.empty:hover {
+  background: var(--color-primary-light);
+}
+
+.sub-slot-plus {
+  color: #9ca3af;
+  font-size: 0.75rem;
+}
+
+/* ========== Image du sous-slot ========== */
+.sub-slot-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 0.25rem;
+  /* Ensure image is below the border */
+  position: relative;
+  z-index: 0;
+}
+
+/* ========== Textes d'étoiles ========== */
+.sub-slot-stars {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0; /* Full width */
+  color: var(--color-item-selected);
+  font-size: 12px;
+  font-weight: bold;
+  padding: 2px 4px;
+  text-align: center;
+  height: 40px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-start;
+  /* Text above gradient, below border */
+  z-index: 1;
+  /* Remove min-width constraint */
+  min-width: auto;
+}
+
+/* Gradient background that covers full width */
+.sub-slot-stars::before {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 100%;
+  /* background: linear-gradient(
+    to top,
+    rgba(170, 255, 0, 0.9),
+    rgba(0, 0, 0, 0.6),
+    rgba(0, 0, 0, 0.3),
+    transparent
+  ); */
+  background: linear-gradient(
+    to top,
+    rgba(0, 0, 0, 0.7),
+    rgba(0, 0, 0, 0.4),
+    transparent
+  );
+
+  /* Match the container's border radius at bottom */
+  border-bottom-left-radius: 0.25rem;
+  border-bottom-right-radius: 0.25rem;
+  /* Gradient is behind the stars text but above the image */
+  z-index: -1;
+}
+
+/* ========== Bordures d'advancement UW ========== */
+.sub-slot.uw-advancement-blue {
+  border: 2px solid !important;
+  border-color: #2175bb !important;
+  box-shadow: 0 0 10px rgba(59, 130, 246, 0.5) !important;
+}
+
+.sub-slot.uw-advancement-purple {
+  border: 2px solid !important;
+  border-color: #ae4f99 !important;
+  box-shadow: 0 0 10px rgba(152, 69, 148, 0.478) !important;
+}
+
+.sub-slot.uw-advancement-red {
+  border: 2px solid !important;
+  border-color: #cc2615 !important;
+  box-shadow: 0 0 10px rgba(239, 68, 68, 0.5) !important;
+}
+
+/* ========== Icône d'advancement ========== */
+.advancement-corner-icon {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  width: 20px;
+  height: 20px;
+  padding: 2px;
+  z-index: 6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.advancement-corner-icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+/* ========== Fallback pour images ========== */
+.sub-slot-fallback {
+  display: none;
+  width: 100%;
+  height: 100%;
+  align-items: center;
+  justify-content: center;
+  color: #9ca3af;
+  font-size: 0.75rem;
+  background: var(--color-primary);
+  border-radius: 0.25rem;
+  padding: 0.125rem;
+  text-align: center;
+  overflow: hidden;
+}

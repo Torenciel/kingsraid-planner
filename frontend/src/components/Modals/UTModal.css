@@ -1,0 +1,98 @@
+/* UTModal.css */
+
+/* ========== Options UT ========== */
+.ut-option {
+  width: 80px;
+  height: 80px;
+  cursor: pointer;
+  border-radius: 4px;
+  background: var(--color-primary);
+  border: 2px solid var(--color-primary-darker);
+  transition: all 0.2s;
+}
+
+.ut-option:hover {
+  border-color: var(--color-item-hover);
+}
+
+.ut-option.selected {
+  border-color: var(--color-item-selected);
+  background-color: rgba(251, 191, 36, 0.1);
+}
+
+.ut-option.empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #9ca3af;
+  font-size: 0.875rem;
+}
+
+/* ========== Grille UT ========== */
+.ut-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+  justify-items: center;
+  margin-bottom: 1rem;
+  max-width: 200px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* ========== Option Empty ========== */
+.ut-empty-container {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1rem;
+}
+
+/* ========== Titres et texte ========== */
+.ut-modal-title {
+  font-size: 1.125rem;
+  font-weight: bold;
+  margin-bottom: 1rem;
+  text-align: center;
+  color: white;
+}
+
+/* ========== Boutons ========== */
+.ut-modal-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.ut-modal-confirm {
+  background-color: #16a34a;
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 0.375rem;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.ut-modal-confirm:hover {
+  background-color: #15803d;
+}
+
+.ut-modal-cancel {
+  background-color: #525252;
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 0.375rem;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.ut-modal-cancel:hover {
+  background-color: var(--color-primary-light);
+}
+
+/* ========== Layout ========== */
+.ut-stars-section {
+  margin-bottom: 1rem;
+}

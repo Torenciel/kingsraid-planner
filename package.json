@@ -1,0 +1,19 @@
+{
+  "name": "kingsraid-planner-root",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently \"npm run start:frontend\" \"npm run start:backend\"",
+    "start:frontend": "cd frontend && npm start",
+    "start:backend": "cd backend/src && node server.js",
+    "watch:backend": "cd backend/src && npx nodemon server.js",
+    "build": "cd frontend && npm run build",
+    "install:all": "npm install && cd frontend && npm install && cd ../backend/src && npm install"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  },
+  "dependencies": {
+    "git-filter-repo": "^0.0.30"
+  }
+}

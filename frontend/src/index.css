@@ -1,0 +1,195 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Couleurs */
+  --color-primary: #262626;
+  --color-primary-light: #363636;
+  --color-primary-lighter: #474747;
+  --color-primary-dark: #191919;
+  --color-primary-darker: #0a0a0a;
+  --color-secondary: #3b82f6;
+  --color-accent: #e6863a;
+  --color-greyed-text: #9ca3af;
+  --color-item-hover: #64e210;
+  --color-item-selected: #fbbf24;
+  --color-item-selected-shadow: rgba(251, 190, 36, 0.5);
+}
+/* Vos styles personnalisés existants */
+body {
+  background-color: var(--color-primary-dark);
+  color: white;
+}
+
+/* ======================================================================== */
+/* wallpapper background */
+.app-container {
+  position: relative;
+  min-height: 100vh;
+  width: 100%;
+}
+
+.background-layer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  /* background-image: url("/public/kings-raid-pandemonium-desaturated.jpg"); */
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  z-index: -2;
+}
+
+.background-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(21, 21, 21, 0.85); /* Ajuste l'opacité ici */
+  z-index: -1;
+}
+
+.app-content {
+  position: relative;
+  z-index: 1;
+  min-height: 100vh;
+}
+
+/* Garde tes styles existants */
+.bg-kr-dark {
+  background-color: var(
+    --color-primary-dark
+  ); /* Fallback si image non disponible*/
+}
+
+/* ========== Styles pour les modales ========== */
+.modal {
+  display: flex;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.8);
+  z-index: 1000;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-content {
+  background: var(--color-primary-dark);
+  padding: 20px;
+  border-radius: 8px;
+  max-width: 550px;
+  width: auto;
+  max-height: 90vh;
+}
+
+/* ========== Stars ========== */
+.stars-container {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin: 15px 0;
+}
+
+.star {
+  font-size: 26px;
+  cursor: pointer;
+  color: #737373;
+}
+
+.star.filled {
+  color: var(--color-item-selected);
+}
+/* ========== Perks ========== */
+
+#perk-modal .modal-content {
+  max-width: 400px !important;
+  width: 90% !important;
+}
+
+/* ====== Global Overlay (Outside of modal) ====== */
+/* Overlay positionné au-dessus */
+.global-overlay {
+  animation: fadeInOverlay 0.15s ease-out;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.8);
+  background: #262626;
+  border-radius: 8px;
+  border: 2px solid var(--color-primary-darker);
+  padding: 12px;
+  pointer-events: auto;
+  /* Style pour la flèche */
+  position: relative;
+  margin-top: -10px;
+}
+
+/* Flèche pointant vers l'item (optionnel) */
+.global-overlay::after {
+  content: "";
+  position: absolute;
+  width: 0;
+  height: 0;
+  border-left: 10px solid transparent;
+  border-right: 10px solid transparent;
+  border-top: 10px solid var(--color-primary-darker);
+  bottom: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.global-overlay::before {
+  content: "";
+  position: absolute;
+  width: 0;
+  height: 0;
+  border-left: 7px solid transparent;
+  border-right: 7px solid transparent;
+  border-top: 7px solid #262626;
+  bottom: -7px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1;
+}
+
+/* Si l'overlay est en dessous, inverser la flèche */
+.global-overlay.bottom-overlay::after {
+  border-top: none;
+  border-bottom: 10px solid var(--color-primary-darker);
+  top: -10px;
+  bottom: auto;
+}
+
+.global-overlay.bottom-overlay::before {
+  border-top: none;
+  border-bottom: 7px solid #262626;
+  top: -7px;
+  bottom: auto;
+}
+
+@keyframes fadeInOverlay {
+  from {
+    opacity: 0;
+    transform: translateY(-10px) translateX(-50%) translateY(-100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) translateX(-50%) translateY(-100%);
+  }
+}
+
+/* Pour les overlays en dessous */
+@keyframes fadeInOverlayBottom {
+  from {
+    opacity: 0;
+    transform: translateY(10px) translateX(-50%);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) translateX(-50%);
+  }
+}

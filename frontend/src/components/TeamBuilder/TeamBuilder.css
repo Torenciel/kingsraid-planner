@@ -1,0 +1,79 @@
+/* TeamBuilder.css */
+
+/* ========== Conteneur principal ========== */
+.team-builder-container {
+  max-width: 1280px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 1rem;
+  padding-right: 1rem;
+  padding-top: 2rem;
+  padding-bottom: 2rem;
+  /* margin-top: 40px; Compensate for the Navbar */
+}
+
+/* ========== État de chargement ========== */
+.team-builder-loading {
+  max-width: 1280px;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 2rem 1rem;
+  text-align: center;
+}
+
+.loading-text {
+  font-size: 1.25rem;
+  line-height: 1.75rem;
+}
+
+/* ========== En-tête ========== */
+.team-builder-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.team-builder-title {
+  font-size: 1.5rem;
+  line-height: 2rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+/* ========== Titre d'équipe ========== */
+.team-title-container {
+  margin-top: 0.5rem;
+}
+
+.team-title {
+  font-size: 1.125rem;
+  line-height: 1.75rem;
+  font-weight: 600;
+  color: #d1d5db; /* gray-300 */
+}
+
+/* ========== Responsive ========== */
+@media (min-width: 640px) {
+  .team-builder-container {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+}
+
+@media (min-width: 768px) {
+  .team-builder-container {
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
+
+  .team-builder-title {
+    font-size: 1.875rem;
+    line-height: 2.25rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .team-builder-container {
+    padding-left: 2.5rem;
+    padding-right: 2.5rem;
+  }
+}

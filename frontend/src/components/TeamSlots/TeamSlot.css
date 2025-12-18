@@ -1,0 +1,9 @@
+/* TeamSlot.css */
+
+/* ========== Slot d'équipe (colonne) ========== */
+.team-slot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}

@@ -1,0 +1,689 @@
+/* Routes/Teams.css */
+
+/* Reset and base styles */
+.teams-container {
+  max-width: 1200px;
+  margin: 40px auto;
+  padding: 0 20px;
+}
+
+/* ========== BINDER TABS ========== */
+.binder-tabs-container {
+  /* Container holds tabs and divider */
+}
+
+.binder-tabs {
+  display: flex;
+  gap: 4px;
+}
+
+/* Individual tab button */
+.binder-tab {
+  background: var(--color-primary);
+  border: 2px solid var(--color-primary-darker);
+  border-bottom: none;
+  border-radius: 12px 12px 0 0;
+  color: var(--color-greyed-text);
+  font-size: 16px;
+  font-weight: 500;
+  padding: 10px 28px;
+  cursor: pointer;
+  position: relative;
+  z-index: 1;
+}
+
+/* Tab hover effect */
+.binder-tab:hover {
+  background: var(--color-primary-light);
+  color: white;
+}
+
+/* Active tab styling */
+.binder-tab.active {
+  background: var(--color-primary-light);
+  color: white;
+  z-index: 5;
+}
+
+/* Red line under active tab */
+.tab-indicator {
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: var(--color-primary-light);
+}
+
+/* ========== TAB CONTENT ========== */
+.binder-content {
+  background: var(--color-primary-light);
+  border: 2px solid var(--color-primary-darker);
+  border-radius: 0px 12px 12px 12px;
+  padding: 10px;
+  min-height: 400px;
+  margin-top: -2px;
+  position: relative;
+  z-index: 1;
+}
+
+/* Content inside tabs */
+.tab-content {
+  color: white;
+  background: var(--color-primary);
+  border: 2px solid var(--color-primary-dark);
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.tab-content h2 {
+  margin-bottom: 10px;
+  font-size: 24px;
+}
+
+.tab-content p {
+  color: #ccc;
+  font-size: 16px;
+}
+
+/* ===== Filters Section ===== */
+.filters-section {
+  background: var(--color-primary);
+  border-radius: 12px;
+  padding: 12px;
+  margin-bottom: 10px;
+  border: 2px solid var(--color-primary-dark);
+}
+
+/* Top filters row with search */
+.top-filters-row {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  /* margin-bottom: 10px; */
+  flex-wrap: wrap;
+}
+
+/* Content Type header moved to left */
+.content-type-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  min-width: 200px;
+}
+
+.content-type-header h3 {
+  margin: 0;
+  color: white;
+  font-size: 18px;
+}
+
+/* Middle section with search */
+.middle-filters {
+  display: flex;
+  align-items: center;
+  flex: 2;
+  min-width: 300px;
+}
+
+/* Header actions container - moved to right */
+.header-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: flex-end;
+  flex: 1;
+  min-width: 200px;
+}
+
+/* Select All Button */
+.select-all-btn {
+  background: var(--color-primary-light);
+  color: white;
+  border: 1px solid var(--color-primary-lighter);
+  border-radius: 6px;
+  padding: 8px 16px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.select-all-btn:hover {
+  background: var(--color-primary-lighter);
+}
+
+/* Clear Filters Icon Button */
+.clear-filters-icon-btn {
+  background: var(--color-primary-light);
+  color: white;
+  border: 1px solid var(--color-primary-lighter);
+  border-radius: 6px;
+  padding: 8px;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.clear-filters-icon-btn:hover:not(:disabled) {
+  background: var(--color-primary-lighter);
+  color: var(--color-accent);
+}
+
+.clear-filters-icon-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Expand/Collapse Toggle Button */
+.expand-toggle-btn {
+  background: var(--color-primary-light);
+  color: white;
+  border: 1px solid var(--color-primary-lighter);
+  border-radius: 6px;
+  padding: 8px;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 18px;
+  font-weight: bold;
+  transition: all 0.2s ease;
+}
+
+.expand-toggle-btn:hover {
+  background: var(--color-primary-lighter);
+}
+
+/* Content Checkboxes */
+.content-checkboxes {
+  display: grid;
+  /* display: flex; */
+  /* flex-direction: column; */
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 4px;
+  margin-top: 10px;
+  animation: slideDown 0.3s ease;
+}
+
+/* transition checkbox */
+/* @keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+} */
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 6px;
+  transition: background 0.2s ease;
+}
+
+.checkbox-label:hover {
+  background: var(--color-primary-light);
+}
+
+.checkbox-input {
+  display: none;
+}
+
+.checkbox-custom {
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--color-greyed-text);
+  border-radius: 4px;
+  margin-right: 10px;
+  position: relative;
+  transition: all 0.2s ease;
+}
+
+.checkbox-input:checked + .checkbox-custom {
+  border-color: var(--color-primary-light);
+  background: var(--color-primary-light);
+}
+
+.checkbox-input:checked + .checkbox-custom::after {
+  content: "✓";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: rgb(255, 255, 255);
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.checkbox-icon {
+  margin-right: 8px;
+  font-size: 18px;
+}
+
+.checkbox-text {
+  color: white;
+  font-size: 14px;
+}
+
+/* Search Container */
+.search-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex: 1;
+}
+
+.search-icon {
+  position: absolute;
+  left: 12px;
+  color: var(--color-greyed-text);
+  font-size: 16px;
+}
+
+.search-input {
+  background: var(--color-primary-dark);
+  color: white;
+  border: 1px solid var(--color-primary-darker);
+  border-radius: 6px;
+  padding: 10px 40px 10px 40px;
+  width: 100%;
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: var(--color-primary-light);
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+
+.search-input::placeholder {
+  color: var(--color-greyed-text);
+}
+
+.clear-search-btn {
+  position: absolute;
+  right: 12px;
+  background: transparent;
+  color: var(--color-greyed-text);
+  border: none;
+  font-size: 18px;
+  cursor: pointer;
+  padding: 0;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+}
+
+.clear-search-btn:hover {
+  color: white;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* Active Filters on same row */
+.active-filters {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  /* margin-top: 20px; */
+  padding-top: 10px;
+  /* border-top: 1px solid var(--color-primary-dark); */
+  flex-wrap: wrap;
+}
+
+.active-filters-label {
+  color: var(--color-greyed-text);
+  white-space: nowrap;
+  margin: 0;
+}
+
+.filter-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+/* Make filter tags clickable buttons */
+.filter-tag {
+  background: var(--color-primary-dark);
+  color: white;
+  padding: 8px 12px;
+  border-radius: 20px;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.filter-tag:hover {
+  background: var(--color-primary-light);
+  transform: translateY(-2px);
+}
+
+.filter-tag-content {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.filter-tag-remove {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  border: none;
+  font-size: 16px;
+  cursor: pointer;
+  padding: 0;
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background 0.2s ease;
+  margin-left: 4px;
+}
+
+.filter-tag:hover .filter-tag-remove {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* Teams Count Header */
+.teams-count-header {
+  color: white;
+  margin-left: 10px;
+  font-weight: 600;
+}
+/* Teams Count Header text + number*/
+.teams-count-header-text {
+  font-size: 20px !important;
+  color: var(--color-item-hover) !important;
+}
+/* Teams Count Header Span */
+.teams-count-header-span {
+  color: white;
+}
+
+/* Teams Count */
+.teams-count {
+  color: var(--color-greyed-text);
+  font-size: 14px;
+  margin-top: 10px;
+  font-style: italic;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .top-filters-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 15px;
+  }
+
+  .content-type-header,
+  .middle-filters,
+  .header-actions {
+    width: 100%;
+    min-width: unset;
+  }
+
+  .middle-filters {
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  .search-container {
+    width: 100%;
+  }
+
+  .header-actions {
+    justify-content: center;
+  }
+
+  .active-filters {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .filter-tags {
+    width: 100%;
+  }
+}
+
+/* =================================== */
+
+/* ===== Sub-Filters Section ===== */
+.sub-filter-section {
+  margin: 1rem 0;
+  padding: 12px;
+  background: var(--color-primary);
+  border-radius: 8px;
+  border: 2px solid var(--color-primary-light);
+  animation: slideDown 0.3s ease;
+}
+
+.sub-filter-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.sub-filter-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: white;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.sub-filter-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.sub-filter-action-btn {
+  padding: 4px 12px;
+  font-size: 12px;
+  background: var(--color-primary-light);
+  color: var(--color-greyed-text);
+  border: 1px solid var(--color-primary-darker);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.sub-filter-action-btn:hover:not(:disabled) {
+  background: var(--color-primary-lighter);
+  color: white;
+  border-color: var(--color-item-hover);
+}
+
+.sub-filter-action-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Dotted divider line */
+.sub-filter-divider {
+  height: 1px;
+  background-size: 20px 1px;
+  margin: 12px 0;
+  position: relative;
+  border-bottom: 2px solid var(--color-primary-light);
+}
+
+.sub-filter-divider::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 1px;
+  background: var(--color-primary-light);
+  opacity: 0.5;
+}
+
+/* Sub-filter items (boss images + names) */
+.sub-filter-items {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.sub-filter-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8px;
+  min-width: 80px;
+  background: var(--color-primary-light);
+  border: 1px solid var(--color-primary-darker);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.sub-filter-item:hover {
+  border-color: var(--color-item-hover);
+  /* transform: translateY(-2px); */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.sub-filter-item.selected {
+  border-color: var(--color-item-selected);
+  background: var(--color-primary-light);
+  /* box-shadow: 0 0 0 2px var(--color-item-hover); */
+}
+
+.sub-filter-image {
+  width: 48px;
+  height: 48px;
+  /* object-fit: contain; */
+  margin-bottom: 8px;
+  border-radius: 6px;
+  background: var(--color-primary);
+  border: 1px solid var(--color-primary-darker);
+}
+
+.sub-filter-fallback {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 8px;
+  border-radius: 6px;
+  background: var(--color-primary);
+  border: 1px solid var(--color-primary-darker);
+  color: var(--color-greyed-text);
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.sub-filter-name {
+  font-size: 12px;
+  color: white;
+  text-align: center;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sub-filter-item.selected .sub-filter-name {
+  color: var(--color-item-selected);
+  font-weight: 600;
+}
+
+/* Active filters adjustments for sub-filters */
+.filter-tag.sub-filter-tag {
+  background: var(--color-primary-dark);
+  border: 1px solid var(--color-item-selected);
+  color: var(--color-item-selected);
+}
+
+.filter-tag.sub-filter-tag:hover {
+  background: var(--color-primary-light);
+  color: var(--color-item-selected);
+}
+
+/* Animation for sub-filter appearance */
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsive adjustments for sub-filters */
+@media (max-width: 768px) {
+  .sub-filter-items {
+    gap: 8px;
+    justify-content: center;
+  }
+
+  .sub-filter-item {
+    min-width: 70px;
+    padding: 6px;
+  }
+
+  .sub-filter-image,
+  .sub-filter-fallback {
+    width: 40px;
+    height: 40px;
+  }
+
+  .sub-filter-name {
+    font-size: 11px;
+  }
+
+  .sub-filter-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .sub-filter-actions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+}
+
+@media (max-width: 480px) {
+  .sub-filter-items {
+    justify-content: space-around;
+  }
+
+  .sub-filter-item {
+    min-width: 65px;
+  }
+}

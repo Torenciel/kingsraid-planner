@@ -1,0 +1,124 @@
+/* PerkModal.css */
+
+/* ========== Grille de perks ========== */
+.perk-modal-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px;
+  border-radius: 6px;
+}
+
+.perk-modal-row {
+  display: flex;
+  gap: 4px;
+  justify-content: flex-start;
+}
+
+/* ========== Options de perk ========== */
+.perk-modal-option {
+  width: 50px;
+  height: 50px;
+  cursor: pointer;
+  border-radius: 4px;
+  background: var(--color-primary);
+  border: 2px solid var(--color-primary-darker);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: bold;
+  color: #9ca3af;
+  transition: all 0.2s;
+  position: relative;
+  overflow: hidden;
+}
+
+.perk-modal-option:hover {
+  border-color: var(--color-item-hover);
+  transform: scale(1.05);
+}
+
+.perk-modal-option.selected {
+  border-color: var(--color-item-selected);
+  background: var(--color-item-selected);
+  color: #1f2937;
+  transform: scale(1.05);
+}
+
+.perk-modal-option img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 3px;
+  opacity: 0.7;
+  filter: grayscale(0.7);
+}
+
+.perk-modal-option.selected img {
+  opacity: 1;
+  filter: none;
+}
+
+/* ========== Points de perks ========== */
+.perk-modal-points {
+  background: var(--color-primary);
+  border-radius: 6px;
+  padding: 10px;
+  margin-bottom: 12px;
+  text-align: center;
+  border: 1px solid var(--color-primary-darker);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.perk-modal-points.over-limit {
+  background: #7f1d1d;
+  border-color: #dc2626;
+  color: #fca5a5;
+}
+
+/* ========== Titres ========== */
+.perk-modal-title {
+  font-size: 1.125rem;
+  font-weight: bold;
+  margin-bottom: 1rem;
+  text-align: center;
+  color: white;
+}
+
+/* ========== Boutons ========== */
+.perk-modal-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.perk-modal-confirm {
+  background-color: #16a34a;
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 0.375rem;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.perk-modal-confirm:hover {
+  background-color: #15803d;
+}
+
+.perk-modal-cancel {
+  background-color: #525252;
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 0.375rem;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.perk-modal-cancel:hover {
+  background-color: var(--color-primary-light);
+}
