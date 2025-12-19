@@ -1,85 +1,180 @@
-// components/Modals/PerkModal.js
 import { useEffect, useState } from "react";
+import { useOverlay } from "../../contexts/OverlayContext";
 import { useTeam } from "../../contexts/TeamContext";
+import { api } from "../../services/api";
 import "./PerkModal.css";
 
 const PerkModal = ({ data, onClose }) => {
   const { teamSlotIndex, heroClass, heroName } = data;
   const { updatePerks, perks } = useTeam();
+  const { showOverlay, hideOverlay } = useOverlay();
 
   const [selectedPerks, setSelectedPerks] = useState(
     perks[teamSlotIndex] || []
   );
   const [usedPoints, setUsedPoints] = useState(0);
+  const [perkData, setPerkData] = useState([]);
+  const [heroSkills, setHeroSkills] = useState({});
+  const [loading, setLoading] = useState(true);
   const maxPoints = 95;
 
-  // Images T1 pour la première ligne des perks
-  const T1_PERK_IMAGES = [
-    "ATK Up.png",
-    "HP Up.png",
-    "DEF up.png",
-    "Crit Resist Up.png",
-    "Monster Hunting.png",
-  ];
-
-  // Images T2 par classe
-  const T2_PERK_IMAGES_BY_CLASS = {
-    Knight: [
-      "Experienced Fighter.png",
-      "Excellent Strategy.png",
-      "Battle Cry.png",
-      "Shield of Protection.png",
-      "Swift Move.png",
-    ],
-    Warrior: [
-      "Opportune Strike.png",
-      "Warlike.png",
-      "Offensive Guard.png",
-      "Tactical Foresight.png",
-      "Blood Wrath.png",
-    ],
-    Assassin: [
-      "Target Weakness.png",
-      "Swift and Nimble.png",
-      "Tactical Foresight.png",
-      "Opportune Strike.png",
-      "Vital Detection.png",
-    ],
-    Mechanic: [
-      "Target Weakness.png",
-      "Ready Cannons.png",
-      "Pressure Point.png",
-      "Special Bullet.png",
-      "Amplified Gunpowder.png",
-    ],
-    Archer: [
-      "Precision Shot.png",
-      "Eagle Eye.png",
-      "Mortal Wound.png",
-      "Opportune Strike.png",
-      "Concentration.png",
-    ],
-    Wizard: [
-      "Deception.png",
-      "Moral Rise.png",
-      "Blessing of Mana.png",
-      "Circuit Burst.png",
-      "Destruction.png",
-    ],
-    Priest: [
-      "Vengeful Curse.png",
-      "Goddess Blessing.png",
-      "Inner Peace.png",
-      "Blessing of Mana.png",
-      "Swiftness.png",
-    ],
+  // Fonction pour obtenir le nom du skill
+  const getSkillName = (skillNumber) => {
+    if (!heroSkills || !heroSkills[skillNumber]) {
+      return `Skill ${skillNumber}`;
+    }
+    return heroSkills[skillNumber].name;
   };
 
-  // Noms des images pour les lignes 3, 4 et 5
-  const HERO_PERK_IMAGES = {
-    row3: ["s1l.png", "s1d.png", "s2l.png", "s2d.png"],
-    row4: ["s3l.png", "s3d.png", "s4l.png", "s4d.png"],
-    row5: ["light.png", "dark.png"],
+  // Charger les données des perks ET les skills du héros
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        setLoading(true);
+        console.log(`📡 Loading perks for ${heroName}...`);
+        
+        // Charger les perks
+        const perksData = await api.request('/v2/perks');
+        console.log(`✅ Loaded ${perksData.length} perks from database`);
+        setPerkData(perksData);
+        
+        // Charger les skills du héros
+        try {
+          const heroData = await api.request(`/v2/heroes/${heroName.toLowerCase()}`);
+          if (heroData?.skills) {
+            console.log(`✅ Loaded skills for ${heroName}:`, Object.keys(heroData.skills).length);
+            setHeroSkills(heroData.skills);
+          }
+        } catch (heroError) {
+          console.warn(`⚠️ Could not load skills for ${heroName}:`, heroError.message);
+        }
+        
+      } catch (error) {
+        console.error("❌ Error loading perk data:", error);
+        setPerkData([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadData();
+  }, [heroName, heroClass]);
+
+  // Trouver une perk
+  const findPerk = (perkImageInfo, rowIndex) => {
+    if (!perkImageInfo || perkData.length === 0) return null;
+    
+    const { name, file, tier, skill, type } = perkImageInfo;
+    const heroSlug = heroName?.toLowerCase();
+    
+    // Chercher par thumbnail exact
+    let foundPerk = perkData.find(perk => perk.thumbnail === file);
+    if (foundPerk) return foundPerk;
+    
+    // Chercher par chemin complet pour T3/T5
+    const fullPath = `heroes/${heroName}/perks/${file}`;
+    foundPerk = perkData.find(perk => perk.thumbnail === fullPath);
+    if (foundPerk) return foundPerk;
+    
+    // Pour T3/T5: chercher par héro, tier, skill et type
+    if (tier === 't3' || tier === 't5') {
+      foundPerk = perkData.find(perk => 
+        perk.heroSlug === heroSlug &&
+        perk.tier === tier &&
+        perk.skillIndex === skill &&
+        perk.type === type
+      );
+      if (foundPerk) return foundPerk;
+    }
+    
+    // Chercher par nom (approximatif)
+    const searchName = name.toLowerCase();
+    foundPerk = perkData.find(perk => 
+      perk.name.toLowerCase().includes(searchName) || 
+      searchName.includes(perk.name.toLowerCase())
+    );
+    
+    return foundPerk;
+  };
+
+  // Gérer le hover sur une perk - MODIFIÉ
+  const handlePerkHover = (perkInfo, perkImageInfo, e) => {
+    if (!perkImageInfo) return;
+
+    const rect = e.currentTarget.getBoundingClientRect();
+    const position = {
+      left: rect.left + rect.width / 2,
+      top: rect.top - 10,
+      transform: "translateX(-50%) translateY(-100%)",
+    };
+
+    // Déterminer le coût basé sur la ligne
+    const getRowCost = (rowIndex) => {
+      const costs = [10, 15, 15, 15, 15];
+      return costs[rowIndex] || 15;
+    };
+
+    const rowIndex = Math.floor(perkImageInfo.index / 10);
+    const cost = getRowCost(rowIndex);
+
+    // DÉTERMINER LE TITRE
+    let displayName = "Unknown Perk";
+    
+    if (perkImageInfo.tier === 't3' && perkImageInfo.skill) {
+      // Pour les perks T3: "Nom du Skill - Light/Dark"
+      const skillName = getSkillName(perkImageInfo.skill);
+      const typeName = perkImageInfo.type === 'light' ? 'Light' : 'Dark';
+      displayName = `${skillName} - ${typeName}`;
+    } else if (perkImageInfo.tier === 't5') {
+      // Pour les perks T5: "Light/Dark Transcendence"
+      const typeName = perkImageInfo.type === 'light' ? 'Light' : 'Dark';
+      displayName = `${typeName} Transcendence`;
+    } else {
+      // Pour T1/T2: nom de la perk
+      displayName = perkInfo?.name || perkImageInfo.name || "Unknown Perk";
+    }
+
+    // DESCRIPTION
+    let description = "No description available";
+    if (perkInfo?.description) {
+      description = perkInfo.description;
+    } else if (perkImageInfo?.effect) {
+      description = perkImageInfo.effect;
+    } else if (perkImageInfo) {
+      description = `Data loading for "${perkImageInfo.name}"...`;
+    }
+
+    const overlayContent = (
+      <div className="perk-overlay">
+        <h4 className="perk-title">{displayName}</h4>
+        <p className="perk-description">{description}</p>
+        
+        {/* <div className="perk-overlay-meta">
+          {perkImageInfo?.tier && (
+            <span className="perk-tier">Tier: {perkImageInfo.tier.toUpperCase()}</span>
+          )}
+          {perkInfo?.class && perkInfo.class !== "General" && (
+            <span className="perk-class">Class: {perkInfo.class}</span>
+          )}
+          {perkImageInfo?.skill && (
+            <span className="perk-skill">Skill {perkImageInfo.skill}</span>
+          )}
+        </div> */}
+        
+        {/* <div className="perk-cost-overlay">
+          Cost: {cost} points
+        </div>
+        
+        {perkInfo?.tags && perkInfo.tags.length > 0 && (
+          <div className="perk-tags">
+            Tags: {perkInfo.tags.slice(0, 3).join(', ')}
+            {perkInfo.tags.length > 3 && ` +${perkInfo.tags.length - 3} more`}
+          </div>
+        )} */}
+      </div>
+    );
+
+    showOverlay(overlayContent, position);
   };
 
   // Calculate used points
@@ -143,6 +238,8 @@ const PerkModal = ({ data, onClose }) => {
             {Array.from({ length: row.count }, (_, i) => {
               const perkIndex = rowIndex * 10 + i;
               const isSelected = selectedPerks.includes(perkIndex);
+              const perkImageInfo = getPerkImageInfo(rowIndex, i, perkIndex);
+              const perkInfo = perkImageInfo ? findPerk(perkImageInfo, rowIndex) : null;
 
               return (
                 <div
@@ -151,8 +248,10 @@ const PerkModal = ({ data, onClose }) => {
                     isSelected ? "selected" : ""
                   }`}
                   onClick={() => togglePerkSelection(perkIndex, row.cost)}
+                  onMouseEnter={(e) => handlePerkHover(perkInfo, perkImageInfo, e)}
+                  onMouseLeave={hideOverlay}
                 >
-                  {renderPerkImage(rowIndex, i, isSelected, row.cost)}
+                  {renderPerkImage(rowIndex, i, isSelected, row.cost, perkImageInfo)}
                 </div>
               );
             })}
@@ -162,80 +261,163 @@ const PerkModal = ({ data, onClose }) => {
     );
   };
 
-  const renderPerkImage = (rowIndex, perkIndex, isSelected, cost) => {
+  // Informations d'image pour chaque perk
+  const getPerkImageInfo = (rowIndex, perkIndex, globalIndex) => {
     // Row 1: T1 perks
-    if (rowIndex === 0 && perkIndex < T1_PERK_IMAGES.length) {
-      const perkImage = T1_PERK_IMAGES[perkIndex];
+    if (rowIndex === 0) {
+      const T1_PERKS = [
+        { name: "ATK Up", file: "ATK Up.png", tier: "t1", index: globalIndex },
+        { name: "HP Up", file: "HP Up.png", tier: "t1", index: globalIndex },
+        { name: "DEF up", file: "DEF up.png", tier: "t1", index: globalIndex },
+        { name: "Crit Resist Up", file: "Crit Resist Up.png", tier: "t1", index: globalIndex },
+        { name: "Monster Hunting", file: "Monster Hunting.png", tier: "t1", index: globalIndex },
+      ];
+      return perkIndex < T1_PERKS.length ? T1_PERKS[perkIndex] : null;
+    }
+    
+    // Row 2: T2 class perks
+    if (rowIndex === 1 && heroClass) {
+      const T2_PERKS_BY_CLASS = {
+        Knight: [
+          { name: "Experienced Fighter", file: "Experienced Fighter.png", tier: "t2", index: globalIndex },
+          { name: "Excellent Strategy", file: "Excellent Strategy.png", tier: "t2", index: globalIndex },
+          { name: "Battle Cry", file: "Battle Cry.png", tier: "t2", index: globalIndex },
+          { name: "Shield of Protection", file: "Shield of Protection.png", tier: "t2", index: globalIndex },
+          { name: "Swift Move", file: "Swift Move.png", tier: "t2", index: globalIndex },
+        ],
+        Warrior: [
+          { name: "Opportune Strike", file: "Opportune Strike.png", tier: "t2", index: globalIndex },
+          { name: "Warlike", file: "Warlike.png", tier: "t2", index: globalIndex },
+          { name: "Offensive Guard", file: "Offensive Guard.png", tier: "t2", index: globalIndex },
+          { name: "Tactical Foresight", file: "Tactical Foresight.png", tier: "t2", index: globalIndex },
+          { name: "Blood Wrath", file: "Blood Wrath.png", tier: "t2", index: globalIndex },
+        ],
+        Assassin: [
+          { name: "Target Weakness", file: "Target Weakness.png", tier: "t2", index: globalIndex },
+          { name: "Swift and Nimble", file: "Swift and Nimble.png", tier: "t2", index: globalIndex },
+          { name: "Tactical Foresight", file: "Tactical Foresight.png", tier: "t2", index: globalIndex },
+          { name: "Opportune Strike", file: "Opportune Strike.png", tier: "t2", index: globalIndex },
+          { name: "Vital Detection", file: "Vital Detection.png", tier: "t2", index: globalIndex },
+        ],
+        Mechanic: [
+          { name: "Target Weakness", file: "Target Weakness.png", tier: "t2", index: globalIndex },
+          { name: "Ready Cannons", file: "Ready Cannons.png", tier: "t2", index: globalIndex },
+          { name: "Pressure Point", file: "Pressure Point.png", tier: "t2", index: globalIndex },
+          { name: "Special Bullet", file: "Special Bullet.png", tier: "t2", index: globalIndex },
+          { name: "Amplified Gunpowder", file: "Amplified Gunpowder.png", tier: "t2", index: globalIndex },
+        ],
+        Archer: [
+          { name: "Precision Shot", file: "Precision Shot.png", tier: "t2", index: globalIndex },
+          { name: "Eagle Eye", file: "Eagle Eye.png", tier: "t2", index: globalIndex },
+          { name: "Mortal Wound", file: "Mortal Wound.png", tier: "t2", index: globalIndex },
+          { name: "Opportune Strike", file: "Opportune Strike.png", tier: "t2", index: globalIndex },
+          { name: "Concentration", file: "Concentration.png", tier: "t2", index: globalIndex },
+        ],
+        Wizard: [
+          { name: "Deception", file: "Deception.png", tier: "t2", index: globalIndex },
+          { name: "Moral Rise", file: "Moral Rise.png", tier: "t2", index: globalIndex },
+          { name: "Blessing of Mana", file: "Blessing of Mana.png", tier: "t2", index: globalIndex },
+          { name: "Circuit Burst", file: "Circuit Burst.png", tier: "t2", index: globalIndex },
+          { name: "Destruction", file: "Destruction.png", tier: "t2", index: globalIndex },
+        ],
+        Priest: [
+          { name: "Vengeful Curse", file: "Vengeful Curse.png", tier: "t2", index: globalIndex },
+          { name: "Goddess Blessing", file: "Goddess Blessing.png", tier: "t2", index: globalIndex },
+          { name: "Inner Peace", file: "Inner Peace.png", tier: "t2", index: globalIndex },
+          { name: "Blessing of Mana", file: "Blessing of Mana.png", tier: "t2", index: globalIndex },
+          { name: "Swiftness", file: "Swiftness.png", tier: "t2", index: globalIndex },
+        ],
+      };
+      
+      const classPerks = T2_PERKS_BY_CLASS[heroClass];
+      return classPerks && perkIndex < classPerks.length ? classPerks[perkIndex] : null;
+    }
+    
+    // Rows 3-5: Hero-specific perks
+    if (rowIndex >= 2 && heroName) {
+      const HERO_PERKS = {
+        row3: [
+          { name: "Skill 1 Light", file: "s1l.png", tier: "t3", skill: 1, type: "light", index: globalIndex },
+          { name: "Skill 1 Dark", file: "s1d.png", tier: "t3", skill: 1, type: "dark", index: globalIndex },
+          { name: "Skill 2 Light", file: "s2l.png", tier: "t3", skill: 2, type: "light", index: globalIndex },
+          { name: "Skill 2 Dark", file: "s2d.png", tier: "t3", skill: 2, type: "dark", index: globalIndex },
+        ],
+        row4: [
+          { name: "Skill 3 Light", file: "s3l.png", tier: "t3", skill: 3, type: "light", index: globalIndex },
+          { name: "Skill 3 Dark", file: "s3d.png", tier: "t3", skill: 3, type: "dark", index: globalIndex },
+          { name: "Skill 4 Light", file: "s4l.png", tier: "t3", skill: 4, type: "light", index: globalIndex },
+          { name: "Skill 4 Dark", file: "s4d.png", tier: "t3", skill: 4, type: "dark", index: globalIndex },
+        ],
+        row5: [
+          { name: "Light Transcendence", file: "light.png", tier: "t5", skill: null, type: "light", index: globalIndex },
+          { name: "Dark Transcendence", file: "dark.png", tier: "t5", skill: null, type: "dark", index: globalIndex },
+        ],
+      };
+      
+      const perkRow = rowIndex === 2 ? HERO_PERKS.row3 : 
+                     rowIndex === 3 ? HERO_PERKS.row4 : 
+                     HERO_PERKS.row5;
+      
+      return perkIndex < perkRow.length ? perkRow[perkIndex] : null;
+    }
+    
+    return null;
+  };
+
+  const renderPerkImage = (rowIndex, perkIndex, isSelected, cost, perkImageInfo) => {
+    if (!perkImageInfo) {
+      // Fallback: show cost
       return (
-        <img
-          src={`/kingsraid-data/assets/perks/t1/${perkImage}`}
-          alt={`Perk ${perkIndex}`}
-          style={{ opacity: isSelected ? 1 : 0.4 }}
-          onError={(e) => {
-            e.target.style.display = "none";
-            e.target.nextElementSibling.style.display = "flex";
-          }}
-        />
+        <div className="perk-cost-fallback">
+          {cost}
+        </div>
       );
     }
 
-    // Row 2: T2 class perks
-    if (rowIndex === 1 && heroClass && T2_PERK_IMAGES_BY_CLASS[heroClass]) {
-      const classPerks = T2_PERK_IMAGES_BY_CLASS[heroClass];
-      if (perkIndex < classPerks.length) {
-        const perkImage = classPerks[perkIndex];
-        return (
-          <img
-            src={`/kingsraid-data/assets/perks/t2/${heroClass.toLowerCase()}/${perkImage}`}
-            alt={`Perk ${perkIndex}`}
-            style={{ opacity: isSelected ? 1 : 0.4 }}
-            onError={(e) => {
-              e.target.style.display = "none";
-              e.target.nextElementSibling.style.display = "flex";
-            }}
-          />
-        );
-      }
+    // Construire le chemin d'accès à l'image
+    let imagePath = "";
+    if (rowIndex === 0) {
+      // T1 perks
+      imagePath = `/kingsraid-data/assets/perks/t1/${perkImageInfo.file}`;
+    } else if (rowIndex === 1 && heroClass) {
+      // T2 class perks
+      imagePath = `/kingsraid-data/assets/perks/t2/${heroClass.toLowerCase()}/${perkImageInfo.file}`;
+    } else if (rowIndex >= 2 && heroName) {
+      // Hero-specific perks
+      imagePath = `/kingsraid-data/assets/heroes/${heroName}/perks/${perkImageInfo.file}`;
     }
 
-    // Rows 3-5: Hero-specific perks
-    if (rowIndex >= 2 && heroName) {
-      const perkRow =
-        rowIndex === 2
-          ? HERO_PERK_IMAGES.row3
-          : rowIndex === 3
-          ? HERO_PERK_IMAGES.row4
-          : HERO_PERK_IMAGES.row5;
-
-      if (perkIndex < perkRow.length) {
-        const perkImage = perkRow[perkIndex];
-        return (
-          <img
-            src={`/kingsraid-data/assets/heroes/${heroName}/perks/${perkImage}`}
-            alt={`Perk ${perkIndex}`}
-            style={{ opacity: isSelected ? 1 : 0.4 }}
-            onError={(e) => {
-              e.target.style.display = "none";
-              e.target.nextElementSibling.style.display = "flex";
-            }}
-          />
-        );
-      }
-    }
-
-    // Fallback: show cost
     return (
-      <div
-        style={{
-          color: isSelected ? "#1f2937" : "#9ca3af",
-          fontWeight: "bold",
-          fontSize: "12px",
-        }}
-      >
-        {cost}
-      </div>
+      <>
+        <img
+          src={imagePath}
+          alt={perkImageInfo.name}
+          className="perk-image"
+          style={{ opacity: isSelected ? 1 : 0.4 }}
+          onError={(e) => {
+            console.log(`❌ Image failed to load: ${imagePath}`);
+            e.target.style.display = "none";
+            const fallback = e.target.nextElementSibling;
+            if (fallback) fallback.style.display = "flex";
+          }}
+        />
+        <div className="perk-fallback">
+          {perkImageInfo.name.length > 8 
+            ? perkImageInfo.name.substring(0, 6) + "..."
+            : perkImageInfo.name}
+        </div>
+      </>
     );
   };
+
+  if (loading) {
+    return (
+      <div>
+        <h3 className="perk-modal-title">Perks - {heroName}</h3>
+        <div className="perk-loading">Loading perks...</div>
+      </div>
+    );
+  }
 
   return (
     <div>

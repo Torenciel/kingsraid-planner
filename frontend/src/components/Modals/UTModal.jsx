@@ -18,17 +18,23 @@ const UTModal = ({ data, onClose }) => {
   const [heroData, setHeroData] = useState(null);
   const itemRefs = useRef({});
 
-  // Charger les données du héros
   useEffect(() => {
     const loadHeroData = async () => {
       try {
-        const response = await fetch(
-          `/kingsraid-data/table-data/heroes/${heroName}.json`
-        );
+        const response = await fetch(`/api/heroes/${heroName}`);
         const data = await response.json();
         setHeroData(data);
       } catch (error) {
-        console.error("Error loading hero data:", error);
+        console.error("Error loading hero data from MongoDB:", error);
+        try {
+          const fallbackResponse = await fetch(
+            `/kingsraid-data/table-data/heroes/${heroName}.json`
+          );
+          const fallbackData = await fallbackResponse.json();
+          setHeroData(fallbackData);
+        } catch (fallbackError) {
+          console.error("Error loading fallback hero data:", fallbackError);
+        }
       }
     };
     loadHeroData();
@@ -44,32 +50,36 @@ const UTModal = ({ data, onClose }) => {
     onClose();
   };
 
-  // Obtenir les données de l'UT sélectionné
   const getUTData = (utNumber) => {
-    if (!heroData?.uts) return null;
-    return heroData.uts[utNumber.toString()];
+    if (!heroData) return null;
+    
+    if (heroData.uts) {
+      return heroData.uts[utNumber.toString()] || heroData.uts[utNumber];
+    }
+    
+    return null;
   };
 
-  // Gérer le hover sur un UT
   const handleUTHover = (utNumber, e) => {
     const utData = getUTData(utNumber);
     if (!utData) return;
 
     const rect = e.currentTarget.getBoundingClientRect();
 
-    // Position au-dessus de l'item
     const position = {
       left: rect.left + rect.width / 2,
       top: rect.top,
       transform: "translateX(-50%) translateY(-100%)",
     };
 
+    const values = utData.value || {};
+    
     showOverlay(
       <ItemOverlay
-        title={utData.name}
+        title={utData.name || `UT${utNumber}`}
         stars={selectedStars}
-        description={utData.description}
-        values={utData.value}
+        description={utData.description || ""}
+        values={values}
         itemType="ut"
       />,
       position
@@ -78,10 +88,8 @@ const UTModal = ({ data, onClose }) => {
 
   return (
     <div>
-      {/* Titre */}
       <h3 className="ut-modal-title">Unique Treasure - {heroName}</h3>
 
-      {/* Options UT */}
       <div className="ut-grid">
         {[1, 2, 3, 4].map((utNumber) => {
           const utData = getUTData(utNumber);
@@ -99,14 +107,13 @@ const UTModal = ({ data, onClose }) => {
               <img
                 src={`/kingsraid-data/assets/heroes/${heroName}/ut/${utNumber}.png`}
                 alt={`UT${utNumber}`}
-                className="w-full h-full object-cover rounded"
                 onError={(e) => {
                   e.target.style.display = "none";
                   const fallback = e.target.nextElementSibling;
                   if (fallback) fallback.style.display = "flex";
                 }}
               />
-              <div className="hidden w-full h-full items-center justify-center text-neutral-400 text-xs bg-neutral-800 rounded">
+              <div className="ut-fallback">
                 UT{utNumber}
               </div>
             </div>
@@ -114,7 +121,6 @@ const UTModal = ({ data, onClose }) => {
         })}
       </div>
 
-      {/* Option Empty */}
       <div className="ut-empty-container">
         <div
           className={`ut-option empty ${selectedUT === 0 ? "selected" : ""}`}
@@ -124,7 +130,6 @@ const UTModal = ({ data, onClose }) => {
         </div>
       </div>
 
-      {/* Stars */}
       {selectedUT > 0 && (
         <div className="ut-stars-section">
           <StarRating
@@ -136,7 +141,6 @@ const UTModal = ({ data, onClose }) => {
         </div>
       )}
 
-      {/* Boutons */}
       <div className="ut-modal-buttons">
         <button onClick={handleConfirm} className="ut-modal-confirm">
           Confirm

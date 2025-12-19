@@ -1,5 +1,6 @@
 // src/contexts/HeroContext.js
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import { useHeroes, useHero } from "../hooks/useApi"; // <-- IMPORT DES NOUVEAUX HOOKS
 
 const HeroContext = createContext();
 
@@ -20,7 +21,7 @@ export const HeroProvider = ({ children }) => {
   const [masangOrder, setMasangOrder] = useState([]);
   const [releaseOrder, setReleaseOrder] = useState({});
   const [loading, setLoading] = useState(true);
-  const [source, setSource] = useState("json"); // "json" ou "mongodb"
+  const [source, setSource] = useState("mongodb"); // <-- DÉFAUT: "mongodb"
 
   // 🎯 TOUS LES FILTRES DANS UN SEUL OBJET
   const [filters, setFilters] = useState({
@@ -40,7 +41,7 @@ export const HeroProvider = ({ children }) => {
     return getAssetUrl(`/kingsraid-data/assets/heroes/${heroName}/ico.png`);
   };
 
-  // Charger l'ordre Masang (URL COMPLÈTE)
+  // Charger l'ordre Masang (URL COMPLÈTE) - GARDÉ POUR COMPATIBILITÉ
   const loadMasangOrder = async () => {
     try {
       const masangUrl = `${API_BASE_URL}/kingsraid-data/hero_release_order_masang.json`;
@@ -50,7 +51,6 @@ export const HeroProvider = ({ children }) => {
       if (response.ok) {
         const masangData = await response.json();
         
-        // Le format peut être un tableau ou un objet
         if (Array.isArray(masangData)) {
           setMasangOrder(masangData);
           console.log("✅ Masang order loaded (array):", masangData.length, "heroes");
@@ -68,115 +68,104 @@ export const HeroProvider = ({ children }) => {
     }
   };
 
-  // Charger l'ordre de release normal (URL COMPLÈTE)
-  const loadReleaseOrder = async () => {
+  // 🆕 NOUVELLE FONCTION: Charger les héros depuis API v2 (MongoDB)
+  const loadHeroesFromMongoDBv2 = async () => {
     try {
-      const releaseUrl = `${API_BASE_URL}/kingsraid-data/hero_release_order.json`;
-      console.log('📄 Loading release order from:', releaseUrl);
+      console.log("🔄 Loading heroes from MongoDB API v2...");
       
-      const response = await fetch(releaseUrl);
-      if (response.ok) {
-        const releaseData = await response.json();
-        setReleaseOrder(releaseData);
-        console.log("✅ Release order loaded");
-      } else {
-        console.warn('⚠️ Release order not found, using empty object');
-        setReleaseOrder({});
+      // Utilisation directe du hook useHeroes
+      const response = await fetch(`${API_BASE_URL}/api/v2/heroes`);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
+      
+      const heroesData = await response.json();
+      console.log('📦 MongoDB v2 response:', heroesData);
+      
+      if (!Array.isArray(heroesData)) {
+        throw new Error('Expected array from API v2');
+      }
+      
+      // Transformer les données MongoDB en format compatible
+      const transformedHeroes = heroesData.map(hero => {
+        // hero est un document MongoDB avec infos.name, infos.class, etc.
+        const heroName = hero.infos?.name || hero.slug;
+        const heroClass = hero.infos?.class || 'Unknown';
+        
+        return {
+          // ID: utiliser slug pour la cohérence
+          id: hero.slug || heroName.toLowerCase().replace(/\s+/g, '-'),
+          // Nom complet
+          name: heroName,
+          // Rôle/classe
+          role: heroClass,
+          // Image
+          image: getHeroImageUrl(heroName),
+          // Rareté par défaut
+          rarity: 5,
+          // Ordre de release (à adapter selon vos données)
+          releaseOrder: hero.releaseOrder || releaseOrder[heroName] || 999,
+          // Données brutes MongoDB pour référence
+          _mongodb: {
+            slug: hero.slug,
+            data: hero
+          }
+        };
+      });
+      
+      setAllHeroes(transformedHeroes);
+      setSource("mongodb");
+      console.log(`✅ ${transformedHeroes.length} héros chargés depuis MongoDB API v2`);
+      return true;
+      
     } catch (error) {
-      console.error("❌ Error loading release order:", error);
-      setReleaseOrder({});
+      console.error("❌ MongoDB v2 connection error:", error.message);
+      return false;
     }
   };
 
-  // 🆕 Charger les héros depuis MongoDB (URL COMPLÈTE)
-  const loadHeroesFromMongoDB = async () => {
-    try {
-      console.log("🔄 Loading heroes from MongoDB...");
-      const mongoUrl = `${API_BASE_URL}/api/heroes`;
-      console.log('📡 MongoDB URL:', mongoUrl);
+  // 🆕 FONCTION SIMPLIFIÉE: Charger avec fallback
+  const loadAllHeroes = async () => {
+    setLoading(true);
+    
+    console.log('🚀 Starting hero data loading...');
+    
+    // 1. Charger les données de référence (masang, release order)
+    await Promise.all([
+      loadMasangOrder(),
+      // loadReleaseOrder() si nécessaire
+    ]);
+    
+    // 2. Essayer MongoDB API v2 d'abord
+    console.log('🔍 Trying MongoDB API v2...');
+    const mongoV2Success = await loadHeroesFromMongoDBv2();
+    
+    if (!mongoV2Success) {
+      // 3. Fallback: API v1 (JSON)
+      console.log('🔍 Falling back to API v1 (JSON)...');
+      const v1Success = await loadHeroesFromAPIv1();
       
-      const response = await fetch(mongoUrl);
-      
-      if (response.ok) {
-        const result = await response.json();
-        console.log('📦 MongoDB response:', result);
-        
-        // Votre API Express peut retourner différents formats
-        // Format 1: Votre serveur actuel
-        if (result.heroes && Array.isArray(result.heroes)) {
-          const heroes = result.heroes.map(hero => ({
-            id: hero.id || hero.name.toLowerCase(),
-            name: hero.name,
-            role: hero.role,
-            image: getHeroImageUrl(hero.name),
-            rarity: hero.rarity || 5,
-            releaseOrder: hero.releaseOrder || releaseOrder[hero.name] || 999,
-            masangOrder: hero.masangOrder || masangOrder.indexOf(hero.name) + 1 || 999
-          }));
-          
-          setAllHeroes(heroes);
-          setSource("mongodb");
-          console.log(`✅ ${heroes.length} héros chargés depuis MongoDB (format 1)`);
-          return true;
-        }
-        
-        // Format 2: Tableau direct
-        if (Array.isArray(result) && result.length > 0) {
-          const heroes = result.map(hero => ({
-            id: hero.id || hero.name.toLowerCase(),
-            name: hero.name,
-            role: hero.role,
-            image: getHeroImageUrl(hero.name),
-            rarity: 5,
-            releaseOrder: hero.releaseOrder || releaseOrder[hero.name] || 999
-          }));
-          
-          setAllHeroes(heroes);
-          setSource("mongodb");
-          console.log(`✅ ${heroes.length} héros chargés depuis MongoDB (format 2)`);
-          return true;
-        }
-        
-        // Format 3: Avec propriété data
-        if (result.data && Array.isArray(result.data)) {
-          const heroes = result.data.map(hero => ({
-            id: hero.id || hero.name.toLowerCase(),
-            name: hero.name,
-            role: hero.role || hero.class,
-            image: getHeroImageUrl(hero.name),
-            rarity: 5,
-            releaseOrder: hero.releaseOrder || releaseOrder[hero.name] || 999
-          }));
-          
-          setAllHeroes(heroes);
-          setSource("mongodb");
-          console.log(`✅ ${heroes.length} héros chargés depuis MongoDB (format 3)`);
-          return true;
-        }
-        
-        console.warn('⚠️ MongoDB returned unexpected format:', result);
-      } else {
-        console.warn('⚠️ MongoDB endpoint not available:', response.status);
+      if (!v1Success) {
+        // 4. Dernier fallback: héros de test
+        console.log('⚠️ Using test heroes as last resort');
+        loadTestHeroes();
       }
-    } catch (error) {
-      console.error("❌ MongoDB connection error:", error.message);
     }
-    return false;
+    
+    setLoading(false);
   };
 
-  // Charger les héros depuis l'API Express (URL COMPLÈTE)
-  const loadHeroesFromAPI = async () => {
+  // 🆕 FONCTION: Charger depuis API v1 (pour compatibilité)
+  const loadHeroesFromAPIv1 = async () => {
     try {
-      console.log("🔄 Loading heroes from Express API...");
+      console.log("🔄 Loading heroes from API v1...");
       const apiUrl = `${API_BASE_URL}/api/heroes?sort=name`;
-      console.log('📡 API URL:', apiUrl);
       
       const response = await fetch(apiUrl);
 
       if (response.ok) {
         const data = await response.json();
-        console.log("📦 API response:", data);
         
         if (data.heroes?.length > 0) {
           const heroes = data.heroes.map(hero => ({
@@ -185,24 +174,23 @@ export const HeroProvider = ({ children }) => {
             role: hero.role || hero.class,
             image: getHeroImageUrl(hero.name),
             rarity: hero.rarity || 5,
-            releaseOrder: hero.releaseOrder || releaseOrder[hero.name] || 999,
+            releaseOrder: hero.releaseOrder || 999,
             hasImage: hero.hasImage || true
           }));
           
           setAllHeroes(heroes);
-          console.log(`✅ ${heroes.length} héros chargés depuis Express API`);
+          setSource("json");
+          console.log(`✅ ${heroes.length} héros chargés depuis API v1`);
           return true;
         }
-      } else {
-        console.warn('⚠️ Express API endpoint not available:', response.status);
       }
     } catch (error) {
-      console.error("❌ Express API error:", error.message);
+      console.error("❌ API v1 error:", error.message);
     }
     return false;
   };
 
-  // Fallback avec héros de test
+  // Fallback avec héros de test (GARDÉ)
   const loadTestHeroes = () => {
     const testHeroes = [
       {
@@ -211,7 +199,7 @@ export const HeroProvider = ({ children }) => {
         role: "Warrior",
         image: getHeroImageUrl("Kasel"),
         rarity: 5,
-        releaseOrder: releaseOrder["Kasel"] || 1
+        releaseOrder: 1
       },
       {
         id: "frey",
@@ -219,7 +207,7 @@ export const HeroProvider = ({ children }) => {
         role: "Priest",
         image: getHeroImageUrl("Frey"),
         rarity: 5,
-        releaseOrder: releaseOrder["Frey"] || 2
+        releaseOrder: 2
       },
       {
         id: "cleo",
@@ -227,7 +215,7 @@ export const HeroProvider = ({ children }) => {
         role: "Wizard",
         image: getHeroImageUrl("Cleo"),
         rarity: 5,
-        releaseOrder: releaseOrder["Cleo"] || 3
+        releaseOrder: 3
       },
       {
         id: "roi",
@@ -235,7 +223,7 @@ export const HeroProvider = ({ children }) => {
         role: "Assassin",
         image: getHeroImageUrl("Roi"),
         rarity: 5,
-        releaseOrder: releaseOrder["Roi"] || 4
+        releaseOrder: 4
       },
       {
         id: "clause",
@@ -243,39 +231,12 @@ export const HeroProvider = ({ children }) => {
         role: "Knight",
         image: getHeroImageUrl("Clause"),
         rarity: 5,
-        releaseOrder: releaseOrder["Clause"] || 5
+        releaseOrder: 5
       },
     ];
     setAllHeroes(testHeroes);
+    setSource("test");
     console.log("⚠️  Using test heroes as fallback");
-  };
-
-  // 🆕 Migrer vers MongoDB
-  const migrateToMongoDB = async () => {
-    if (source === "mongodb") {
-      return { success: false, message: "Already using MongoDB" };
-    }
-    
-    try {
-      setLoading(true);
-      const response = await fetch(`${API_BASE_URL}/api/heroes/migrate`, {
-        method: 'POST'
-      });
-      
-      const result = await response.json();
-      
-      if (result.success) {
-        // Recharger depuis MongoDB
-        await loadHeroesFromMongoDB();
-      }
-      
-      return result;
-    } catch (error) {
-      console.error("❌ Migration error:", error);
-      return { success: false, error: error.message };
-    } finally {
-      setLoading(false);
-    }
   };
 
   // 🎯 FONCTION POUR APPLIQUER TOUS LES FILTRES
@@ -284,7 +245,7 @@ export const HeroProvider = ({ children }) => {
 
     let result = [...allHeroes];
 
-    // 1. FILTRE DISPONIBILITÉ
+    // 1. FILTRE DISPONIBILITÉ (si masangOrder existe)
     if (filters.availability === "available" && masangOrder.length > 0) {
       result = result.filter((hero) => masangOrder.includes(hero.name));
     }
@@ -345,61 +306,15 @@ export const HeroProvider = ({ children }) => {
 
   // Initialisation
   useEffect(() => {
-    const initializeData = async () => {
-      setLoading(true);
-      console.log('🚀 Initializing HeroContext...');
-      console.log('🔧 Configuration:', {
-        API_BASE_URL,
-        ASSETS_BASE_URL,
-        NODE_ENV: process.env.NODE_ENV
-      });
-      
-      // Charger les ordres de release
-      await Promise.all([
-        loadMasangOrder(),
-        loadReleaseOrder()
-      ]);
-
-      console.log('📊 Data loaded:', {
-        masangOrderCount: masangOrder.length,
-        releaseOrderCount: Object.keys(releaseOrder).length
-      });
-
-      // Essayer Express API d'abord
-      console.log('🔍 Trying Express API...');
-      const apiSuccess = await loadHeroesFromAPI();
-      
-      if (!apiSuccess) {
-        // Fallback: MongoDB
-        console.log('🔍 Trying MongoDB...');
-        const mongoSuccess = await loadHeroesFromMongoDB();
-        
-        if (!mongoSuccess) {
-          // Dernier fallback: héros de test
-          console.log('⚠️ Using test heroes as fallback');
-          loadTestHeroes();
-        }
-      }
-
-      console.log('✅ HeroContext initialized');
-      console.log('📈 Stats:', {
-        totalHeroes: allHeroes.length,
-        source: source,
-        loading: false
-      });
-      
-      setLoading(false);
-    };
-
-    initializeData();
+    loadAllHeroes();
   }, []);
 
   // 🆕 Recharger les héros
   const refreshHeroes = async () => {
     setLoading(true);
-    const success = await loadHeroesFromAPI();
+    const success = await loadHeroesFromMongoDBv2();
     if (!success) {
-      await loadHeroesFromMongoDB();
+      await loadHeroesFromAPIv1();
     }
     setLoading(false);
   };
@@ -407,11 +322,15 @@ export const HeroProvider = ({ children }) => {
   // 🆕 Tester la connexion API
   const testApiConnection = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/debug`);
+      const response = await fetch(`${API_BASE_URL}/api/health`);
+      const data = await response.json();
+      
       return {
         success: response.ok,
         status: response.status,
-        url: API_BASE_URL
+        mongodb: data.mongodb?.connected || false,
+        url: API_BASE_URL,
+        data: data
       };
     } catch (error) {
       return {
@@ -419,6 +338,20 @@ export const HeroProvider = ({ children }) => {
         error: error.message,
         url: API_BASE_URL
       };
+    }
+  };
+
+  // 🆕 Obtenir un héros spécifique par slug
+  const getHeroBySlug = async (slug) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/v2/heroes/${slug}`);
+      if (response.ok) {
+        return await response.json();
+      }
+      return null;
+    } catch (error) {
+      console.error(`Error fetching hero ${slug}:`, error);
+      return null;
     }
   };
 
@@ -436,7 +369,7 @@ export const HeroProvider = ({ children }) => {
     // Fonctions
     updateFilter,
     refreshHeroes,
-    migrateToMongoDB,
+    getHeroBySlug,
     testApiConnection,
     getHeroImageUrl,
     getAssetUrl,
@@ -449,6 +382,9 @@ export const HeroProvider = ({ children }) => {
     heroCount: filteredHeroes.length,
     totalHeroes: allHeroes.length,
     masangOrderCount: masangOrder.length,
+    
+    // Info source
+    dataSource: source
   };
 
   return <HeroContext.Provider value={value}>{children}</HeroContext.Provider>;

@@ -10,7 +10,6 @@ const SERVER_PORT = process.env.SERVER_PORT || 3002;
 
 // === CHEMINS CORRIGÉS ===
 const PROJECT_ROOT = path.join(__dirname, '..', '..', '..');
-// AJOUTEZ "kingsraid-planner" dans le chemin
 const PUBLIC_PATH = path.join(PROJECT_ROOT, 'kingsraid-planner', 'frontend', 'public');
 const KINGSRAID_DATA_PATH = path.join(PUBLIC_PATH, 'kingsraid-data');
 
@@ -24,27 +23,41 @@ console.log('📂 Exists?', fs.existsSync(KINGSRAID_DATA_PATH));
 app.use(cors());
 app.use(express.json());
 
+
 // Connexion MongoDB
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/kingsraid';
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/kingsraid-planner';
 
 mongoose.connect(MONGODB_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 })
-.then(() => console.log('✅ MongoDB connecté'))
+.then(() => {
+  console.log('✅ MongoDB connecté');
+  console.log(`📊 Base de données: ${mongoose.connection.db.databaseName}`);
+})
 .catch(err => {
   console.error('❌ Erreur MongoDB:', err);
   // Continuer même si MongoDB échoue (mode dégradé)
 });
 
-// Routes MongoDB (à importer)
+// =============== ROUTES MONGODB (API V2) ===============
+// Routes déjà existantes
 const heroRoutes = require('./routes/hero.routes');
 const teamRoutes = require('./routes/team.routes');
 
-app.use('/api/v2/heroes', heroRoutes);  // Nouvelles routes MongoDB
-app.use('/api/v2/teams', teamRoutes);   // Nouvelles routes MongoDB
+// Nouvelles routes MongoDB
+const perkRoutes = require('./routes/perk.routes');
+const artifactRoutes = require('./routes/artifact.routes');
+const gearsetRoutes = require('./routes/gearset.routes');
 
-// === ROUTES EXISTANTES (pour compatibilité) ===
+// API v2 - MongoDB
+app.use('/api/v2/heroes', heroRoutes);
+app.use('/api/v2/teams', teamRoutes);
+app.use('/api/v2/perks', perkRoutes);
+app.use('/api/v2/artifacts', artifactRoutes);
+app.use('/api/v2/gearsets', gearsetRoutes);
+
+// =============== ROUTES EXISTANTES (API V1 - FICHIERS JSON) ===============
 // Gardez TOUTES vos routes existantes ici...
 
 // Servir les fichiers statiques KingsRaid
@@ -67,6 +80,11 @@ app.get('/api/debug', (req, res) => {
     }
   }
   
+  // Stats MongoDB
+  const mongoCollections = mongoose.connection.collections 
+    ? Object.keys(mongoose.connection.collections) 
+    : [];
+  
   res.json({
     paths: {
       projectRoot: PROJECT_ROOT,
@@ -84,10 +102,18 @@ app.get('/api/debug', (req, res) => {
       heroesCount: heroFiles.length,
       heroFiles: heroFiles.slice(0, 10)
     },
+    mongodb: {
+      connected: mongoose.connection.readyState === 1,
+      collections: mongoCollections,
+      database: mongoose.connection.db?.databaseName || 'N/A'
+    },
     server: {
       port: SERVER_PORT,
       env: process.env.NODE_ENV,
-      mongodb: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected'
+      apiVersions: {
+        v1: 'Fichiers JSON',
+        v2: 'MongoDB'
+      }
     }
   });
 });
@@ -126,11 +152,11 @@ app.get('/api/kingsraid-data/hero_release_order_masang.json', (req, res) => {
   }
 });
 
-// API pour les héros (FONCTION CORRIGÉE)
+// API v1 pour les héros (FICHIERS JSON)
 app.get('/api/heroes', (req, res) => {
   try {
     const { sort = 'name' } = req.query;
-    console.log(`🔍 Loading heroes with sort: ${sort}`);
+    console.log(`🔍 Loading heroes (v1 JSON) with sort: ${sort}`);
     
     // Utiliser la fonction avec les bons chemins
     const heroes = getAllHeroesWithDetails();
@@ -154,6 +180,7 @@ app.get('/api/heroes', (req, res) => {
     }).map(hero => hero.name);
     
     const response = {
+      version: 'v1 (JSON files)',
       heroes: heroesWithImages,
       missingHeroes: missingHeroes,
       total: heroes.length,
@@ -172,7 +199,7 @@ app.get('/api/heroes', (req, res) => {
     res.json(response);
     
   } catch (error) {
-    console.error('❌ Error in /api/heroes:', error);
+    console.error('❌ Error in /api/heroes (v1):', error);
     res.status(500).json({
       error: 'Failed to load heroes',
       message: error.message,
@@ -182,7 +209,7 @@ app.get('/api/heroes', (req, res) => {
   }
 });
 
-// === FONCTIONS UTILITAIRES AVEC CHEMINS CORRIGÉS ===
+// === FONCTIONS UTILITAIRES AVEC CHEMINS CORRIGÉS (pour v1) ===
 
 function loadReleaseOrder() {
   try {
@@ -305,7 +332,7 @@ function getRoleFromName(name) {
   return roleMap[name] || 'Unknown';
 }
 
-// Routes temporaires pour les équipes (stockage en mémoire)
+// =============== ROUTES TEMPORAIRES POUR LES ÉQUIPES (stockage en mémoire) ===============
 const teams = new Map();
 
 app.post('/api/teams', (req, res) => {
@@ -374,36 +401,71 @@ function generateShortId() {
   return result;
 }
 
-// Route de santé
+// =============== ROUTE DE SANTÉ COMPLÈTE ===============
 app.get('/api/health', (req, res) => {
+  // Compter les documents dans chaque collection MongoDB
+  const mongoStats = mongoose.connection.readyState === 1 ? {
+    heroes: mongoose.connection.collections?.heroes?.estimatedDocumentCount,
+    perks: mongoose.connection.collections?.perks?.estimatedDocumentCount,
+    artifacts: mongoose.connection.collections?.artifacts?.estimatedDocumentCount,
+    gearsets: mongoose.connection.collections?.gearsets?.estimatedDocumentCount
+  } : null;
+  
   res.json({
     status: 'OK',
     service: 'Kings Raid Planner API',
-    mongodb: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected',
     timestamp: new Date().toISOString(),
+    mongodb: {
+      connected: mongoose.connection.readyState === 1,
+      database: mongoose.connection.db?.databaseName || 'N/A',
+      stats: mongoStats
+    },
+    memoryUsage: process.memoryUsage(),
     endpoints: {
-      v1: {
+      v1_json: {
         heroes: '/api/heroes',
+        teams: '/api/teams',
         debug: '/api/debug'
       },
-      v2: {
+      v2_mongodb: {
         heroes: '/api/v2/heroes',
+        perks: '/api/v2/perks',
+        artifacts: '/api/v2/artifacts',
+        gearsets: '/api/v2/gearsets',
         teams: '/api/v2/teams',
         health: '/api/health'
-      }
+      },
+      static_data: '/kingsraid-data/*'
     }
   });
 });
 
-// Démarrer le serveur
+// =============== DÉMARRAGE DU SERVEUR ===============
 app.listen(SERVER_PORT, () => {
+  console.log('='.repeat(60));
   console.log(`🚀 KingsRaid API Server running on http://localhost:${SERVER_PORT}`);
-  console.log(`📁 Data path: ${KINGSRAID_DATA_PATH}`);
-  console.log(`📊 MongoDB: ${MONGODB_URI}`);
-  console.log(`🔗 Debug endpoint: http://localhost:${SERVER_PORT}/api/debug`);
-  console.log(`👥 Heroes (JSON): http://localhost:${SERVER_PORT}/api/heroes`);
-  console.log(`👥 Heroes (MongoDB): http://localhost:${SERVER_PORT}/api/v2/heroes`);
-  console.log(`🏥 Health: http://localhost:${SERVER_PORT}/api/health`);
+  console.log('='.repeat(60));
+  
+  console.log('📁 PATHS:');
+  console.log(`   Data path: ${KINGSRAID_DATA_PATH}`);
+  console.log(`   MongoDB: ${MONGODB_URI}`);
+  
+  console.log('\n🔗 API V1 (Fichiers JSON):');
+  console.log(`   • Heroes: http://localhost:${SERVER_PORT}/api/heroes`);
+  console.log(`   • Teams: http://localhost:${SERVER_PORT}/api/teams`);
+  console.log(`   • Debug: http://localhost:${SERVER_PORT}/api/debug`);
+  
+  console.log('\n🔗 API V2 (MongoDB):');
+  console.log(`   • Heroes: http://localhost:${SERVER_PORT}/api/v2/heroes`);
+  console.log(`   • Perks: http://localhost:${SERVER_PORT}/api/v2/perks`);
+  console.log(`   • Artifacts: http://localhost:${SERVER_PORT}/api/v2/artifacts`);
+  console.log(`   • Gearsets: http://localhost:${SERVER_PORT}/api/v2/gearsets`);
+  console.log(`   • Teams: http://localhost:${SERVER_PORT}/api/v2/teams`);
+  console.log(`   • Health: http://localhost:${SERVER_PORT}/api/health`);
+  
+  console.log('\n📊 STATIC DATA:');
+  console.log(`   • /kingsraid-data/* (assets, JSON files)`);
+  console.log('='.repeat(60));
 });
 
 module.exports = app;

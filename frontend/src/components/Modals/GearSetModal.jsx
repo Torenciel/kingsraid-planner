@@ -12,17 +12,42 @@ const GearSetModal = ({ data, onClose }) => {
   const [gearSets, setGearSets] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Charger les données depuis le fichier JSON
+  // Charger les données depuis MongoDB
   useEffect(() => {
     const loadGearSetsData = async () => {
       try {
-        const response = await fetch(
-          "/kingsraid-data/table-data/gearsets.json"
-        );
+        // Charger depuis l'API MongoDB
+        const response = await fetch("/api/gearsets");
         const data = await response.json();
-        setGearSets(data);
+        
+        console.log("📦 Gear sets data from MongoDB:", data);
+        
+        // Format pour MongoDB: data peut être directement le tableau ou dans une propriété
+        if (Array.isArray(data)) {
+          setGearSets(data);
+        } else if (data.gearSets || data.gearsets) {
+          setGearSets(data.gearSets || data.gearsets);
+        } else {
+          // Fallback vers l'ancien système
+          console.log("🔄 Trying fallback JSON...");
+          const fallbackResponse = await fetch(
+            "/kingsraid-data/table-data/gearsets.json"
+          );
+          const fallbackData = await fallbackResponse.json();
+          setGearSets(fallbackData);
+        }
       } catch (error) {
         console.error("Erreur lors du chargement des gearsets:", error);
+        // Fallback vers l'ancien système
+        try {
+          const fallbackResponse = await fetch(
+            "/kingsraid-data/table-data/gearsets.json"
+          );
+          const fallbackData = await fallbackResponse.json();
+          setGearSets(fallbackData);
+        } catch (fallbackError) {
+          console.error("Erreur lors du chargement fallback:", fallbackError);
+        }
       } finally {
         setLoading(false);
       }
@@ -151,7 +176,7 @@ const GearSetModal = ({ data, onClose }) => {
                       if (fallback) fallback.style.display = "flex";
                     }}
                   />
-                  <div className="hidden w-full h-full items-center justify-center text-neutral-400 text-xs bg-neutral-800 rounded p-1 text-center">
+                  <div className="gearset-fallback">
                     {set.name}
                   </div>
                 </>

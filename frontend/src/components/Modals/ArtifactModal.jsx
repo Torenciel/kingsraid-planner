@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useArtifacts } from "../../contexts/ArtifactContext";
 import { useOverlay } from "../../contexts/OverlayContext";
 import { useTeam } from "../../contexts/TeamContext";
@@ -12,82 +12,89 @@ const ArtifactModal = ({ data, onClose }) => {
   const { allArtifacts, loading } = useArtifacts();
   const { showOverlay, hideOverlay } = useOverlay();
 
+  const getArtifactNameFromUrl = (url) => {
+    if (!url) return null;
+    const match = url.match(/artifacts\/(.+)\.png$/);
+    return match ? match[1] : null;
+  };
+
+  const currentArtifactName = currentItem ? getArtifactNameFromUrl(currentItem) : null;
+  
+  const findArtifactByFileName = (fileName) => {
+    return allArtifacts.find(artifact => {
+      if (!artifact) return false;
+      const thumbName = artifact.thumbnail?.replace('artifacts/', '').replace('.png', '');
+      const artifactId = artifact._id?.toString();
+      const artifactNameId = artifact.id?.toString();
+      
+      return thumbName === fileName || 
+             artifactId === fileName || 
+             artifactNameId === fileName ||
+             artifact.name?.toLowerCase().replace(/\s+/g, '_') === fileName;
+    });
+  };
+
   const [selectedArtifact, setSelectedArtifact] = useState(
-    currentItem
-      ? currentItem.split("/artifacts/")[1]?.replace(".png", "")
-      : null
+    currentArtifactName ? findArtifactByFileName(currentArtifactName) : null
   );
   const [selectedStars, setSelectedStars] = useState(currentStars);
   const [searchTerm, setSearchTerm] = useState("");
-
-  const [artifactsData, setArtifactsData] = useState([]);
-
-  useEffect(() => {
-    const loadArtifactsData = async () => {
-      try {
-        const response = await fetch(
-          "/kingsraid-data/table-data/artifacts.json"
-        );
-        const data = await response.json();
-        setArtifactsData(data);
-      } catch (error) {
-        console.error("Error loading artifacts data:", error);
-      }
-    };
-
-    loadArtifactsData();
-  }, []);
 
   const showLoading = loading && allArtifacts.length === 0;
 
   const displayArtifacts = useMemo(() => {
     if (searchTerm) {
       return allArtifacts.filter((artifact) => {
-        const artifactInfo = artifactsData.find(
-          (a) => a.thumbnail === `artifacts/${artifact}.png`
-        );
-        const name = artifactInfo?.name || artifact;
-        return name.toLowerCase().includes(searchTerm.toLowerCase());
+        const name = artifact.name || '';
+        const search = searchTerm.toLowerCase();
+        return name.toLowerCase().includes(search);
       });
     }
     return allArtifacts;
-  }, [searchTerm, allArtifacts, artifactsData]);
+  }, [searchTerm, allArtifacts]);
 
-  const getArtifactData = (artifactName) => {
-    if (!artifactName || artifactsData.length === 0) return null;
-
-    const artifactInfo = artifactsData.find(
-      (a) => a.thumbnail === `artifacts/${artifactName}.png`
-    );
-
-    if (!artifactInfo) {
-      const formattedName = artifactName.replace(/_/g, " ");
-      return artifactsData.find(
-        (a) => a.name.toLowerCase() === formattedName.toLowerCase()
-      );
+  const getArtifactFileName = (artifact) => {
+    if (!artifact) return '';
+    
+    if (artifact.thumbnail) {
+      return artifact.thumbnail.replace('artifacts/', '').replace('.png', '');
     }
+    
+    return artifact.name?.toLowerCase().replace(/\s+/g, '_') || '';
+  };
 
-    return artifactInfo;
+  const getArtifactData = (artifact) => {
+    if (!artifact) return null;
+    
+    const values = artifact.rawData?.value || artifact.value || {};
+    
+    return {
+      name: artifact.name,
+      description: artifact.description || artifact.rawData?.description || "",
+      value: values,
+      thumbnail: artifact.thumbnail
+    };
   };
 
   const handleConfirm = () => {
-    if (selectedArtifact === null) {
+    if (!selectedArtifact) {
       updateSubSlot(teamSlotIndex, subSlotIndex, null, 0);
     } else {
-      const artifactPath = `/kingsraid-data/assets/artifacts/${selectedArtifact}.png`;
+      const artifactFileName = getArtifactFileName(selectedArtifact);
+      const artifactPath = `/kingsraid-data/assets/artifacts/${artifactFileName}.png`;
       updateSubSlot(teamSlotIndex, subSlotIndex, artifactPath, selectedStars);
     }
     onClose();
   };
 
-  // Gérer le hover sur un artefact
-  const handleArtifactHover = (artifactName, e) => {
-    const artifactInfo = getArtifactData(artifactName);
-    if (!artifactInfo) return;
+  const handleArtifactHover = (artifact, e) => {
+    if (!artifact) return;
+
+    const artifactData = getArtifactData(artifact);
+    if (!artifactData) return;
 
     const rect = e.currentTarget.getBoundingClientRect();
 
-    // Position au-dessus de l'item
     const position = {
       left: rect.left + rect.width / 2,
       top: rect.top,
@@ -96,14 +103,30 @@ const ArtifactModal = ({ data, onClose }) => {
 
     showOverlay(
       <ItemOverlay
-        title={artifactInfo.name}
+        title={artifactData.name}
         stars={selectedStars}
-        description={artifactInfo.description}
-        values={artifactInfo.value}
+        description={artifactData.description}
+        values={artifactData.value}
         itemType="artifact"
       />,
       position
     );
+  };
+
+  const isArtifactSelected = (artifact) => {
+    if (!selectedArtifact || !artifact) return false;
+    
+    if (selectedArtifact._id && artifact._id) {
+      return selectedArtifact._id === artifact._id;
+    }
+    if (selectedArtifact.id && artifact.id) {
+      return selectedArtifact.id === artifact.id;
+    }
+    if (selectedArtifact.name && artifact.name) {
+      return selectedArtifact.name === artifact.name;
+    }
+    
+    return false;
   };
 
   return (
@@ -123,10 +146,9 @@ const ArtifactModal = ({ data, onClose }) => {
       ) : (
         <>
           <div className="artifact-grid">
-            {/* Option "Empty" */}
             <div
               className={`artifact-option empty ${
-                selectedArtifact === null ? "selected" : ""
+                !selectedArtifact ? "selected" : ""
               }`}
               onClick={() => {
                 setSelectedArtifact(null);
@@ -136,32 +158,31 @@ const ArtifactModal = ({ data, onClose }) => {
               Empty
             </div>
 
-            {/* Liste des artefacts */}
-            {displayArtifacts.map((artifactName) => {
-              const artifactInfo = getArtifactData(artifactName);
-              const isSelected = selectedArtifact === artifactName;
+            {displayArtifacts.map((artifact) => {
+              const artifactFileName = getArtifactFileName(artifact);
+              const isSelected = isArtifactSelected(artifact);
 
               return (
                 <div
-                  key={artifactName}
+                  key={artifact._id || artifact.id || artifact.name}
                   className={`artifact-option ${isSelected ? "selected" : ""}`}
-                  onClick={() => setSelectedArtifact(artifactName)}
-                  onMouseEnter={(e) => handleArtifactHover(artifactName, e)}
+                  onClick={() => setSelectedArtifact(artifact)}
+                  onMouseEnter={(e) => handleArtifactHover(artifact, e)}
                   onMouseLeave={hideOverlay}
                 >
                   <img
-                    src={`/kingsraid-data/assets/artifacts/${artifactName}.png`}
-                    alt={artifactName}
+                    src={`/kingsraid-data/assets/artifacts/${artifactFileName}.png`}
+                    alt={artifact.name}
                     onError={(e) => {
                       e.target.style.display = "none";
                       const fallback = e.target.nextElementSibling;
                       if (fallback) fallback.style.display = "flex";
                     }}
                   />
-                  <div className="hidden w-full h-full items-center justify-center text-neutral-400 text-xs bg-neutral-800 rounded p-1 text-center overflow-hidden">
-                    {artifactName.length > 10
-                      ? artifactName.substring(0, 8) + "..."
-                      : artifactName}
+                  <div className="artifact-fallback">
+                    {artifactFileName.length > 10
+                      ? artifactFileName.substring(0, 8) + "..."
+                      : artifactFileName}
                   </div>
                 </div>
               );
@@ -181,8 +202,8 @@ const ArtifactModal = ({ data, onClose }) => {
           <div className="artifact-stars-label">
             Select star level for{" "}
             <span className="artifact-stars-name">
-              {getArtifactData(selectedArtifact)?.name ||
-                selectedArtifact.replace(/_/g, " ")}
+              {selectedArtifact.name ||
+                getArtifactFileName(selectedArtifact).replace(/_/g, " ")}
             </span>
           </div>
           <StarRating

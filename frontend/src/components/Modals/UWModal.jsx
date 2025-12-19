@@ -27,23 +27,30 @@ const UWModal = ({ data, onClose }) => {
   const [heroData, setHeroData] = useState(null);
   const uwItemRef = useRef(null);
 
-  // Charger les données du héros
+  // Charger les données du héros depuis MongoDB
   useEffect(() => {
     const loadHeroData = async () => {
       try {
-        const response = await fetch(
-          `/kingsraid-data/table-data/heroes/${heroName}.json`
-        );
+        const response = await fetch(`/api/heroes/${heroName}`);
         const data = await response.json();
         setHeroData(data);
       } catch (error) {
-        console.error("Error loading hero data:", error);
+        console.error("Error loading hero data from MongoDB:", error);
+        // Fallback vers l'ancien système
+        try {
+          const fallbackResponse = await fetch(
+            `/kingsraid-data/table-data/heroes/${heroName}.json`
+          );
+          const fallbackData = await fallbackResponse.json();
+          setHeroData(fallbackData);
+        } catch (fallbackError) {
+          console.error("Error loading fallback hero data:", fallbackError);
+        }
       }
     };
     loadHeroData();
   }, [heroName]);
 
-  // Dans UWModal.jsx, UTModal.jsx, etc.
   const handleConfirm = (e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -59,25 +66,44 @@ const UWModal = ({ data, onClose }) => {
     onClose();
   };
 
+  // Obtenir les données UW (compatible MongoDB)
+  const getUWData = () => {
+    if (!heroData) return null;
+    
+    // Essayer plusieurs structures possibles
+    if (heroData.uw) {
+      return heroData.uw;
+    }
+    
+    // Structure dans rawData
+    if (heroData.rawData?.uw) {
+      return heroData.rawData.uw;
+    }
+    
+    return null;
+  };
+
   // Gérer le hover sur l'UW
   const handleUWHover = (e) => {
-    if (!heroData?.uw) return;
+    const uwData = getUWData();
+    if (!uwData) return;
 
     const rect = e.currentTarget.getBoundingClientRect();
 
-    // Position au-dessus de l'item
     const position = {
       left: rect.left + rect.width / 2,
       top: rect.top,
       transform: "translateX(-50%) translateY(-100%)",
     };
 
+    const values = uwData.value || {};
+    
     showOverlay(
       <ItemOverlay
-        title={heroData.uw.name}
+        title={uwData.name || "Unique Weapon"}
         stars={selectedStars}
-        description={heroData.uw.description}
-        values={heroData.uw.value}
+        description={uwData.description || ""}
+        values={values}
         itemType="uw"
       />,
       position
@@ -157,12 +183,9 @@ const UWModal = ({ data, onClose }) => {
 
   return (
     <div>
-      {/* Titre */}
       <h3 className="uw-modal-title">Unique Weapon - {heroName}</h3>
 
-      {/* Options UW */}
       <div className="uw-options-container">
-        {/* Option Empty */}
         <div
           className={`uw-option empty ${
             selectedOption === "empty" ? "selected" : ""
@@ -172,7 +195,6 @@ const UWModal = ({ data, onClose }) => {
           Empty
         </div>
 
-        {/* Option UW */}
         <div
           ref={uwItemRef}
           className={`uw-option ${selectedOption === "uw" ? "selected" : ""}`}
@@ -183,20 +205,18 @@ const UWModal = ({ data, onClose }) => {
           <img
             src={`/kingsraid-data/assets/heroes/${heroName}/uw.png`}
             alt="UW"
-            className="w-full h-full object-cover rounded"
             onError={(e) => {
               e.target.style.display = "none";
               const fallback = e.target.nextElementSibling;
               if (fallback) fallback.style.display = "flex";
             }}
           />
-          <div className="hidden w-full h-full items-center justify-center text-neutral-400 text-xs bg-neutral-800 rounded">
+          <div className="uw-fallback">
             UW
           </div>
         </div>
       </div>
 
-      {/* Stars */}
       {selectedOption === "uw" && (
         <div className="uw-stars-section">
           <StarRating
@@ -209,7 +229,6 @@ const UWModal = ({ data, onClose }) => {
         </div>
       )}
 
-      {/* Advancement */}
       {selectedOption === "uw" && (
         <div className="uw-advancement-section">
           <h4 className="uw-modal-subtitle">Soul Weapon Advancement</h4>
@@ -217,7 +236,6 @@ const UWModal = ({ data, onClose }) => {
         </div>
       )}
 
-      {/* Boutons */}
       <div className="uw-modal-buttons">
         <button onClick={handleConfirm} className="uw-modal-confirm">
           Confirm

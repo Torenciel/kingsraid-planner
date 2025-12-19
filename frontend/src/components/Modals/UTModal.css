@@ -9,15 +9,51 @@
   background: var(--color-primary);
   border: 2px solid var(--color-primary-darker);
   transition: all 0.2s;
+  position: relative;
+  overflow: hidden;
+  box-sizing: border-box;
 }
 
+/* Style par défaut */
+.ut-option {
+  border-color: var(--color-primary-darker);
+}
+
+/* Style au survol */
 .ut-option:hover {
   border-color: var(--color-item-hover);
+  transform: scale(1.05);
 }
 
+/* Style sélectionné */
 .ut-option.selected {
   border-color: var(--color-item-selected);
   background-color: rgba(251, 191, 36, 0.1);
+  transform: scale(1.05);
+}
+
+/* Image UT */
+.ut-option img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 3px;
+  display: block;
+}
+
+/* Fallback text */
+.ut-fallback {
+  width: 100%;
+  height: 100%;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  color: #9ca3af;
+  font-size: 0.875rem;
+  background: var(--color-primary);
+  border-radius: 3px;
+  font-weight: 500;
 }
 
 .ut-option.empty {
@@ -72,6 +108,8 @@
   border: none;
   cursor: pointer;
   transition: background-color 0.2s;
+  font-size: 0.875rem;
+  font-weight: 500;
 }
 
 .ut-modal-confirm:hover {
@@ -86,6 +124,8 @@
   border: none;
   cursor: pointer;
   transition: background-color 0.2s;
+  font-size: 0.875rem;
+  font-weight: 500;
 }
 
 .ut-modal-cancel:hover {
@@ -95,4 +135,5 @@
 /* ========== Layout ========== */
 .ut-stars-section {
   margin-bottom: 1rem;
+  text-align: center;
 }

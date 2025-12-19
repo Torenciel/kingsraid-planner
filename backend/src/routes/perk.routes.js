@@ -1,134 +1,66 @@
+// backend/src/routes/perk.routes.js
 const express = require('express');
 const router = express.Router();
-const Perk = require('../models/Perk');
+const PerkService = require('../services/perkService');
 
-// Récupérer toutes les perks d'un certain tier
+const perkService = new PerkService();
+
+// GET /api/perks - Toutes les perks (pour le frontend)
+router.get('/', async (req, res) => {
+  try {
+    const perks = await perkService.getAllPerks();
+    res.json(perks);
+  } catch (error) {
+    console.error('Error fetching all perks:', error);
+    res.status(500).json({ error: 'Failed to fetch perks' });
+  }
+});
+
+// GET /api/perks/tier/:tier - Perks par tier
 router.get('/tier/:tier', async (req, res) => {
   try {
-    const { tier } = req.params;
-    const { class: heroClass, heroSlug } = req.query;
+    const filters = {};
+    if (req.query.class) filters.class = req.query.class;
+    if (req.query.heroSlug) filters.heroSlug = req.query.heroSlug;
     
-    const query = { tier };
-    
-    if (heroClass && heroClass !== 'General') {
-      query.class = heroClass;
-    }
-    
-    if (heroSlug && (tier === 't3' || tier === 't5')) {
-      query.heroSlug = heroSlug;
-    }
-    
-    const perks = await Perk.find(query).sort({ displayOrder: 1 });
-    
-    res.json({
-      success: true,
-      perks: perks,
-      count: perks.length
-    });
+    const perks = await perkService.getPerksByTier(req.params.tier, filters);
+    res.json(perks);
   } catch (error) {
-    console.error('Error getting perks:', error);
-    res.status(500).json({ success: false, error: error.message });
+    console.error(`Error fetching tier ${req.params.tier} perks:`, error);
+    res.status(500).json({ error: 'Failed to fetch perks' });
   }
 });
 
-// Récupérer les perks T1 (générales)
-router.get('/t1', async (req, res) => {
+// GET /api/perks/hero/:heroSlug - Perks d'un héros (T3/T5)
+router.get('/hero/:heroSlug', async (req, res) => {
   try {
-    const perks = await Perk.find({ tier: 't1' }).sort({ displayOrder: 1 });
-    res.json({ success: true, perks });
+    const perks = await perkService.getHeroPerks(req.params.heroSlug);
+    res.json(perks);
   } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
+    console.error(`Error fetching perks for hero ${req.params.heroSlug}:`, error);
+    res.status(500).json({ error: 'Failed to fetch hero perks' });
   }
 });
 
-// Récupérer les perks T2 par classe
-router.get('/t2/:class', async (req, res) => {
+// GET /api/perks/class/:className - Perks T1/T2 par classe
+router.get('/class/:className', async (req, res) => {
   try {
-    const { class: heroClass } = req.params;
-    const perks = await Perk.find({ 
-      tier: 't2', 
-      class: heroClass 
-    }).sort({ displayOrder: 1 });
-    
-    res.json({ success: true, perks });
+    const perks = await perkService.getClassPerks(req.params.className);
+    res.json(perks);
   } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
+    console.error(`Error fetching class perks for ${req.params.className}:`, error);
+    res.status(500).json({ error: 'Failed to fetch class perks' });
   }
 });
 
-// Récupérer les perks T3/T5 d'un héros
-router.get('/hero/:slug', async (req, res) => {
+// GET /api/perks/search/:term - Recherche de perks
+router.get('/search/:term', async (req, res) => {
   try {
-    const { slug } = req.params;
-    const { tier } = req.query; // 't3', 't5', ou les deux
-    
-    const query = { heroSlug: slug };
-    if (tier) {
-      query.tier = tier;
-    }
-    
-    const perks = await Perk.find(query).sort({ 
-      tier: 1, 
-      skillIndex: 1,
-      type: 1 
-    });
-    
-    // Grouper par tier et skill pour le frontend
-    const grouped = {
-      t3: {
-        1: { light: null, dark: null },
-        2: { light: null, dark: null },
-        3: { light: null, dark: null },
-        4: { light: null, dark: null }
-      },
-      t5: { light: null, dark: null }
-    };
-    
-    perks.forEach(perk => {
-      if (perk.tier === 't3' && perk.skillIndex) {
-        grouped.t3[perk.skillIndex][perk.type] = perk;
-      } else if (perk.tier === 't5') {
-        grouped.t5[perk.type] = perk;
-      }
-    });
-    
-    res.json({
-      success: true,
-      perks: perks,
-      grouped: grouped,
-      count: perks.length
-    });
+    const perks = await perkService.searchPerks(req.params.term);
+    res.json(perks);
   } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
-  }
-});
-
-// Recherche de perks
-router.get('/search', async (req, res) => {
-  try {
-    const { q, tier, class: heroClass } = req.query;
-    
-    const query = {};
-    
-    if (q) {
-      query.$text = { $search: q };
-    }
-    
-    if (tier) {
-      query.tier = tier;
-    }
-    
-    if (heroClass) {
-      query.class = heroClass;
-    }
-    
-    const perks = await Perk.find(query)
-      .limit(20)
-      .sort({ tier: 1, class: 1, displayOrder: 1 });
-    
-    res.json({ success: true, perks });
-  } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
+    console.error(`Error searching perks for ${req.params.term}:`, error);
+    res.status(500).json({ error: 'Failed to search perks' });
   }
 });
 

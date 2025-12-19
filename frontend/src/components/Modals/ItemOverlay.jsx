@@ -1,108 +1,102 @@
 import "./ItemOverlay.css";
 
-// Fonction pour UW/UT (structure différente)
-const formatUWUTDescription = (description, values, starLevel) => {
-  if (!values) return [{ type: "text", content: description }];
-
-  let parts = [];
-  let currentText = description;
-
-  Object.keys(values).forEach((key) => {
-    const valueObj = values[key];
-    const selectedValue = valueObj[starLevel.toString()] || valueObj["0"];
-
-    const partsArray = currentText.split(`(${key})`);
-    if (partsArray.length > 1) {
-      if (partsArray[0]) {
-        parts.push({ type: "text", content: partsArray[0] });
-      }
-      parts.push({ type: "value", content: selectedValue });
-      currentText = partsArray.slice(1).join(`(${key})`);
-    }
-  });
-
-  if (currentText) {
-    parts.push({ type: "text", content: currentText });
-  }
-
-  return parts.length > 0 ? parts : [{ type: "text", content: description }];
-};
-
-// Fonction pour Artifacts (structure avec split - VOTRE FORMAT)
-const formatArtifactDescription = (description, values, starLevel) => {
-  if (!values) return [{ type: "text", content: description }];
-
-  let parts = [];
-  let currentText = description;
-
-  Object.keys(values).forEach((key) => {
-    const valueStr = values[key];
-    const valueArray = valueStr.split(", ");
-    const selectedValue =
-      valueArray[Math.min(starLevel, valueArray.length - 1)] || valueArray[0];
-
-    const partsArray = currentText.split(`(${key})`);
-    if (partsArray.length > 1) {
-      if (partsArray[0]) {
-        parts.push({ type: "text", content: partsArray[0] });
-      }
-      parts.push({ type: "value", content: selectedValue });
-      currentText = partsArray.slice(1).join(`(${key})`);
-    }
-  });
-
-  if (currentText) {
-    parts.push({ type: "text", content: currentText });
-  }
-
-  return parts.length > 0 ? parts : [{ type: "text", content: description }];
-};
-
-// Fonction principale qui choisit le bon formatage
-const formatDescription = (description, values, starLevel, itemType) => {
-  if (!values) return [{ type: "text", content: description }];
-
-  if (itemType === "uw" || itemType === "ut") {
-    return formatUWUTDescription(description, values, starLevel);
-  } else {
-    return formatArtifactDescription(description, values, starLevel);
-  }
-};
-
 const ItemOverlay = ({
   title,
-  stars,
-  description,
-  values,
-  itemType,
+  stars = 0,
+  description = "",
+  values = {},
+  itemType = "artifact",
   className = "",
 }) => {
-  const formattedDescription = formatDescription(
-    description,
-    values,
-    stars,
-    itemType
-  );
+  // Fonction pour extraire la valeur selon le format
+  const getFormattedValue = (key, starLevel) => {
+    if (!values || !values[key]) return "";
+    
+    const valueData = values[key];
+    
+    // Format 1: String avec valeurs séparées par des virgules (artifacts)
+    if (typeof valueData === 'string') {
+      const valueArray = valueData.split(/,\s*/);
+      const index = Math.min(starLevel, valueArray.length - 1);
+      return valueArray[index] || valueArray[0] || "";
+    }
+    
+    // Format 2: Objet avec clés 0-5 (UW/UT)
+    if (typeof valueData === 'object' && valueData !== null) {
+      const starKey = starLevel.toString();
+      return valueData[starKey] || valueData["0"] || "";
+    }
+    
+    return "";
+  };
+
+  const formatDescription = () => {
+    if (!description) {
+      return [{ type: "text", content: "" }];
+    }
+
+    if (!values || typeof values !== 'object' || Object.keys(values).length === 0) {
+      return [{ type: "text", content: description }];
+    }
+
+    let currentText = description;
+    const parts = [];
+
+    const sortedKeys = Object.keys(values)
+      .filter(key => !isNaN(parseInt(key)))
+      .sort((a, b) => parseInt(a) - parseInt(b));
+
+    for (const key of sortedKeys) {
+      const selectedValue = getFormattedValue(key, stars);
+
+      if (!selectedValue) continue;
+
+      const placeholder = `(${key})`;
+      const placeholderRegex = new RegExp(`\\(${key}\\)`, 'g');
+      
+      if (currentText.includes(placeholder)) {
+        const textParts = currentText.split(placeholderRegex);
+        
+        if (textParts[0]) {
+          parts.push({ type: "text", content: textParts[0] });
+        }
+        
+        parts.push({ type: "value", content: selectedValue });
+        currentText = textParts.slice(1).join('');
+      }
+    }
+
+    if (currentText) {
+      parts.push({ type: "text", content: currentText });
+    }
+
+    if (parts.length === 0) {
+      parts.push({ type: "text", content: description });
+    }
+
+    return parts;
+  };
+
+  const formattedDescription = formatDescription();
 
   return (
     <div className={`item-overlay-content ${className}`}>
-      {/* En-tête */}
       <div className="item-overlay-header">
         <div className="item-overlay-stars">{stars}★</div>
         <div className="item-overlay-title">{title}</div>
       </div>
 
-      {/* Description formatée */}
       <div className="item-overlay-description">
-        {formattedDescription.map((part, index) =>
-          part.type === "value" ? (
-            <span key={index} className="item-overlay-value">
-              {part.content}
-            </span>
-          ) : (
-            <span key={index}>{part.content}</span>
-          )
-        )}
+        {formattedDescription.map((part, index) => {
+          if (part.type === "value") {
+            return (
+              <span key={index} className="item-overlay-value">
+                {part.content}
+              </span>
+            );
+          }
+          return <span key={index}>{part.content}</span>;
+        })}
       </div>
     </div>
   );

@@ -7,6 +7,8 @@
   gap: 4px;
   padding: 8px;
   border-radius: 6px;
+  background: var(--color-primary);
+  border: 1px solid var(--color-primary-darker);
 }
 
 .perk-modal-row {
@@ -32,13 +34,21 @@
   transition: all 0.2s;
   position: relative;
   overflow: hidden;
+  box-sizing: border-box;
 }
 
+/* Style par défaut */
+.perk-modal-option {
+  border-color: var(--color-primary-darker);
+}
+
+/* Style au survol */
 .perk-modal-option:hover {
   border-color: var(--color-item-hover);
   transform: scale(1.05);
 }
 
+/* Style sélectionné */
 .perk-modal-option.selected {
   border-color: var(--color-item-selected);
   background: var(--color-item-selected);
@@ -46,18 +56,49 @@
   transform: scale(1.05);
 }
 
-.perk-modal-option img {
+/* Image de perk */
+.perk-image {
   width: 100%;
   height: 100%;
   object-fit: cover;
   border-radius: 3px;
   opacity: 0.7;
   filter: grayscale(0.7);
+  display: block;
 }
 
-.perk-modal-option.selected img {
+.perk-modal-option.selected .perk-image {
   opacity: 1;
   filter: none;
+}
+
+/* Fallback text */
+.perk-fallback {
+  width: 100%;
+  height: 100%;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  color: #9ca3af;
+  font-size: 8px;
+  background: var(--color-primary);
+  border-radius: 3px;
+  padding: 2px;
+  overflow: hidden;
+  box-sizing: border-box;
+  font-weight: 500;
+}
+
+/* Fallback pour le coût */
+.perk-cost-fallback {
+  color: #9ca3af;
+  font-weight: bold;
+  font-size: 12px;
+}
+
+.perk-modal-option.selected .perk-cost-fallback {
+  color: #1f2937;
 }
 
 /* ========== Points de perks ========== */
@@ -103,6 +144,8 @@
   border: none;
   cursor: pointer;
   transition: background-color 0.2s;
+  font-size: 0.875rem;
+  font-weight: 500;
 }
 
 .perk-modal-confirm:hover {
@@ -117,8 +160,60 @@
   border: none;
   cursor: pointer;
   transition: background-color 0.2s;
+  font-size: 0.875rem;
+  font-weight: 500;
 }
 
 .perk-modal-cancel:hover {
   background-color: var(--color-primary-light);
+}
+
+/* ========== Loading ========== */
+.perk-loading {
+  text-align: center;
+  padding: 2rem 0;
+  color: #9ca3af;
+  font-size: 0.875rem;
+}
+
+/* ========== Perk Overlay ========== */
+
+/* Styles additionnels pour l'overlay */
+
+.perk-hero {
+  color: #a78bfa;
+  font-weight: 500;
+}
+
+.perk-tag {
+  background: rgba(59, 130, 246, 0.2);
+  color: #93c5fd;
+  padding: 2px 6px;
+  border-radius: 10px;
+  font-size: 0.7rem;
+  margin-right: 4px;
+  display: inline-block;
+}
+
+.perk-tag-more {
+  background: rgba(107, 114, 128, 0.2);
+  color: #9ca3af;
+  padding: 2px 6px;
+  border-radius: 10px;
+  font-size: 0.7rem;
+  margin-left: 4px;
+}
+
+.perk-title {
+  color: white;
+  font-weight: bold;
+  font-size: 14px;
+  text-align: center;
+}
+.perk-description {
+  color: white;
+  font-size: 12px;
+  text-align: center;
+  word-break: break-word;
+  padding: 0 4px;
 }

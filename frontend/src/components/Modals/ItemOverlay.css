@@ -8,32 +8,30 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.25rem;
-  margin-bottom: 0.5rem;
+  gap: 8px;
+  margin-bottom: 8px;
 }
 
 .item-overlay-stars {
   color: var(--color-item-selected);
   font-weight: bold;
-  font-size: 0.875rem;
+  font-size: 14px;
   white-space: nowrap;
-  margin-right: 0.25rem;
 }
 
 .item-overlay-title {
-  color: var(--color-item-selected);
+  color: white;
   font-weight: bold;
-  font-size: 0.875rem;
+  font-size: 14px;
   text-align: center;
 }
 
 .item-overlay-description {
   color: white;
-  font-size: 0.75rem;
+  font-size: 12px;
   text-align: center;
   word-break: break-word;
-  padding-left: 0.25rem;
-  padding-right: 0.25rem;
+  padding: 0 4px;
 }
 
 .item-overlay-value {
