@@ -41,17 +41,29 @@ mongoose.connect(MONGODB_URI, {
 
 // =============== 🔥 MODIFICATION PRINCIPALE ===============
 // Importer les routes centralisées depuis index.js
-const routes = require('./src/routes'); // Ceci va importer ./src/routes/index.js
+const routes = require('./routes'); // Ceci va importer ./routes/index.js
+
+// const heroRoutes = require('./routes/hero.routes');
+// const artifactRoutes = require('./routes/artifact.routes');
+// const gearsetRoutes = require('./routes/gearset.routes');
+// const perkRoutes = require('./routes/perk.routes');
+// const teamRoutes = require('./routes/team.routes');
 
 // Utiliser TOUTES les routes via l'index
 app.use('/', routes);
 
+// app.use('/api/v2/heroes', heroRoutes);
+// app.use('/api/v2/artifacts', artifactRoutes);
+// app.use('/api/v2/gearsets', gearsetRoutes);
+// app.use('/api/v2/perks', perkRoutes);
+// app.use('/api/v2/teams', teamRoutes);
+
 // =============== GARDE TES ROUTES EXISTANTES SI BESOIN ===============
 // (Si tu veux garder certaines routes v1 temporairement)
-// Mais il vaut mieux les déplacer aussi dans src/routes/
+// Mais il vaut mieux les déplacer aussi dans /routes/
 
 // =============== ROUTES EXISTANTES À DÉPLACER DANS L'INDEX ===============
-// Les routes suivantes doivent être déplacées dans src/routes/index.js :
+// Les routes suivantes doivent être déplacées dans /routes/index.js :
 
 // 1. Servir les fichiers statiques KingsRaid (déjà présent)
 app.use('/kingsraid-data', express.static(KINGSRAID_DATA_PATH));
@@ -121,12 +133,7 @@ app.use('*', (req, res) => {
   });
 });
 
-// Start server
-app.listen(SERVER_PORT, () => {
-  console.log(`🚀 Server running on http://localhost:${SERVER_PORT}`);
-  console.log(`📚 API v2 available at http://localhost:${SERVER_PORT}/api/v2`);
-  console.log(`🔍 Debug info: http://localhost:${SERVER_PORT}/api/debug`);
-});
+
 
 // Route pour le fichier masang
 app.get('/api/kingsraid-data/hero_release_order_masang.json', (req, res) => {

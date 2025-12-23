@@ -1,8 +1,8 @@
 /* SubSlotOverlay.css - Flèche positionnée correctement */
 
 .subslot-overlay {
-  position: absolute;
-  z-index: 1000;
+  position: fixed !important;
+  z-index: 9999 !important;
   width: max-content;
   max-width: 350px;
   pointer-events: none;
@@ -387,3 +387,5 @@
   color: var(--color-item-selected);
   font-weight: bold;
 }
+
+

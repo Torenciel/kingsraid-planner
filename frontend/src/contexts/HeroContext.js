@@ -1,391 +1,321 @@
-// src/contexts/HeroContext.js
-import { createContext, useContext, useEffect, useMemo, useState } from "react";
-import { useHeroes, useHero } from "../hooks/useApi"; // <-- IMPORT DES NOUVEAUX HOOKS
+// frontend/src/contexts/HeroContext.jsx
+import React, { createContext, useContext, useState, useMemo, useEffect, useCallback } from 'react';
 
 const HeroContext = createContext();
 
-export const useHeroContext = () => {
-  const context = useContext(HeroContext);
-  if (!context) {
-    throw new Error("useHeroContext must be used within a HeroProvider");
-  }
-  return context;
-};
-
-// Configuration
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3002';
-const ASSETS_BASE_URL = process.env.REACT_APP_ASSETS_URL || 'http://localhost:3002';
-
 export const HeroProvider = ({ children }) => {
+  // États
   const [allHeroes, setAllHeroes] = useState([]);
-  const [masangOrder, setMasangOrder] = useState([]);
-  const [releaseOrder, setReleaseOrder] = useState({});
   const [loading, setLoading] = useState(true);
-  const [source, setSource] = useState("mongodb"); // <-- DÉFAUT: "mongodb"
-
-  // 🎯 TOUS LES FILTRES DANS UN SEUL OBJET
   const [filters, setFilters] = useState({
-    availability: "all",
-    role: "all",
-    sort: "name",
-    search: "",
+    role: 'all',
+    sort: 'name',
+    search: '',
+    availability: 'all'
   });
+  const [source, setSource] = useState('mongodb');
+  
+  // Configuration API
+  const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3002';
+  const ASSETS_BASE_URL = process.env.REACT_APP_ASSETS_URL || 'http://localhost:3002';
 
-  // Helper pour les URLs d'assets
-  const getAssetUrl = (path) => {
-    return `${ASSETS_BASE_URL}${path.startsWith('/') ? path : `/${path}`}`;
-  };
-
-  // Helper pour les images de héros
-  const getHeroImageUrl = (heroName) => {
-    return getAssetUrl(`/kingsraid-data/assets/heroes/${heroName}/ico.png`);
-  };
-
-  // Charger l'ordre Masang (URL COMPLÈTE) - GARDÉ POUR COMPATIBILITÉ
-  const loadMasangOrder = async () => {
+  // 🔥 CHARGER TOUS LES HÉROS
+  const loadAllHeroes = useCallback(async () => {
     try {
-      const masangUrl = `${API_BASE_URL}/kingsraid-data/hero_release_order_masang.json`;
-      console.log('📄 Loading masang order from:', masangUrl);
+      setLoading(true);
+      console.log('🔄 Chargement des héros depuis MongoDB...');
       
-      const response = await fetch(masangUrl);
-      if (response.ok) {
-        const masangData = await response.json();
-        
-        if (Array.isArray(masangData)) {
-          setMasangOrder(masangData);
-          console.log("✅ Masang order loaded (array):", masangData.length, "heroes");
-        } else if (masangData && typeof masangData === 'object') {
-          setMasangOrder(Object.keys(masangData));
-          console.log("✅ Masang order loaded (object):", Object.keys(masangData).length, "heroes");
-        }
-      } else {
-        console.warn('⚠️ Masang order not found, using empty array');
-        setMasangOrder([]);
-      }
-    } catch (error) {
-      console.error("❌ Error loading masang order:", error);
-      setMasangOrder([]);
-    }
-  };
-
-  // 🆕 NOUVELLE FONCTION: Charger les héros depuis API v2 (MongoDB)
-  const loadHeroesFromMongoDBv2 = async () => {
-    try {
-      console.log("🔄 Loading heroes from MongoDB API v2...");
-      
-      // Utilisation directe du hook useHeroes
       const response = await fetch(`${API_BASE_URL}/api/v2/heroes`);
       
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-      }
-      
-      const heroesData = await response.json();
-      console.log('📦 MongoDB v2 response:', heroesData);
-      
-      if (!Array.isArray(heroesData)) {
-        throw new Error('Expected array from API v2');
-      }
-      
-      // Transformer les données MongoDB en format compatible
-      const transformedHeroes = heroesData.map(hero => {
-        // hero est un document MongoDB avec infos.name, infos.class, etc.
-        const heroName = hero.infos?.name || hero.slug;
-        const heroClass = hero.infos?.class || 'Unknown';
+      if (response.ok) {
+        const result = await response.json();
         
-        return {
-          // ID: utiliser slug pour la cohérence
-          id: hero.slug || heroName.toLowerCase().replace(/\s+/g, '-'),
-          // Nom complet
-          name: heroName,
-          // Rôle/classe
-          role: heroClass,
-          // Image
-          image: getHeroImageUrl(heroName),
-          // Rareté par défaut
-          rarity: 5,
-          // Ordre de release (à adapter selon vos données)
-          releaseOrder: hero.releaseOrder || releaseOrder[heroName] || 999,
-          // Données brutes MongoDB pour référence
-          _mongodb: {
+        if (result.success && result.heroes) {
+          // Formater les héros pour le frontend
+          const formattedHeroes = result.heroes.map(hero => ({
+            // Données de base
+            id: hero._id?.toString() || hero.id,
             slug: hero.slug,
-            data: hero
-          }
-        };
-      });
+            name: hero.name,
+            role: hero.class,
+            class: hero.class,
+            position: hero.position || 'Unknown',
+            image: hero.thumbnail || `${ASSETS_BASE_URL}/kingsraid-data/assets/heroes/${hero.name}/ico.png`,
+            rarity: 5,
+            releaseOrder: hero.releaseOrder || 999,
+            
+            // Métadonnées
+            hasUW: false, // Remplir plus tard si disponible
+            hasSW: false,
+            utsCount: 0,
+            
+            // Données complètes (chargées à la demande)
+            infos: {
+              name: hero.name,
+              class: hero.class,
+              position: hero.position,
+              thumbnail: hero.thumbnail
+            }
+          }));
+          
+          setAllHeroes(formattedHeroes);
+          setSource('mongodb');
+          console.log(`✅ ${formattedHeroes.length} héros chargés depuis MongoDB`);
+          return formattedHeroes;
+        }
+      }
       
-      setAllHeroes(transformedHeroes);
-      setSource("mongodb");
-      console.log(`✅ ${transformedHeroes.length} héros chargés depuis MongoDB API v2`);
-      return true;
+      // Fallback vers le JSON local
+      console.log('⚠️ MongoDB non disponible, tentative JSON...');
+      return await loadHeroesFromJSON();
       
     } catch (error) {
-      console.error("❌ MongoDB v2 connection error:", error.message);
-      return false;
+      console.error('❌ Erreur chargement héros:', error);
+      // Dernier recours: données de test
+      const testHeroes = getTestHeroes();
+      setAllHeroes(testHeroes);
+      setSource('test');
+      return testHeroes;
+    } finally {
+      setLoading(false);
     }
-  };
+  }, [API_BASE_URL, ASSETS_BASE_URL]);
 
-  // 🆕 FONCTION SIMPLIFIÉE: Charger avec fallback
-  const loadAllHeroes = async () => {
-    setLoading(true);
-    
-    console.log('🚀 Starting hero data loading...');
-    
-    // 1. Charger les données de référence (masang, release order)
-    await Promise.all([
-      loadMasangOrder(),
-      // loadReleaseOrder() si nécessaire
-    ]);
-    
-    // 2. Essayer MongoDB API v2 d'abord
-    console.log('🔍 Trying MongoDB API v2...');
-    const mongoV2Success = await loadHeroesFromMongoDBv2();
-    
-    if (!mongoV2Success) {
-      // 3. Fallback: API v1 (JSON)
-      console.log('🔍 Falling back to API v1 (JSON)...');
-      const v1Success = await loadHeroesFromAPIv1();
-      
-      if (!v1Success) {
-        // 4. Dernier fallback: héros de test
-        console.log('⚠️ Using test heroes as last resort');
-        loadTestHeroes();
-      }
-    }
-    
-    setLoading(false);
-  };
-
-  // 🆕 FONCTION: Charger depuis API v1 (pour compatibilité)
-  const loadHeroesFromAPIv1 = async () => {
+  // 🔥 CHARGER DEPUIS JSON LOCAL (fallback)
+  const loadHeroesFromJSON = async () => {
     try {
-      console.log("🔄 Loading heroes from API v1...");
-      const apiUrl = `${API_BASE_URL}/api/heroes?sort=name`;
-      
-      const response = await fetch(apiUrl);
-
+      const response = await fetch('/kingsraid-data/table-data/heroes.json');
       if (response.ok) {
         const data = await response.json();
         
-        if (data.heroes?.length > 0) {
-          const heroes = data.heroes.map(hero => ({
-            id: hero.id || hero.name.toLowerCase(),
-            name: hero.name,
-            role: hero.role || hero.class,
-            image: getHeroImageUrl(hero.name),
-            rarity: hero.rarity || 5,
-            releaseOrder: hero.releaseOrder || 999,
-            hasImage: hero.hasImage || true
-          }));
-          
-          setAllHeroes(heroes);
-          setSource("json");
-          console.log(`✅ ${heroes.length} héros chargés depuis API v1`);
-          return true;
-        }
+        const formattedHeroes = data.map(hero => ({
+          id: hero.slug,
+          slug: hero.slug,
+          name: hero.infos?.name || hero.name,
+          role: hero.infos?.class || hero.class,
+          class: hero.infos?.class || hero.class,
+          position: hero.infos?.position || 'Unknown',
+          image: `${ASSETS_BASE_URL}/kingsraid-data/assets/heroes/${hero.infos?.name}/ico.png`,
+          rarity: 5,
+          releaseOrder: hero.releaseOrder || 999,
+          infos: hero.infos || {}
+        }));
+        
+        setAllHeroes(formattedHeroes);
+        setSource('json');
+        console.log(`✅ ${formattedHeroes.length} héros chargés depuis JSON`);
+        return formattedHeroes;
       }
     } catch (error) {
-      console.error("❌ API v1 error:", error.message);
+      console.error('Erreur chargement JSON:', error);
     }
-    return false;
+    return [];
   };
 
-  // Fallback avec héros de test (GARDÉ)
-  const loadTestHeroes = () => {
-    const testHeroes = [
+  // 🔥 DONNÉES DE TEST
+  const getTestHeroes = () => {
+    return [
       {
-        id: "kasel",
-        name: "Kasel",
-        role: "Warrior",
-        image: getHeroImageUrl("Kasel"),
+        id: 'kasel',
+        slug: 'kasel',
+        name: 'Kasel',
+        role: 'Warrior',
+        class: 'Warrior',
+        position: 'Front',
+        image: `${ASSETS_BASE_URL}/kingsraid-data/assets/heroes/Kasel/ico.png`,
         rarity: 5,
-        releaseOrder: 1
+        releaseOrder: 1,
+        infos: {
+          name: 'Kasel',
+          class: 'Warrior',
+          position: 'Front'
+        }
       },
       {
-        id: "frey",
-        name: "Frey",
-        role: "Priest",
-        image: getHeroImageUrl("Frey"),
+        id: 'frey',
+        slug: 'frey',
+        name: 'Frey',
+        role: 'Priest',
+        class: 'Priest',
+        position: 'Back',
+        image: `${ASSETS_BASE_URL}/kingsraid-data/assets/heroes/Frey/ico.png`,
         rarity: 5,
-        releaseOrder: 2
+        releaseOrder: 2,
+        infos: {
+          name: 'Frey',
+          class: 'Priest',
+          position: 'Back'
+        }
       },
       {
-        id: "cleo",
-        name: "Cleo",
-        role: "Wizard",
-        image: getHeroImageUrl("Cleo"),
+        id: 'cleo',
+        slug: 'cleo',
+        name: 'Cleo',
+        role: 'Wizard',
+        class: 'Wizard',
+        position: 'Back',
+        image: `${ASSETS_BASE_URL}/kingsraid-data/assets/heroes/Cleo/ico.png`,
         rarity: 5,
-        releaseOrder: 3
+        releaseOrder: 3,
+        infos: {
+          name: 'Cleo',
+          class: 'Wizard',
+          position: 'Back'
+        }
       },
       {
-        id: "roi",
-        name: "Roi",
-        role: "Assassin",
-        image: getHeroImageUrl("Roi"),
+        id: 'roi',
+        slug: 'roi',
+        name: 'Roi',
+        role: 'Assassin',
+        class: 'Assassin',
+        position: 'Front',
+        image: `${ASSETS_BASE_URL}/kingsraid-data/assets/heroes/Roi/ico.png`,
         rarity: 5,
-        releaseOrder: 4
-      },
-      {
-        id: "clause",
-        name: "Clause",
-        role: "Knight",
-        image: getHeroImageUrl("Clause"),
-        rarity: 5,
-        releaseOrder: 5
-      },
+        releaseOrder: 4,
+        infos: {
+          name: 'Roi',
+          class: 'Assassin',
+          position: 'Front'
+        }
+      }
     ];
-    setAllHeroes(testHeroes);
-    setSource("test");
-    console.log("⚠️  Using test heroes as fallback");
   };
 
-  // 🎯 FONCTION POUR APPLIQUER TOUS LES FILTRES
+  // 🔥 FILTRER ET TRIER LES HÉROS
   const filteredHeroes = useMemo(() => {
-    if (!allHeroes.length) return [];
-
     let result = [...allHeroes];
-
-    // 1. FILTRE DISPONIBILITÉ (si masangOrder existe)
-    if (filters.availability === "available" && masangOrder.length > 0) {
-      result = result.filter((hero) => masangOrder.includes(hero.name));
-    }
-
-    // 2. FILTRE RÔLE
-    if (filters.role !== "all") {
-      result = result.filter((hero) => hero.role === filters.role);
-    }
-
-    // 3. FILTRE RECHERCHE
-    if (filters.search.trim()) {
-      const searchTerm = filters.search.toLowerCase();
-      result = result.filter((hero) =>
-        hero.name.toLowerCase().includes(searchTerm)
+    
+    // Filtre par rôle/classe
+    if (filters.role !== 'all') {
+      result = result.filter(hero => 
+        hero.role === filters.role || 
+        hero.class === filters.role ||
+        hero.infos?.class === filters.role
       );
     }
-
-    // 4. TRI
+    
+    // Recherche par nom
+    if (filters.search.trim()) {
+      const searchTerm = filters.search.toLowerCase();
+      result = result.filter(hero =>
+        hero.name.toLowerCase().includes(searchTerm) ||
+        hero.slug.toLowerCase().includes(searchTerm) ||
+        (hero.infos?.name?.toLowerCase() || '').includes(searchTerm)
+      );
+    }
+    
+    // Tri
     switch (filters.sort) {
-      case "name":
+      case 'name':
         result.sort((a, b) => a.name.localeCompare(b.name));
         break;
-      case "release":
-        result.sort((a, b) => {
-          const orderA = a.releaseOrder || 999;
-          const orderB = b.releaseOrder || 999;
-          return orderA - orderB;
-        });
+      case 'release':
+        result.sort((a, b) => (a.releaseOrder || 999) - (b.releaseOrder || 999));
         break;
-      case "masang":
-        if (masangOrder.length > 0) {
-          result.sort((a, b) => {
-            const indexA = masangOrder.indexOf(a.name);
-            const indexB = masangOrder.indexOf(b.name);
-            if (indexA !== -1 && indexB !== -1) return indexA - indexB;
-            if (indexA !== -1) return -1;
-            if (indexB !== -1) return 1;
-            return a.name.localeCompare(b.name);
-          });
-        } else {
-          result.sort((a, b) => a.name.localeCompare(b.name));
-        }
+      case 'class':
+        result.sort((a, b) => a.class.localeCompare(b.class));
         break;
       default:
         result.sort((a, b) => a.name.localeCompare(b.name));
     }
-
+    
     return result;
-  }, [allHeroes, masangOrder, filters]);
+  }, [allHeroes, filters]);
 
-  // 🎯 FONCTION POUR METTRE À JOUR LES FILTRES
-  const updateFilter = (filterType, value) => {
-    setFilters((prev) => ({
-      ...prev,
-      [filterType]: value,
-    }));
+  // 🔥 CHARGER LES DONNÉES DÉTAILLÉES D'UN HÉROS
+  const loadHeroDetails = async (slug) => {
+    try {
+      console.log(`🔍 Chargement détails pour: ${slug}`);
+      
+      const response = await fetch(`${API_BASE_URL}/api/v2/heroes/${slug}`);
+      
+      if (response.ok) {
+        const result = await response.json();
+        
+        if (result.success && result.hero) {
+          return result.hero;
+        }
+      }
+      
+      // Fallback: chercher dans les héros déjà chargés
+      return allHeroes.find(h => h.slug === slug)?.rawData || null;
+      
+    } catch (error) {
+      console.error(`Erreur chargement détails ${slug}:`, error);
+      return null;
+    }
   };
 
-  // Initialisation
+  // 🔥 RECHERCHER UN HÉROS PAR SLUG
+  const getHeroBySlug = (slug) => {
+    return allHeroes.find(hero => 
+      hero.slug === slug || 
+      hero.id === slug ||
+      hero.name?.toLowerCase() === slug?.toLowerCase()
+    );
+  };
+
+  // 🔥 METTRE À JOUR LES FILTRES
+  const updateFilter = (filterType, value) => {
+    setFilters(prev => ({ ...prev, [filterType]: value }));
+  };
+
+  // 🔥 RÉINITIALISER LES FILTRES
+  const resetFilters = () => {
+    setFilters({
+      role: 'all',
+      sort: 'name',
+      search: '',
+      availability: 'all'
+    });
+  };
+
+  // 🔥 RECHARGER LES HÉROS
+  const refreshHeroes = async () => {
+    return await loadAllHeroes();
+  };
+
+  // Charger au démarrage
   useEffect(() => {
     loadAllHeroes();
-  }, []);
+  }, [loadAllHeroes]);
 
-  // 🆕 Recharger les héros
-  const refreshHeroes = async () => {
-    setLoading(true);
-    const success = await loadHeroesFromMongoDBv2();
-    if (!success) {
-      await loadHeroesFromAPIv1();
-    }
-    setLoading(false);
-  };
-
-  // 🆕 Tester la connexion API
-  const testApiConnection = async () => {
-    try {
-      const response = await fetch(`${API_BASE_URL}/api/health`);
-      const data = await response.json();
-      
-      return {
-        success: response.ok,
-        status: response.status,
-        mongodb: data.mongodb?.connected || false,
-        url: API_BASE_URL,
-        data: data
-      };
-    } catch (error) {
-      return {
-        success: false,
-        error: error.message,
-        url: API_BASE_URL
-      };
-    }
-  };
-
-  // 🆕 Obtenir un héros spécifique par slug
-  const getHeroBySlug = async (slug) => {
-    try {
-      const response = await fetch(`${API_BASE_URL}/api/v2/heroes/${slug}`);
-      if (response.ok) {
-        return await response.json();
-      }
-      return null;
-    } catch (error) {
-      console.error(`Error fetching hero ${slug}:`, error);
-      return null;
-    }
-  };
-
+  // Valeur du contexte
   const value = {
     // Données
     allHeroes,
     currentHeroes: filteredHeroes,
     loading,
     source,
-    isFromMongoDB: source === "mongodb",
-
-    // Filtres
     filters,
-
-    // Fonctions
-    updateFilter,
-    refreshHeroes,
-    getHeroBySlug,
-    testApiConnection,
-    getHeroImageUrl,
-    getAssetUrl,
-
-    // Configuration
-    apiBaseUrl: API_BASE_URL,
-    assetsBaseUrl: ASSETS_BASE_URL,
-
+    
     // Statistiques
     heroCount: filteredHeroes.length,
     totalHeroes: allHeroes.length,
-    masangOrderCount: masangOrder.length,
     
-    // Info source
-    dataSource: source
+    // Actions
+    updateFilter,
+    resetFilters,
+    refreshHeroes,
+    loadHeroDetails,
+    getHeroBySlug,
+    
+    // Constantes
+    API_BASE_URL,
+    ASSETS_BASE_URL
   };
 
   return <HeroContext.Provider value={value}>{children}</HeroContext.Provider>;
 };
+
+// 🔥 EXPORT DU HOOK useHeroContext
+export const useHeroContext = () => {
+  const context = useContext(HeroContext);
+  if (!context) {
+    throw new Error('useHeroContext must be used within a HeroProvider');
+  }
+  return context;
+};
+
+export default HeroProvider;

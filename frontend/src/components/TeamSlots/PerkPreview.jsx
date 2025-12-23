@@ -126,74 +126,91 @@ const PerkPreview = ({
   };
 
   // Trouver une perk dans la base de données
-  const findPerk = (perkImageInfo) => {
-    if (!perkImageInfo || perkData.length === 0) return null;
-    
-    const { name, file, tier, skill, type } = perkImageInfo;
-    const heroSlug = heroName?.toLowerCase();
-    
-    // Chercher par thumbnail exact
-    let foundPerk = perkData.find(perk => perk.thumbnail === file);
-    if (foundPerk) return foundPerk;
-    
-    // Chercher par chemin complet pour T3/T5
-    const fullPath = `heroes/${heroName}/perks/${file}`;
-    foundPerk = perkData.find(perk => perk.thumbnail === fullPath);
-    if (foundPerk) return foundPerk;
-    
-    // Pour T3/T5: chercher par héro, tier, skill et type
-    if (tier === 't3' || tier === 't5') {
-      foundPerk = perkData.find(perk => 
-        perk.heroSlug === heroSlug &&
-        perk.tier === tier &&
-        perk.skillIndex === skill &&
-        perk.type === type
-      );
-      if (foundPerk) return foundPerk;
-    }
-    
-    // Chercher par nom (approximatif)
-    const searchName = name.toLowerCase();
+const findPerk = (perkImageInfo) => {
+  if (!perkImageInfo || !perkData || !Array.isArray(perkData) || perkData.length === 0) {
+    return null;
+  }
+  
+  const { name, file, tier, skill, type } = perkImageInfo;
+  const heroSlug = heroName?.toLowerCase();
+  
+  // Chercher par thumbnail exact
+  let foundPerk = perkData.find(perk => perk && perk.thumbnail === file);
+  if (foundPerk) return foundPerk;
+  
+  // Chercher par chemin complet pour T3/T5
+  const fullPath = `heroes/${heroName}/perks/${file}`;
+  foundPerk = perkData.find(perk => perk && perk.thumbnail === fullPath);
+  if (foundPerk) return foundPerk;
+  
+  // Pour T3/T5: chercher par héro, tier, skill et type
+  if ((tier === 't3' || tier === 't5') && heroSlug) {
     foundPerk = perkData.find(perk => 
-      perk.name.toLowerCase().includes(searchName) || 
-      searchName.includes(perk.name.toLowerCase())
+      perk && 
+      perk.heroSlug === heroSlug &&
+      perk.tier === tier &&
+      perk.skillIndex === skill &&
+      perk.type === type
     );
-    
-    return foundPerk;
-  };
+    if (foundPerk) return foundPerk;
+  }
+  
+  // Chercher par nom (approximatif)
+  const searchName = name.toLowerCase();
+  foundPerk = perkData.find(perk => 
+    perk && 
+    perk.name && 
+    perk.name.toLowerCase().includes(searchName)
+  );
+  
+  return foundPerk || null;
+};
 
-  // Charger les données
-  useEffect(() => {
-    const loadData = async () => {
-      if (!heroName) return;
+// Et modifie aussi le useEffect qui charge les données :
+useEffect(() => {
+  const loadData = async () => {
+    if (!heroName) return;
+    
+    try {
+      setLoading(true);
       
-      try {
-        setLoading(true);
-        
-        // Charger les perks
-        const perksData = await api.request('/v2/perks');
+      // Charger les perks
+      const perksData = await api.request('/v2/perks');
+      
+      // Vérifier que perksData est un tableau
+      if (perksData && Array.isArray(perksData)) {
         setPerkData(perksData);
-        
-        // Charger les skills du héros
-        try {
-          const heroData = await api.request(`/v2/heroes/${heroName.toLowerCase()}`);
-          if (heroData?.skills) {
-            setHeroSkills(heroData.skills);
-          }
-        } catch (heroError) {
-          console.warn(`⚠️ Could not load skills for ${heroName}:`, heroError.message);
-        }
-        
-      } catch (error) {
-        console.error("❌ Error loading perk preview data:", error);
-      } finally {
-        setLoading(false);
+      } else if (perksData && perksData.perks && Array.isArray(perksData.perks)) {
+        // Si l'API retourne { perks: [...] }
+        setPerkData(perksData.perks);
+      } else {
+        console.warn('Perks data format unexpected:', perksData);
+        setPerkData([]);
       }
-    };
-    
-    loadData();
-  }, [heroName]);
-
+      
+      // Charger les skills du héros
+      try {
+        const heroSlug = heroName.toLowerCase().replace(/\s+/g, '-');
+        const heroData = await api.request(`/v2/heroes/${heroSlug}`);
+        if (heroData?.skills) {
+          setHeroSkills(heroData.skills);
+        }
+      } catch (heroError) {
+        console.warn(`⚠️ Could not load skills for ${heroName}:`, heroError.message);
+      }
+      
+    } catch (error) {
+      console.error("❌ Error loading perk preview data:", error);
+      setPerkData([]); // Assure que perkData est toujours un tableau
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+  loadData();
+}, [heroName]);
+  
+  
   // ============ OPTION 1 ============
   // Afficher un overlay différent pour les perks non sélectionnées
   const handlePerkHoverOption1 = (perkImageInfo, isSelected, e) => {

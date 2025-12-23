@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useArtifacts } from "../../contexts/ArtifactContext";
 import { useOverlay } from "../../contexts/OverlayContext";
 import { useTeam } from "../../contexts/TeamContext";
@@ -12,167 +12,154 @@ const ArtifactModal = ({ data, onClose }) => {
   const { allArtifacts, loading } = useArtifacts();
   const { showOverlay, hideOverlay } = useOverlay();
 
-  // Fonction pour extraire le nom de fichier de l'URL
-  const getArtifactNameFromUrl = (url) => {
-    if (!url) return null;
+// Fonction pour obtenir le chemin d'image
+const getArtifactImageUrl = (artifact) => {
+  if (!artifact) return '';
+  
+  if (artifact.thumbnail) {
+    // Si c'est déjà une URL complète
+    if (artifact.thumbnail.startsWith('http')) {
+      return artifact.thumbnail;
+    }
+    // Si c'est un chemin avec artifacts/ (format MongoDB)
+    else if (artifact.thumbnail.includes('artifacts/')) {
+      const filename = artifact.thumbnail.split('/').pop(); // "Madame's Bronze Mirrors.png"
+      // Encoder seulement les espaces, garder les apostrophes
+      const encodedFilename = filename.replace(/\s/g, '%20');
+      return `/kingsraid-data/assets/artifacts/${encodedFilename}`;
+    }
+    // Sinon, encoder directement
+    else {
+      const encodedFilename = artifact.thumbnail.replace(/\s/g, '%20');
+      return `/kingsraid-data/assets/artifacts/${encodedFilename}`;
+    }
+  }
+  
+  // Fallback très basique si vraiment pas de thumbnail
+  return `/kingsraid-data/assets/artifacts/unknown.png`;
+};
+
+  // Fonction pour obtenir le nom de fichier pour la sauvegarde
+  const getArtifactFilename = (artifact) => {
+    if (!artifact) return '';
     
-    // Si c'est un objet spécial
-    if (typeof url === 'object' && url._stringValue) {
-      const match = url._stringValue.match(/artifacts\/(.+)\.png$/);
-      return match ? match[1] : null;
+    if (artifact.thumbnail) {
+      // Extraire juste le nom du fichier
+      if (artifact.thumbnail.includes('artifacts/')) {
+        return artifact.thumbnail.split('/').pop();
+      }
+      return artifact.thumbnail;
     }
     
-    // Si c'est une string
-    if (typeof url === 'string') {
-      const match = url.match(/artifacts\/(.+)\.png$/);
-      return match ? match[1] : null;
+    // Fallback
+    return `${artifact.name || artifact.slug || ''}.png`;
+  };
+
+  // Initialiser l'état
+  const [selectedArtifact, setSelectedArtifact] = useState(() => {
+    // Si pas d'item, retourner null
+    if (!currentItem) return null;
+    
+    // Attendre que les artefacts soient chargés
+    if (!allArtifacts || allArtifacts.length === 0) {
+      return null;
+    }
+    
+    // Si currentItem a artifactSlug (format de sauvegarde)
+    if (currentItem.artifactSlug) {
+      const found = allArtifacts.find(a => a.slug === currentItem.artifactSlug);
+      if (found) return found;
+    }
+    
+    // Si currentItem est déjà un objet artefact MongoDB
+    if (currentItem.slug) {
+      const found = allArtifacts.find(a => a.slug === currentItem.slug);
+      if (found) return found;
     }
     
     return null;
-  };
-
-  const currentArtifactName = currentItem ? getArtifactNameFromUrl(currentItem) : null;
+  });
   
-  // Trouver l'artifact par nom de fichier
-  const findArtifactByFileName = (fileName) => {
-    return allArtifacts.find(artifact => {
-      if (!artifact) return false;
-      const thumbName = artifact.thumbnail?.replace('artifacts/', '').replace('.png', '');
-      const artifactId = artifact._id?.toString();
-      const artifactNameId = artifact.id?.toString();
-      
-      return thumbName === fileName || 
-             artifactId === fileName || 
-             artifactNameId === fileName ||
-             artifact.name?.toLowerCase().replace(/\s+/g, '_') === fileName;
-    });
-  };
-
-  const [selectedArtifact, setSelectedArtifact] = useState(
-    currentArtifactName ? findArtifactByFileName(currentArtifactName) : null
-  );
   const [selectedStars, setSelectedStars] = useState(currentStars || 0);
   const [searchTerm, setSearchTerm] = useState("");
+
+  // Effet pour réessayer de trouver l'artefact quand les données sont chargées
+  useEffect(() => {
+    if (allArtifacts.length > 0 && currentItem && !selectedArtifact) {
+      let foundArtifact = null;
+      
+      // Essayer par artifactSlug
+      if (currentItem.artifactSlug) {
+        foundArtifact = allArtifacts.find(a => a.slug === currentItem.artifactSlug);
+      }
+      
+      // Essayer par slug
+      if (!foundArtifact && currentItem.slug) {
+        foundArtifact = allArtifacts.find(a => a.slug === currentItem.slug);
+      }
+      
+      // Essayer par _id
+      if (!foundArtifact && currentItem._id) {
+        foundArtifact = allArtifacts.find(a => a._id?.toString() === currentItem._id.toString());
+      }
+      
+      if (foundArtifact) {
+        setSelectedArtifact(foundArtifact);
+      }
+    }
+  }, [allArtifacts, currentItem, selectedArtifact]);
 
   const showLoading = loading && allArtifacts.length === 0;
 
   const displayArtifacts = useMemo(() => {
     if (searchTerm) {
+      const searchLower = searchTerm.toLowerCase();
       return allArtifacts.filter((artifact) => {
         const name = artifact.name || '';
-        const search = searchTerm.toLowerCase();
-        return name.toLowerCase().includes(search);
+        const slug = artifact.slug || '';
+        return name.toLowerCase().includes(searchLower) || 
+               slug.toLowerCase().includes(searchLower);
       });
     }
     return allArtifacts;
   }, [searchTerm, allArtifacts]);
 
-  const getArtifactFileName = (artifact) => {
-    if (!artifact) return '';
-    
-    if (artifact.thumbnail) {
-      return artifact.thumbnail.replace('artifacts/', '').replace('.png', '');
-    }
-    
-    return artifact.name?.toLowerCase().replace(/\s+/g, '_') || '';
-  };
-
+  // Fonction pour obtenir les données d'un artifact
   const getArtifactData = (artifact) => {
     if (!artifact) return null;
     
-    const values = artifact.rawData?.value || artifact.value || {};
-    
     return {
       name: artifact.name,
-      description: artifact.description || artifact.rawData?.description || "",
-      value: values,
-      thumbnail: artifact.thumbnail
+      description: artifact.description || "",
+      values: artifact.values || artifact.value || {},
+      slug: artifact.slug,
+      id: artifact._id || artifact.id
     };
   };
 
-  // Fonction pour créer l'objet spécial
-  const createSpecialArtifactObject = (artifact, stars) => {
+  // Créer l'objet pour la sauvegarde
+  const createArtifactObjectForSave = (artifact, stars) => {
     if (!artifact) return null;
     
-    const fileName = getArtifactFileName(artifact);
-    const artifactPath = `/kingsraid-data/assets/artifacts/${fileName}.png`;
+    const artifactFilename = getArtifactFilename(artifact);
     
-    // Créer un objet qui peut être utilisé comme string par SubSlotOverlay
-    const specialObject = {
-      // Pour SubSlotOverlay (qui utilise .split() et autres méthodes de string)
-      _stringValue: artifactPath,
-      
-      // Pour SaveTeamButton (qui a besoin de l'ID)
-      _type: 'artifact',
-      _id: artifact._id || artifact.id,
-      _name: artifact.name,
-      _thumbnail: artifactPath,
-      _description: artifact.description || '',
-      _values: artifact.rawData?.value || artifact.value || {},
-      
-      // Méthodes pour se comporter comme une string
-      toString: function() { return this._stringValue; },
-      valueOf: function() { return this._stringValue; },
-      
-      // Méthodes string que SubSlotOverlay pourrait utiliser
-      split: function(separator, limit) {
-        return this._stringValue.split(separator, limit);
+    return {
+      artifactSlug: artifact.slug || artifact._id?.toString(),
+      artifactInfo: {
+        name: artifact.name,
+        thumbnail: artifact.thumbnail,
+        description: artifact.description
       },
-      includes: function(searchString, position) {
-        return this._stringValue.includes(searchString, position);
-      },
-      toLowerCase: function() {
-        return this._stringValue.toLowerCase();
-      },
-      match: function(regexp) {
-        return this._stringValue.match(regexp);
-      },
-      replace: function(pattern, replacement) {
-        return this._stringValue.replace(pattern, replacement);
-      },
-      indexOf: function(searchValue, fromIndex) {
-        return this._stringValue.indexOf(searchValue, fromIndex);
-      },
-      slice: function(beginIndex, endIndex) {
-        return this._stringValue.slice(beginIndex, endIndex);
-      },
-      substring: function(start, end) {
-        return this._stringValue.substring(start, end);
-      }
+      stars: stars
     };
-    
-    console.log('🔧 Objet spécial créé:', {
-      stringValue: specialObject._stringValue,
-      id: specialObject._id,
-      name: specialObject._name,
-      type: specialObject._type
-    });
-    
-    return specialObject;
   };
 
   const handleConfirm = () => {
-    console.log('🔧 ArtifactModal - Confirmation');
-    console.log('Selected artifact:', selectedArtifact);
-    console.log('Selected stars:', selectedStars);
-    
     if (!selectedArtifact) {
-      console.log('❌ Aucun artifact sélectionné');
       updateSubSlot(teamSlotIndex, subSlotIndex, null, 0);
     } else {
-      // Créer l'objet spécial
-      const specialObject = createSpecialArtifactObject(selectedArtifact, selectedStars);
-      
-      if (!specialObject) {
-        console.error('❌ Impossible de créer l\'objet artifact');
-        // Fallback: envoyer le chemin normal
-        const artifactFileName = getArtifactFileName(selectedArtifact);
-        const artifactPath = `/kingsraid-data/assets/artifacts/${artifactFileName}.png`;
-        updateSubSlot(teamSlotIndex, subSlotIndex, artifactPath, selectedStars);
-      } else {
-        console.log('✅ Envoi objet spécial à updateSubSlot');
-        updateSubSlot(teamSlotIndex, subSlotIndex, specialObject, selectedStars);
-      }
+      const artifactData = createArtifactObjectForSave(selectedArtifact, selectedStars);
+      updateSubSlot(teamSlotIndex, subSlotIndex, artifactData, selectedStars);
     }
     onClose();
   };
@@ -184,7 +171,6 @@ const ArtifactModal = ({ data, onClose }) => {
     if (!artifactData) return;
 
     const rect = e.currentTarget.getBoundingClientRect();
-
     const position = {
       left: rect.left + rect.width / 2,
       top: rect.top,
@@ -196,7 +182,7 @@ const ArtifactModal = ({ data, onClose }) => {
         title={artifactData.name}
         stars={selectedStars}
         description={artifactData.description}
-        values={artifactData.value}
+        values={artifactData.values || artifactData.value}
         itemType="artifact"
       />,
       position
@@ -206,22 +192,61 @@ const ArtifactModal = ({ data, onClose }) => {
   const isArtifactSelected = (artifact) => {
     if (!selectedArtifact || !artifact) return false;
     
+    // Comparer par slug
+    if (selectedArtifact.slug && artifact.slug) {
+      return selectedArtifact.slug === artifact.slug;
+    }
+    
+    // Comparer par _id
     if (selectedArtifact._id && artifact._id) {
       return selectedArtifact._id.toString() === artifact._id.toString();
-    }
-    if (selectedArtifact.id && artifact.id) {
-      return selectedArtifact.id.toString() === artifact.id.toString();
-    }
-    if (selectedArtifact.name && artifact.name) {
-      return selectedArtifact.name === artifact.name;
     }
     
     return false;
   };
 
+  // Fonction pour gérer les erreurs de chargement d'image
+  const handleImageError = (e, artifact) => {
+    // Essayer plusieurs alternatives
+    const name = artifact.name || artifact.slug || '';
+    
+    if (name) {
+      // 1. Essayer avec encodage
+      const encodedName = encodeURIComponent(`${name}.png`);
+      const encodedPath = `/kingsraid-data/assets/artifacts/${encodedName}`;
+      if (encodedPath !== e.target.src) {
+        e.target.src = encodedPath;
+        return;
+      }
+      
+      // 2. Essayer sans apostrophe
+      const noApostropheName = name.replace(/'/g, '');
+      const noApostrophePath = `/kingsraid-data/assets/artifacts/${encodeURIComponent(noApostropheName)}.png`;
+      if (noApostrophePath !== e.target.src) {
+        e.target.src = noApostrophePath;
+        return;
+      }
+      
+      // 3. Essayer avec underscore
+      const underscoreName = name.replace(/'/g, '').replace(/\s+/g, '_');
+      const underscorePath = `/kingsraid-data/assets/artifacts/${underscoreName}.png`;
+      if (underscorePath !== e.target.src) {
+        e.target.src = underscorePath;
+        return;
+      }
+    }
+    
+    // Si tout échoue, afficher le fallback
+    e.target.style.display = "none";
+    const fallback = e.target.nextElementSibling;
+    if (fallback) {
+      fallback.style.display = "flex";
+    }
+  };
+
   return (
     <div className="artifact-modal-container">
-      <h3 className="artifact-modal-title">Artifact</h3>
+      <h3 className="artifact-modal-title">Select Artifact</h3>
 
       <input
         type="text"
@@ -241,46 +266,40 @@ const ArtifactModal = ({ data, onClose }) => {
                 !selectedArtifact ? "selected" : ""
               }`}
               onClick={() => {
-                console.log('🧹 Artifact vide sélectionné');
                 setSelectedArtifact(null);
                 setSelectedStars(0);
               }}
             >
-              Empty
+              <div className="empty-slot-label">Empty</div>
             </div>
 
             {displayArtifacts.map((artifact) => {
-              const artifactFileName = getArtifactFileName(artifact);
               const isSelected = isArtifactSelected(artifact);
-              const imageUrl = `/kingsraid-data/assets/artifacts/${artifactFileName}.png`;
+              const imageUrl = getArtifactImageUrl(artifact);
+              const displayName = artifact.name || artifact.slug || 'Unknown';
 
               return (
                 <div
-                  key={artifact._id || artifact.id || artifact.name}
+                  key={artifact.slug || artifact._id || artifact.id}
                   className={`artifact-option ${isSelected ? "selected" : ""}`}
-                  onClick={() => {
-                    console.log('🎯 Artifact sélectionné:', artifact.name);
-                    setSelectedArtifact(artifact);
-                  }}
+                  onClick={() => setSelectedArtifact(artifact)}
                   onMouseEnter={(e) => handleArtifactHover(artifact, e)}
                   onMouseLeave={hideOverlay}
                 >
                   <img
                     src={imageUrl}
-                    alt={artifact.name}
+                    alt={displayName}
                     className="artifact-image"
-                    onError={(e) => {
-                      console.warn(`❌ Image non chargée: ${imageUrl}`);
-                      e.target.style.display = "none";
-                      const fallback = e.target.nextElementSibling;
-                      if (fallback) fallback.style.display = "flex";
-                    }}
+                    onError={(e) => handleImageError(e, artifact)}
                   />
                   <div className="artifact-fallback">
-                    {artifactFileName.length > 10
-                      ? artifactFileName.substring(0, 8) + "..."
-                      : artifactFileName}
+                    {displayName.length > 10
+                      ? displayName.substring(0, 8) + "..."
+                      : displayName}
                   </div>
+                  {isSelected && (
+                    <div className="artifact-selected-indicator">✓</div>
+                  )}
                 </div>
               );
             })}
@@ -297,34 +316,29 @@ const ArtifactModal = ({ data, onClose }) => {
       {selectedArtifact && (
         <div className="artifact-stars-section">
           <div className="artifact-stars-label">
-            Select star level for{" "}
             <span className="artifact-stars-name">
-              {selectedArtifact.name ||
-                getArtifactFileName(selectedArtifact).replace(/_/g, " ")}
+              {selectedArtifact.name || selectedArtifact.slug}
             </span>
           </div>
           <StarRating
             value={selectedStars}
-            onChange={(stars) => {
-              console.log(`⭐ Stars changées: ${stars}`);
-              setSelectedStars(stars);
-            }}
+            onChange={setSelectedStars}
             maxStars={5}
             showZeroOption={true}
           />
         </div>
       )}
 
-      <div className="artifact-modal-buttons">
+      <div className="btn-modal">
         <button 
           onClick={handleConfirm} 
-          className="artifact-modal-confirm"
+          className="btn-modal-confirm"
         >
           Confirm
         </button>
         <button 
           onClick={onClose} 
-          className="artifact-modal-cancel"
+          className="btn-modal-cancel"
         >
           Cancel
         </button>

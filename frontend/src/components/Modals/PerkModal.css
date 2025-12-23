@@ -128,46 +128,6 @@
   color: white;
 }
 
-/* ========== Boutons ========== */
-.perk-modal-buttons {
-  display: flex;
-  justify-content: center;
-  gap: 1rem;
-  margin-top: 1.5rem;
-}
-
-.perk-modal-confirm {
-  background-color: #16a34a;
-  color: white;
-  padding: 0.5rem 1rem;
-  border-radius: 0.375rem;
-  border: none;
-  cursor: pointer;
-  transition: background-color 0.2s;
-  font-size: 0.875rem;
-  font-weight: 500;
-}
-
-.perk-modal-confirm:hover {
-  background-color: #15803d;
-}
-
-.perk-modal-cancel {
-  background-color: #525252;
-  color: white;
-  padding: 0.5rem 1rem;
-  border-radius: 0.375rem;
-  border: none;
-  cursor: pointer;
-  transition: background-color 0.2s;
-  font-size: 0.875rem;
-  font-weight: 500;
-}
-
-.perk-modal-cancel:hover {
-  background-color: var(--color-primary-light);
-}
-
 /* ========== Loading ========== */
 .perk-loading {
   text-align: center;

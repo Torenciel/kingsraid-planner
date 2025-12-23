@@ -1,11 +1,11 @@
-// App.jsx
+// frontend/src/App.jsx
 import {
   BrowserRouter,
   Navigate,
   Route,
   Routes,
   useLocation,
-} from "react-router-dom"; // Added useLocation
+} from "react-router-dom";
 import Navbar from "./components/UI/Navbar";
 import About from "./Routes/About";
 import Home from "./Routes/Home";
@@ -23,9 +23,18 @@ import StoryTeams from "./Routes/teams/StoryTeams";
 import TrialTeams from "./Routes/teams/TrialTeams";
 import WBTeams from "./Routes/teams/WBTeams";
 
+// IMPORT TOUS LES CONTEXT PROVIDERS
+import { TeamProvider } from "./contexts/TeamContext";
+import { HeroProvider } from "./contexts/HeroContext";
+import { ArtifactProvider } from "./contexts/ArtifactContext";
+import { GearSetProvider } from "./contexts/GearSetContext";
+import { ModalProvider } from "./contexts/ModalContext";
+import { OverlayProvider } from "./contexts/OverlayContext";
+import { PerksProvider } from "./contexts/PerksContext";
+
 // Create a wrapper component to use useLocation
 function AppRoutes() {
-  const location = useLocation(); // Now this is correct
+  const location = useLocation();
 
   return (
     <Routes>
@@ -44,7 +53,7 @@ function AppRoutes() {
       <Route path="/team/edit" element={<TeamEdit />} />
       <Route path="/about" element={<About />} />
 
-      {/* Boss team routes - you might want to remove these if they're not needed anymore */}
+      {/* Boss team routes */}
       <Route path="/teams/wb" element={<WBTeams />} />
       <Route path="/teams/raid" element={<RaidTeams />} />
       <Route path="/teams/gc" element={<GCTeams />} />
@@ -54,7 +63,7 @@ function AppRoutes() {
       <Route path="/teams/story" element={<StoryTeams />} />
       <Route path="/teams/pvp" element={<PvPTeams />} />
 
-      {/* Optional: Add 404 route */}
+      {/* 404 route */}
       <Route path="*" element={<NotFound />} />
     </Routes>
   );
@@ -63,12 +72,37 @@ function AppRoutes() {
 function App() {
   return (
     <BrowserRouter>
-      <div className="app">
-        <Navbar />
-        <main className="main-content">
-          <AppRoutes /> {/* Use the wrapper component */}
-        </main>
-      </div>
+      {/* HIÉRARCHIE DES PROVIDERS (ordre important) */}
+      {/* 
+        Ordre logique :
+        1. HeroProvider (utilisé par les providers suivants)
+        2. ArtifactProvider 
+        3. GearSetProvider
+        4. PerksProvider
+        5. ModalProvider (utilise les providers précédents)
+        6. OverlayProvider (utilise les providers précédents)
+        7. TeamProvider (utilise tous les précédents)
+      */}
+      <HeroProvider>
+        <ArtifactProvider>
+          <GearSetProvider>
+            <PerksProvider>
+              <ModalProvider>
+                <OverlayProvider>
+                  <TeamProvider>
+                    <div className="app">
+                      <Navbar />
+                      <main className="main-content">
+                        <AppRoutes />
+                      </main>
+                    </div>
+                  </TeamProvider>
+                </OverlayProvider>
+              </ModalProvider>
+            </PerksProvider>
+          </GearSetProvider>
+        </ArtifactProvider>
+      </HeroProvider>
     </BrowserRouter>
   );
 }

@@ -1,76 +1,87 @@
-import {
-  useCallback,
-  useEffect,
-  useLayoutEffect,
-  useRef,
-  useState,
-} from "react";
+import { useEffect, useLayoutEffect, useRef, useState, useCallback } from "react";
 import "./SubSlotOverlay.css";
+import { useHeroContext } from "../../contexts/HeroContext";
+import { useArtifacts } from "../../contexts/ArtifactContext";
 
 const SubSlotOverlay = ({
   subSlotIndex,
   item,
   stars,
   advancement,
-  heroName,
-  artifactsData,
-  heroesData,
-  gearSetsData,
+  heroSlug,
   slotRef,
+  onMouseEnter,
+  onMouseLeave,
 }) => {
   const overlayRef = useRef(null);
-  const contentRef = useRef(null);
-  const [position, setPosition] = useState("right");
-  const [calculated, setCalculated] = useState(false);
-  const [dimensions, setDimensions] = useState({ width: 300, height: 200 });
-  const hasMeasuredRef = useRef(false);
+  const [position, setPosition] = useState({ x: 0, y: 0, transform: "" });
+  const [isCalculated, setIsCalculated] = useState(false);
+  const [overlayInfo, setOverlayInfo] = useState(null);
+  const [heroDetails, setHeroDetails] = useState(null);
+  const [loading, setLoading] = useState(false);
+  
+  const { getHeroBySlug, loadHeroDetails } = useHeroContext();
+  const { allArtifacts, getArtifactBySlug } = useArtifacts();
+  const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3002';
 
-  // Fonctions de formatage EN PREMIER
-  const formatDescription = (description, values, starLevel) => {
-    if (!values) return [{ type: "text", content: description }];
-
-    let parts = [];
-    let currentText = description;
-
-    Object.keys(values).forEach((key) => {
-      const valueArray = values[key].split(", ");
-      const selectedValue =
-        valueArray[Math.min(starLevel, valueArray.length - 1)] || valueArray[0];
-
-      const partsArray = currentText.split(`(${key})`);
-      if (partsArray.length > 1) {
-        if (partsArray[0]) {
-          parts.push({ type: "text", content: partsArray[0] });
-        }
-        parts.push({ type: "value", content: selectedValue });
-        currentText = partsArray.slice(1).join(`(${key})`);
+  // Charger les détails du héros
+  useEffect(() => {
+    const loadHeroData = async () => {
+      if (!heroSlug) return;
+      
+      try {
+        setLoading(true);
+        const details = await loadHeroDetails(heroSlug);
+        setHeroDetails(details);
+      } catch (error) {
+        console.error("Error loading hero details:", error);
+      } finally {
+        setLoading(false);
       }
-    });
+    };
+    
+    loadHeroData();
+  }, [heroSlug, loadHeroDetails]);
 
-    if (currentText) {
-      parts.push({ type: "text", content: currentText });
+  // Fonction de formatage pour UW, UT et ARTIFACT - CORRIGÉE
+  const formatUWUTDescription = useCallback((description, values, starLevel) => {
+    if (!description) return [{ type: "text", content: "No description available" }];
+    if (!values || Object.keys(values).length === 0) {
+      return [{ type: "text", content: description }];
     }
 
-    return parts.length > 0 ? parts : [{ type: "text", content: description }];
-  };
-
-  const formatUWUTDescription = (description, values, starLevel) => {
-    if (!values) return [{ type: "text", content: description }];
-
     let parts = [];
     let currentText = description;
 
+    // Pour les artefacts, les valeurs sont au format "2%, 2.4%, 2.8%, 3.4%, 4.2%, 5%"
+    // Pour UW/UT, c'est souvent au format { "0": "10%", "1": "12%", ... }
+    
     Object.keys(values).forEach((key) => {
       const valueObj = values[key];
-      const selectedValue = valueObj[starLevel.toString()] || valueObj["0"];
+      let selectedValue;
+      
+      if (typeof valueObj === 'string') {
+        // Format artefact: "2%, 2.4%, 2.8%, 3.4%, 4.2%, 5%"
+        const valueArray = valueObj.split(",").map(v => v.trim());
+        // starLevel peut être de 0 à 5, correspondant aux 6 valeurs
+        const valueIndex = Math.min(starLevel, valueArray.length - 1);
+        selectedValue = valueArray[valueIndex] || valueArray[0];
+      } else if (typeof valueObj === 'object') {
+        // Format UW/UT: { "0": "10%", "1": "12%", ... }
+        selectedValue = valueObj[starLevel.toString()] || valueObj["0"];
+      } else {
+        selectedValue = "N/A";
+      }
 
-      const partsArray = currentText.split(`(${key})`);
+      const placeholder = `(${key})`;
+      const partsArray = currentText.split(placeholder);
+      
       if (partsArray.length > 1) {
         if (partsArray[0]) {
           parts.push({ type: "text", content: partsArray[0] });
         }
         parts.push({ type: "value", content: selectedValue });
-        currentText = partsArray.slice(1).join(`(${key})`);
+        currentText = partsArray.slice(1).join(placeholder);
       }
     });
 
@@ -79,103 +90,71 @@ const SubSlotOverlay = ({
     }
 
     return parts.length > 0 ? parts : [{ type: "text", content: description }];
-  };
+  }, []);
 
-  // Ensuite définir getOverlayInfo
-  const getOverlayInfo = () => {
+  // Getters d'information d'overlay
+  const getOverlayInfo = useCallback(() => {
     if (!item) return null;
 
     // GearSet (slot 3)
     if (subSlotIndex === 3) {
-      try {
-        const gearSets = JSON.parse(item);
+      if (typeof item === 'object' && item.gearSetSlug) {
+        const gearSetSlug = item.gearSetSlug;
+        const pieces = item.pieces || 0;
+        
         const stats = [];
+        
+        stats.push({
+          type: "gearset_header",
+          content: `${item.gearSetInfo?.name || gearSetSlug} (${pieces}P)`,
+          isSingle: true,
+        });
 
-        if (gearSets.length === 1) {
-          const set = gearSets[0];
-          const gearSetData = gearSetsData.find((gs) => gs.id === set);
-
-          if (gearSetData) {
-            stats.push({
-              type: "gearset_header",
-              content: `${gearSetData.name} (4P)`,
-              isSingle: true,
-            });
-
-            if (gearSetData.bonus2P) {
-              stats.push({
-                type: "gearset_bonus",
-                content: gearSetData.bonus2P,
-                level: "2P",
-              });
-            }
-
-            if (gearSetData.bonus4P) {
-              stats.push({
-                type: "gearset_bonus",
-                content: gearSetData.bonus4P,
-                level: "4P",
-              });
-            }
-          }
-
-          return {
-            title: gearSetData ? gearSetData.name : set.replace(/_/g, " "),
-            stats: stats,
-          };
-        } else if (gearSets.length === 2) {
-          gearSets.forEach((set) => {
-            const gearSetData = gearSetsData.find((gs) => gs.id === set);
-
-            if (gearSetData) {
-              stats.push({
-                type: "gearset_header",
-                content: `${gearSetData.name} (2P)`,
-                isSingle: false,
-              });
-
-              if (gearSetData.bonus2P) {
-                stats.push({
-                  type: "gearset_bonus",
-                  content: gearSetData.bonus2P,
-                  level: "2P",
-                });
-              }
-            }
+        if (item.gearSetInfo?.bonus2P) {
+          stats.push({
+            type: "gearset_bonus",
+            content: item.gearSetInfo.bonus2P,
+            level: "2P",
           });
-
-          return {
-            title: "Gear Sets",
-            stats: stats,
-          };
         }
-      } catch (e) {
-        console.error("Error parsing gear set data:", e);
+
+        if (item.gearSetInfo?.bonus4P && pieces >= 4) {
+          stats.push({
+            type: "gearset_bonus",
+            content: item.gearSetInfo.bonus4P,
+            level: "4P",
+          });
+        }
+
         return {
-          title: "Gear Set",
-          stats: ["Invalid gear set data"],
+          title: item.gearSetInfo?.name || gearSetSlug,
+          stats: stats,
         };
       }
     }
 
     // UW (slot 0)
-    if (subSlotIndex === 0) {
-      const heroData = heroesData[heroName];
-      if (!heroData || !heroData.uw) {
+    if (subSlotIndex === 0 && heroDetails) {
+      if (!heroDetails.uw) {
         return {
           title: "Unique Weapon",
           stats: [
             `${stars}★`,
-            advancement !== "none"
-              ? `Advancement: ${advancement}`
-              : "No Advancement",
-          ].filter(Boolean),
+            { 
+              type: "text", 
+              content: advancement !== "none" ? 
+                `Soul Weapon: ${advancement}` : 
+                "No Soul Weapon" 
+            }
+          ],
+          isUW: true,
+          advancement: advancement,
         };
       }
 
       const formattedDescription = formatUWUTDescription(
-        heroData.uw.description,
-        heroData.uw.value,
+        heroDetails.uw.description || "",
+        heroDetails.uw.value || heroDetails.uw.values || {},
         stars
       );
 
@@ -184,13 +163,12 @@ const SubSlotOverlay = ({
         { type: "formatted", content: formattedDescription },
       ];
 
-      if (advancement !== "none" && heroData.sw) {
-        const advancementColor =
-          {
-            blue: "#2175bb",
-            purple: "#ae4f99",
-            red: "#cc2615",
-          }[advancement] || "#ae4f99";
+      if (advancement !== "none" && heroDetails.sw) {
+        const advancementColor = {
+          blue: "#2175bb",
+          purple: "#ae4f99",
+          red: "#cc2615",
+        }[advancement] || "#ae4f99";
 
         stats.push({
           type: "separator",
@@ -198,225 +176,234 @@ const SubSlotOverlay = ({
           color: advancementColor,
         });
 
-        stats.push({ type: "text", content: heroData.sw.description });
+        if (heroDetails.sw.description) {
+          stats.push({ 
+            type: "text", 
+            content: heroDetails.sw.description 
+          });
+        }
 
-        if (heroData.sw.advancement) {
-          Object.keys(heroData.sw.advancement).forEach((advKey) => {
-            const isSelected =
-              (advKey === "1" &&
-                (advancement === "purple" || advancement === "red")) ||
-              (advKey === "2" && advancement === "red");
-
-            const levelColor = advKey === "1" ? "#ae4f99" : "#cc2615";
+        if (heroDetails.sw.advancement) {
+          Object.entries(heroDetails.sw.advancement).forEach(([level, description]) => {
+            const isSelected = (level === "1" && (advancement === "purple" || advancement === "red")) ||
+                              (level === "2" && advancement === "red");
+            
+            const levelColor = level === "1" ? "#ae4f99" : "#cc2615";
 
             stats.push({
               type: "sw_advancement",
-              content: heroData.sw.advancement[advKey],
+              content: description,
               isSelected: isSelected,
-              level: `A${advKey}`,
+              level: `A${level}`,
               color: levelColor,
             });
           });
         }
 
-        if (heroData.sw.cooldown) {
+        if (heroDetails.sw.cooldown) {
           stats.push({
             type: "cooldown",
-            content: `Cooldown: ${heroData.sw.cooldown}s`,
+            content: `Cooldown: ${heroDetails.sw.cooldown}s`,
           });
         }
-      } else if (advancement !== "none") {
-        stats.push(`Advancement: ${advancement}`);
       }
 
       return {
-        title: heroData.uw.name,
+        title: heroDetails.uw.name || "Unique Weapon",
         stats: stats,
         isUW: true,
         advancement: advancement,
-        hasSW: advancement !== "none" && heroData.sw,
       };
     }
 
     // UT (slot 1)
-    if (subSlotIndex === 1) {
-      const utNumber = item.split("/ut/")[1]?.split(".")[0];
-      const heroData = heroesData[heroName];
+    if (subSlotIndex === 1 && heroDetails) {
+      let utNumber = 1;
+      if (typeof item === 'object' && item.choice) {
+        utNumber = item.choice;
+      }
 
-      if (!heroData || !heroData.uts || !heroData.uts[utNumber]) {
+      const utData = heroDetails.uts?.[utNumber];
+      
+      if (!utData) {
         return {
-          title: `Unique Treasure ${utNumber || ""}`,
-          stats: [`${stars}★`],
+          title: `Unique Treasure ${utNumber}`,
+          stats: [
+            `${stars}★`,
+            { type: "text", content: "No UT data available" }
+          ],
+          isUT: true,
         };
       }
 
-      const utData = heroData.uts[utNumber];
-      const utFormattedDescription = formatUWUTDescription(
-        utData.description,
-        utData.value,
+      const formattedDescription = formatUWUTDescription(
+        utData.description || "",
+        utData.value || utData.values || {},
         stars
       );
 
       return {
-        title: utData.name,
+        title: utData.name || `UT${utNumber}`,
         stats: [
           `${stars}★`,
-          { type: "formatted", content: utFormattedDescription },
+          { type: "formatted", content: formattedDescription },
         ],
         isUT: true,
       };
     }
 
-    // Artifact (slot 2)
+    // Artifact (slot 2) - CORRIGÉ pour utiliser la même logique que UT
     if (subSlotIndex === 2) {
-      const artifactName = item.split("/artifacts/")[1]?.replace(".png", "");
+      let artifactSlug = "";
+      let artifactInfo = null;
+      
+      if (typeof item === 'object') {
+        if (item.artifactSlug) {
+          artifactSlug = item.artifactSlug;
+          artifactInfo = item.artifactInfo;
+        }
+      }
 
-      if (!artifactName)
+      if (!artifactSlug) {
         return {
           title: "Artifact",
-          stats: [`${stars}★`],
+          stats: [
+            `${stars}★`,
+            { type: "text", content: "No artifact selected" }
+          ],
+          isArtifact: true,
         };
+      }
 
-      const artifactData = artifactsData.find(
-        (artifact) =>
-          artifact.thumbnail === `artifacts/${artifactName}.png` ||
-          artifact.name === artifactName.replace(/_/g, " ")
-      );
+      // Chercher l'artefact dans la liste
+      let artifactData = null;
+      
+      if (allArtifacts && allArtifacts.length > 0) {
+        artifactData = allArtifacts.find(a => a && a.slug === artifactSlug);
+      }
 
-      if (!artifactData)
+      // Si pas trouvé dans allArtifacts, utiliser artifactInfo
+      if (!artifactData && artifactInfo) {
+        artifactData = {
+          name: artifactInfo.name,
+          description: artifactInfo.description || "",
+          value: artifactInfo.values || artifactInfo.value || {},
+        };
+      }
+
+      if (!artifactData) {
         return {
-          title: artifactName.replace(/_/g, " "),
-          stats: [`${stars}★`],
+          title: artifactSlug.replace(/_/g, " "),
+          stats: [
+            `${stars}★`,
+            { type: "text", content: "Artifact data not found" }
+          ],
+          isArtifact: true,
         };
+      }
 
-      const artifactFormattedDescription = formatDescription(
-        artifactData.description,
-        artifactData.value,
+      // Utiliser la MÊME fonction que pour UW/UT
+      const formattedDescription = formatUWUTDescription(
+        artifactData.description || "",
+        artifactData.value || artifactData.values || {},
         stars
       );
 
       return {
-        title: artifactData.name,
+        title: artifactData.name || artifactSlug.replace(/_/g, " "),
         stats: [
           `${stars}★`,
-          { type: "formatted", content: artifactFormattedDescription },
+          { type: "formatted", content: formattedDescription },
         ],
         isArtifact: true,
       };
     }
 
     return null;
-  };
+  }, [
+    item, stars, advancement, heroDetails, 
+    subSlotIndex, formatUWUTDescription,
+    allArtifacts, getArtifactBySlug
+  ]);
 
-  const overlayInfo = getOverlayInfo();
+  // Mettre à jour l'overlay info
+  useEffect(() => {
+    if (loading) return;
+    
+    const info = getOverlayInfo();
+    setOverlayInfo(info);
+  }, [getOverlayInfo, loading]);
 
-  // Mesurer la taille réelle UNE FOIS
+  // Calculer la position
   useLayoutEffect(() => {
-    if (contentRef.current && overlayInfo && !hasMeasuredRef.current) {
-      const rect = contentRef.current.getBoundingClientRect();
-      const borderWidth = 2;
-      const shadowMargin = 4;
-      setDimensions({
-        width: rect.width + borderWidth * 2 + shadowMargin,
-        height: rect.height + borderWidth * 2 + shadowMargin,
+    if (!slotRef?.current || !overlayInfo) {
+      return;
+    }
+
+    const calculatePosition = () => {
+      const slotRect = slotRef.current.getBoundingClientRect();
+      const viewportWidth = window.innerWidth;
+      const viewportHeight = window.innerHeight;
+      
+      const estimatedWidth = 320;
+      const estimatedHeight = 200;
+      const margin = 10;
+
+      let targetX = slotRect.left + slotRect.width / 2;
+      let targetY = slotRect.top - margin;
+      let transform = "translateX(-50%) translateY(-100%)";
+
+      if (targetY - estimatedHeight < 0) {
+        targetY = slotRect.bottom + margin;
+        transform = "translateX(-50%)";
+      }
+
+      const leftEdge = targetX - estimatedWidth / 2;
+      const rightEdge = targetX + estimatedWidth / 2;
+
+      if (leftEdge < 0) {
+        targetX = estimatedWidth / 2 + margin;
+      } else if (rightEdge > viewportWidth) {
+        targetX = viewportWidth - estimatedWidth / 2 - margin;
+      }
+
+      if (targetY + estimatedHeight > viewportHeight) {
+        targetY = viewportHeight - estimatedHeight - margin;
+      }
+
+      setPosition({
+        x: targetX,
+        y: targetY,
+        transform: transform,
       });
-      hasMeasuredRef.current = true;
-    }
-  }, [overlayInfo]);
+      setIsCalculated(true);
+    };
 
-  // Calculer la position après avoir les dimensions
-  useEffect(() => {
-    if (dimensions.width !== 300 && !calculated && overlayInfo) {
-      calculatePosition();
-    }
-  }, [dimensions, calculated, overlayInfo]);
+    calculatePosition();
 
-  // Calculer la position optimale avec les dimensions réelles
-  const calculatePosition = useCallback(() => {
-    if (!slotRef?.current || calculated || !overlayInfo) return;
-
-    const slotRect = slotRef.current.getBoundingClientRect();
-    const viewportWidth = window.innerWidth;
-    const viewportHeight = window.innerHeight;
-
-    const overlayWidth = dimensions.width;
-    const overlayHeight = dimensions.height;
-    const margin = 15;
-
-    const spaceOnRight = viewportWidth - slotRect.right - margin;
-    const spaceOnLeft = slotRect.left - margin;
-    const spaceOnTop = slotRect.top - margin;
-    const spaceOnBottom = viewportHeight - slotRect.bottom - margin;
-
-    const basePosition =
-      subSlotIndex === 0 || subSlotIndex === 2 ? "left" : "right";
-
-    console.log("Espaces disponibles:", {
-      left: spaceOnLeft,
-      right: spaceOnRight,
-      top: spaceOnTop,
-      bottom: spaceOnBottom,
-      basePosition,
-      overlayWidth,
-      overlayHeight,
-      type: overlayInfo.isUW
-        ? "UW"
-        : overlayInfo.isUT
-        ? "UT"
-        : overlayInfo.isArtifact
-        ? "Artifact"
-        : "GearSet",
-    });
-
-    if (basePosition === "left") {
-      if (spaceOnLeft >= overlayWidth) {
-        setPosition("left");
-        setCalculated(true);
-        return;
-      } else if (spaceOnRight >= overlayWidth) {
-        setPosition("right");
-        setCalculated(true);
-        return;
+    const timeoutId = setTimeout(() => {
+      if (overlayRef.current) {
+        const overlayRect = overlayRef.current.getBoundingClientRect();
+        const currentViewportHeight = window.innerHeight;
+        
+        if (overlayRect.bottom > currentViewportHeight) {
+          setPosition(prev => ({
+            ...prev,
+            y: currentViewportHeight - overlayRect.height - 10
+          }));
+        }
       }
-    } else {
-      if (spaceOnRight >= overlayWidth) {
-        setPosition("right");
-        setCalculated(true);
-        return;
-      } else if (spaceOnLeft >= overlayWidth) {
-        setPosition("left");
-        setCalculated(true);
-        return;
-      }
-    }
+    }, 50);
 
-    if (spaceOnTop >= overlayHeight) {
-      setPosition("top");
-      setCalculated(true);
-      return;
-    } else if (spaceOnBottom >= overlayHeight) {
-      setPosition("bottom");
-      setCalculated(true);
-      return;
-    }
+    return () => clearTimeout(timeoutId);
+  }, [slotRef, overlayInfo]);
 
-    setPosition(basePosition);
-    setCalculated(true);
-  }, [subSlotIndex, slotRef, calculated, dimensions, overlayInfo]);
+  // Fonction de rendu du contenu
+  const renderContent = () => {
+    if (!overlayInfo) return null;
 
-  // Réinitialiser quand l'item change
-  useEffect(() => {
-    setCalculated(false);
-    setDimensions({ width: 300, height: 200 });
-    hasMeasuredRef.current = false;
-  }, [item]);
-
-  if (!overlayInfo) return null;
-
-  return (
-    <div
-      ref={overlayRef}
-      className={`subslot-overlay ${position} ${
+    return (
+      <div className={`subslot-overlay-content ${
         overlayInfo.isUW && overlayInfo.advancement === "blue"
           ? "border-blue"
           : overlayInfo.isUW && overlayInfo.advancement === "purple"
@@ -424,54 +411,55 @@ const SubSlotOverlay = ({
           : overlayInfo.isUW && overlayInfo.advancement === "red"
           ? "border-red"
           : ""
-      }`}
-      style={{ opacity: calculated ? 1 : 0 }}
-    >
-      <div
-        ref={contentRef}
-        className={`subslot-overlay-content ${
-          overlayInfo.isUW && overlayInfo.advancement === "blue"
-            ? "border-blue"
-            : overlayInfo.isUW && overlayInfo.advancement === "purple"
-            ? "border-purple"
-            : overlayInfo.isUW && overlayInfo.advancement === "red"
-            ? "border-red"
-            : ""
-        }`}
-      >
-        {subSlotIndex !== 3 && (
-          <div className="subslot-overlay-header">
-            <div className="subslot-overlay-stars">{overlayInfo.stats[0]}</div>
-            <div className="subslot-overlay-title">{overlayInfo.title}</div>
-            {overlayInfo.isUW && overlayInfo.advancement !== "none" && (
-              <img
-                src={`/kingsraid-data/assets/advancements/${overlayInfo.advancement}.png`}
-                alt={overlayInfo.advancement}
-                className="subslot-advancement-icon"
-                onError={(e) => {
-                  e.target.style.display = "none";
-                }}
-              />
-            )}
+      }`}>
+        
+        {/* Header */}
+        <div className="subslot-overlay-header">
+          <div className="subslot-overlay-stars">
+            {typeof overlayInfo.stats[0] === 'object' 
+              ? overlayInfo.stats[0].content 
+              : overlayInfo.stats[0]}
           </div>
-        )}
+          
+          <div className="subslot-overlay-title">{overlayInfo.title}</div>
+          
+          {overlayInfo.isUW && overlayInfo.advancement !== "none" && (
+            <img
+              src={`/kingsraid-data/assets/advancements/${overlayInfo.advancement}.png`}
+              alt={overlayInfo.advancement}
+              className="subslot-advancement-icon"
+              onError={(e) => {
+                e.target.style.display = "none";
+              }}
+            />
+          )}
+        </div>
 
+        {/* Contenu des stats */}
         <div className="subslot-overlay-stats">
-          {overlayInfo.stats
-            .slice(subSlotIndex === 3 ? 0 : 1)
+          {(subSlotIndex === 3 ? overlayInfo.stats : overlayInfo.stats.slice(1))
             .map((stat, index) => {
-              if (typeof stat === "object" && stat !== null) {
+              if (typeof stat === 'string') {
+                return (
+                  <div key={index} className="subslot-text">
+                    {stat}
+                  </div>
+                );
+              }
+              
+              if (stat && typeof stat === 'object') {
                 switch (stat.type) {
                   case "gearset_header":
                     return (
-                      <div key={index} className="subslot-gearset-header">
+                      <div key={`${index}-${stat.index || 0}`} className="subslot-gearset-header">
                         {stat.content}
                       </div>
                     );
                   case "gearset_bonus":
                     return (
-                      <div key={index} className="subslot-gearset-bonus">
-                        {stat.content}
+                      <div key={`${index}-${stat.level}-${stat.index || 0}`} className="subslot-gearset-bonus">
+                        <span className="gearset-bonus-level">{stat.level}:</span>
+                        <span>{stat.content}</span>
                       </div>
                     );
                   case "separator":
@@ -530,14 +518,72 @@ const SubSlotOverlay = ({
                 }
               }
 
-              return (
-                <div key={index} className="subslot-text">
-                  {stat}
-                </div>
-              );
+              return null;
             })}
         </div>
       </div>
+    );
+  };
+
+  // Rendu pendant le chargement
+  if (loading) {
+    return (
+      <div
+        ref={overlayRef}
+        className="subslot-overlay"
+        style={{
+          position: "fixed",
+          left: `${position.x}px`,
+          top: `${position.y}px`,
+          transform: position.transform,
+          zIndex: 999999,
+        }}
+      >
+        <div className="subslot-overlay-content">
+          <div className="subslot-loading">Loading data...</div>
+        </div>
+      </div>
+    );
+  }
+
+  // Rendu normal
+  if (!overlayInfo) {
+    return null;
+  }
+
+  return (
+    <div
+      ref={overlayRef}
+      className={`subslot-overlay ${
+        overlayInfo.isUW && overlayInfo.advancement === "blue"
+          ? "border-blue"
+          : overlayInfo.isUW && overlayInfo.advancement === "purple"
+          ? "border-purple"
+          : overlayInfo.isUW && overlayInfo.advancement === "red"
+          ? "border-red"
+          : ""
+      }`}
+      style={{
+        position: "fixed",
+        left: `${position.x}px`,
+        top: `${position.y}px`,
+        transform: position.transform,
+        zIndex: 999999,
+        opacity: isCalculated ? 1 : 0,
+        transition: "opacity 0.15s ease",
+        pointerEvents: "auto",
+        overscrollBehavior: "contain",
+      }}
+      onMouseEnter={(e) => {
+        e.stopPropagation();
+        onMouseEnter?.();
+      }}
+      onMouseLeave={(e) => {
+        e.stopPropagation();
+        onMouseLeave?.();
+      }}
+    >
+      {renderContent()}
     </div>
   );
 };

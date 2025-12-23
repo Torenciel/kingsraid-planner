@@ -78,9 +78,31 @@ function createSlug(name) {
     .replace(/[\u0300-\u036f]/g, '') // Supprimer les accents
     .replace(/[^a-z0-9\s-]/g, '') // Garder seulement lettres, chiffres, espaces, tirets
     .replace(/\s+/g, '-') // Remplacer espaces par tirets
-    .replace(/'/g, '') // Supprimer apostrophes
+    .replace(/'/g, '') // Supprimer apostrophes pour le slug
     .replace(/--+/g, '-') // Éviter doubles tirets
     .trim();
+}
+
+// Fonction pour corriger les thumbnails connus (garder les apostrophes)
+function correctThumbnail(thumbnail) {
+  if (!thumbnail) return thumbnail;
+  
+  // Liste de corrections pour les thumbnails sans apostrophe
+  const corrections = {
+    'artifacts/Madames Bronze Mirrors.png': 'artifacts/Madame\'s Bronze Mirrors.png',
+    'artifacts/Madames Bronze Mirrors.png': 'artifacts/Madame\'s Bronze Mirrors.png',
+    'artifacts/Solenis Engraving.png': 'artifacts/Solenis\' Engraving.png',
+    // Ajoutez d'autres corrections au besoin
+  };
+  
+  // Vérifier s'il y a une correction pour ce thumbnail
+  const corrected = corrections[thumbnail];
+  if (corrected) {
+    console.log(`   → Correction thumbnail: ${thumbnail} → ${corrected}`);
+    return corrected;
+  }
+  
+  return thumbnail;
 }
 
 // Fonction pour nettoyer les données d'artifact
@@ -115,18 +137,16 @@ function cleanArtifactData(artifactData) {
   if (!data.story) data.story = '';
   if (!data.aliases) data.aliases = [];
   
-  // 5. Normaliser le thumbnail (format standard)
+  // 5. Normaliser le thumbnail (format standard) - IMPORTANT: GARDER LES APOSTROPHES
   if (data.thumbnail) {
     // S'assurer que le chemin commence par 'artifacts/'
     if (!data.thumbnail.startsWith('artifacts/')) {
       const filename = data.thumbnail.split('/').pop() || data.thumbnail;
       data.thumbnail = `artifacts/${filename}`;
     }
-    // Nettoyer le nom de fichier (enlever apostrophes)
-    const parts = data.thumbnail.split('/');
-    const filename = parts.pop();
-    const cleanFilename = filename.replace(/'/g, '');
-    data.thumbnail = [...parts, cleanFilename].join('/');
+    // CORRECTION: Appliquer les corrections pour garder les apostrophes
+    data.thumbnail = correctThumbnail(data.thumbnail);
+    // NE PAS SUPPRIMER LES APOSTROPHES - c'était l'erreur
   }
   
   return data;
@@ -235,7 +255,7 @@ async function importArtifacts() {
         // Afficher le nombre d'attributs
         const attrCount = Object.keys(cleanedData.value || {}).length;
         console.log(`✅ ${importedCount}. ${cleanedData.name}`);
-        console.log(`   Slug: ${cleanedData.slug}, Attributs: ${attrCount}`);
+        console.log(`   Slug: ${cleanedData.slug}, Thumbnail: ${cleanedData.thumbnail}`);
         
       } catch (error) {
         errorCount++;
@@ -271,21 +291,35 @@ async function importArtifacts() {
     const totalInDB = await Artifact.countDocuments();
     console.log(`\n📊 Total dans la base: ${totalInDB} artifacts`);
     
-    // Afficher quelques exemples avec leurs slugs
-    console.log('\n🔍 Exemples d\'artifacts importés:');
+    // Afficher quelques exemples avec leurs thumbnails
+    console.log('\n🔍 Exemples d\'artifacts importés (vérifiez les apostrophes):');
     const samples = await Artifact.find().limit(5).select('slug name thumbnail');
     samples.forEach(artifact => {
-      console.log(`   • ${artifact.name} (slug: ${artifact.slug})`);
+      console.log(`   • ${artifact.name}`);
+      console.log(`     Slug: ${artifact.slug}`);
+      console.log(`     Thumbnail: ${artifact.thumbnail}`);
     });
     
-    // Vérifier que tous les artifacts ont un slug
-    const artifactsWithoutSlug = await Artifact.countDocuments({ slug: { $exists: false } });
-    if (artifactsWithoutSlug > 0) {
-      console.log(`\n⚠️  ${artifactsWithoutSlug} artifacts sans slug!`);
-      const toFix = await Artifact.find({ slug: { $exists: false } }).select('name');
-      toFix.forEach(artifact => {
-        console.log(`   • ${artifact.name}`);
-      });
+    // Vérifier les thumbnails avec apostrophes
+    console.log('\n🔍 Artifacts avec apostrophes dans le thumbnail:');
+    const artifactsWithApostrophe = await Artifact.find({
+      thumbnail: /'/
+    }).select('name thumbnail');
+    
+    console.log(`   ${artifactsWithApostrophe.length} artifacts avec apostrophe:`);
+    artifactsWithApostrophe.forEach(artifact => {
+      console.log(`   • ${artifact.name}: ${artifact.thumbnail}`);
+    });
+    
+    // Vérifier les thumbnails SANS apostrophes qui devraient en avoir
+    console.log('\n🔍 Vérification des thumbnails potentiellement problématiques:');
+    const problemNames = ['Madame\'s Bronze Mirrors', 'Solenis\' Engraving'];
+    for (const name of problemNames) {
+      const artifact = await Artifact.findOne({ name: name }).select('name thumbnail');
+      if (artifact) {
+        const hasApostrophe = artifact.thumbnail.includes("'");
+        console.log(`   • ${artifact.name}: ${hasApostrophe ? '✅ Avec apostrophe' : '❌ SANS apostrophe'} (${artifact.thumbnail})`);
+      }
     }
     
     await mongoose.disconnect();

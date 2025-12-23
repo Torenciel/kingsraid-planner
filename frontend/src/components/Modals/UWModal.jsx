@@ -1,3 +1,4 @@
+// frontend/src/components/Modals/UWModal.jsx - Version corrigée
 import { useEffect, useRef, useState } from "react";
 import { useOverlay } from "../../contexts/OverlayContext";
 import { useTeam } from "../../contexts/TeamContext";
@@ -10,6 +11,7 @@ const UWModal = ({ data, onClose }) => {
     teamSlotIndex,
     subSlotIndex,
     heroName,
+    heroSlug,
     currentItem,
     currentStars,
     currentAdvancement,
@@ -20,55 +22,89 @@ const UWModal = ({ data, onClose }) => {
   const [selectedOption, setSelectedOption] = useState(
     currentItem ? "uw" : "empty"
   );
-  const [selectedStars, setSelectedStars] = useState(currentStars);
-  const [selectedAdvancement, setSelectedAdvancement] =
-    useState(currentAdvancement);
+  const [selectedStars, setSelectedStars] = useState(currentStars || 0);
+  const [selectedAdvancement, setSelectedAdvancement] = useState(currentAdvancement || "none");
   const [hoveredAdvancement, setHoveredAdvancement] = useState(null);
   const [heroData, setHeroData] = useState(null);
+  const [heroFullName, setHeroFullName] = useState(null);
   const uwItemRef = useRef(null);
 
-// Charger les données du héros depuis MongoDB API v2
-useEffect(() => {
-  const loadHeroData = async () => {
-    try {
-      // Convertir le nom en slug (ex: "Arch" → "arch", "Kasel" → "kasel")
-      const heroSlug = heroName.toLowerCase().replace(/\s+/g, '-');
-      
-      const response = await fetch(`http://localhost:3002/api/v2/heroes/${heroSlug}`); // <-- CHANGÉ
-      
-      
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`);
-      }
-      
-      const data = await response.json();
-
-      console.log("📦 UW and Advancement data from MongoDB:", data);
-      
-      setHeroData(data);
-    } catch (error) {
-      console.error("Error loading hero data from MongoDB API v2:", error);
-      
-      // Fallback vers l'ancien système (fichiers JSON)
+  // Charger les données du héros
+  useEffect(() => {
+    const loadHeroData = async () => {
       try {
-        const fallbackResponse = await fetch(
-          `/kingsraid-data/table-data/heroes/${heroName}.json`
-        );
+        // Utiliser le slug si fourni, sinon convertir le nom
+        const slug = heroSlug || heroName?.toLowerCase().replace(/\s+/g, '-');
         
-        if (fallbackResponse.ok) {
-          const fallbackData = await fallbackResponse.json();
-          setHeroData(fallbackData);
+        if (!slug) {
+          console.warn("No hero slug or name provided");
+          return;
         }
-      } catch (fallbackError) {
-        console.error("Error loading fallback hero data:", fallbackError);
+        
+        const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3002';
+        const response = await fetch(`${API_BASE_URL}/api/v2/heroes/${slug}`);
+        
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+        
+        const result = await response.json();
+
+        if (result.success && result.hero) {
+          console.log("Hero data loaded from MongoDB:", result.hero);
+          setHeroData(result.hero);
+          // Stocker le nom complet du héros
+          setHeroFullName(result.hero.name || result.hero.infos?.name || heroName);
+        } else {
+          throw new Error("No hero data found");
+        }
+      } catch (error) {
+        console.error("Error loading hero data from MongoDB:", error);
+        
+        // Fallback vers l'ancien système (fichiers JSON)
+        try {
+          const fallbackName = heroName || heroSlug;
+          const fallbackResponse = await fetch(
+            `/kingsraid-data/table-data/heroes/${fallbackName}.json`
+          );
+          
+          if (fallbackResponse.ok) {
+            const fallbackData = await fallbackResponse.json();
+            setHeroData(fallbackData);
+            setHeroFullName(fallbackData.name || fallbackData.infos?.name || heroName);
+          }
+        } catch (fallbackError) {
+          console.error("Error loading fallback hero data:", fallbackError);
+          // Utiliser heroName comme fallback
+          setHeroFullName(heroName);
+        }
       }
+    };
+    
+    if (heroName || heroSlug) {
+      loadHeroData();
+    } else {
+      // Si pas de heroName fourni, utiliser heroSlug comme fallback
+      setHeroFullName(heroSlug);
     }
+  }, [heroName, heroSlug]);
+
+  // Fonction pour obtenir le chemin de l'image UW
+  const getUWImagePath = () => {
+    // Utiliser le nom complet du héros (avec espaces) si disponible
+    const nameToUse = heroFullName || heroName || heroSlug || 'unknown';
+    
+    // IMPORTANT: Utiliser encodeURIComponent pour les espaces
+    const encodedName = encodeURIComponent(nameToUse);
+    
+    // Chemin par défaut
+    return `/kingsraid-data/assets/heroes/${encodedName}/uw.png`;
   };
-  
-  if (heroName) {
-    loadHeroData();
-  }
-}, [heroName]);
+
+  // Fonction pour obtenir le chemin des images d'advancement
+  const getAdvancementImagePath = (fileName) => {
+    return `/kingsraid-data/assets/advancements/${fileName}`;
+  };
 
   const handleConfirm = (e) => {
     e.preventDefault();
@@ -78,14 +114,21 @@ useEffect(() => {
       updateSubSlot(teamSlotIndex, subSlotIndex, null, 0);
       updateAdvancement(teamSlotIndex, "none");
     } else {
-      const uwPath = `/kingsraid-data/assets/heroes/${heroName}/uw.png`;
-      updateSubSlot(teamSlotIndex, subSlotIndex, uwPath, selectedStars);
+      // Créer l'objet UW pour la sauvegarde
+      const uwObject = {
+        uwPath: getUWImagePath(),
+        heroSlug: heroSlug || heroName?.toLowerCase().replace(/\s+/g, '-'),
+        heroName: heroName,
+        stars: selectedStars
+      };
+      
+      updateSubSlot(teamSlotIndex, subSlotIndex, uwObject, selectedStars);
       updateAdvancement(teamSlotIndex, selectedAdvancement);
     }
     onClose();
   };
 
-  // Obtenir les données UW (compatible MongoDB)
+  // Obtenir les données UW
   const getUWData = () => {
     if (!heroData) return null;
     
@@ -108,7 +151,6 @@ useEffect(() => {
     if (!uwData) return;
 
     const rect = e.currentTarget.getBoundingClientRect();
-
     const position = {
       left: rect.left + rect.width / 2,
       top: rect.top,
@@ -129,27 +171,37 @@ useEffect(() => {
     );
   };
 
+  // Gérer les erreurs de chargement d'image UW
+  const handleUWImageError = (e) => {
+    console.warn(`UW image failed to load: ${e.target.src}`);
+    e.target.style.display = "none";
+    const fallback = e.target.nextElementSibling;
+    if (fallback) {
+      fallback.style.display = "flex";
+    }
+  };
+
   const renderAdvancementOptions = () => {
     const advancements = [
       {
         id: "none",
         label: "None",
-        image: "/kingsraid-data/assets/advancements/none.png",
+        image: getAdvancementImagePath("none.png"),
       },
       {
         id: "blue",
         label: "Blue",
-        image: "/kingsraid-data/assets/advancements/blue.png",
+        image: getAdvancementImagePath("blue.png"),
       },
       {
         id: "purple",
         label: "Purple",
-        image: "/kingsraid-data/assets/advancements/purple.png",
+        image: getAdvancementImagePath("purple.png"),
       },
       {
         id: "red",
         label: "Red",
-        image: "/kingsraid-data/assets/advancements/red.png",
+        image: getAdvancementImagePath("red.png"),
       },
     ];
 
@@ -168,8 +220,11 @@ useEffect(() => {
             <div className="advancement-image-container">
               <img
                 src={adv.image}
-                alt={adv.label}
                 className="advancement-image"
+                onError={(e) => {
+                  console.error(`Advancement image failed to load: ${adv.image}`);
+                  e.target.style.display = "none";
+                }}
               />
               <div
                 className="advancement-border"
@@ -178,8 +233,9 @@ useEffect(() => {
                 }}
               >
                 <img
-                  src="/kingsraid-data/assets/advancements/border-hover.png"
+                  src={getAdvancementImagePath("border-hover.png")}
                   alt="hover border"
+                  onError={(e) => e.target.style.display = "none"}
                 />
               </div>
               <div
@@ -189,11 +245,13 @@ useEffect(() => {
                 }}
               >
                 <img
-                  src="/kingsraid-data/assets/advancements/border-selected.png"
+                  src={getAdvancementImagePath("border-selected.png")}
                   alt="selected border"
+                  onError={(e) => e.target.style.display = "none"}
                 />
               </div>
             </div>
+
           </div>
         ))}
       </div>
@@ -201,8 +259,10 @@ useEffect(() => {
   };
 
   return (
-    <div>
-      <h3 className="uw-modal-title">Unique Weapon - {heroName}</h3>
+    <div className="uw-modal-container">
+      <h3 className="uw-modal-title">
+        Unique Weapon - {heroName || heroSlug}
+      </h3>
 
       <div className="uw-options-container">
         <div
@@ -211,7 +271,7 @@ useEffect(() => {
           }`}
           onClick={() => setSelectedOption("empty")}
         >
-          Empty
+          <div className="empty-slot-label">Empty</div>
         </div>
 
         <div
@@ -222,17 +282,17 @@ useEffect(() => {
           onMouseLeave={hideOverlay}
         >
           <img
-            src={`/kingsraid-data/assets/heroes/${heroName}/uw.png`}
+            src={getUWImagePath()}
             alt="UW"
-            onError={(e) => {
-              e.target.style.display = "none";
-              const fallback = e.target.nextElementSibling;
-              if (fallback) fallback.style.display = "flex";
-            }}
+            className="uw-image"
+            onError={handleUWImageError}
           />
           <div className="uw-fallback">
             UW
           </div>
+          {selectedOption === "uw" && (
+            <div className="uw-selected-indicator">✓</div>
+          )}
         </div>
       </div>
 
@@ -250,16 +310,16 @@ useEffect(() => {
 
       {selectedOption === "uw" && (
         <div className="uw-advancement-section">
-          <h4 className="uw-modal-subtitle">Soul Weapon Advancement</h4>
+          <h4 className="uw-modal-subtitle">Soul Weapon</h4>
           {renderAdvancementOptions()}
         </div>
       )}
 
-      <div className="uw-modal-buttons">
-        <button onClick={handleConfirm} className="uw-modal-confirm">
+      <div className="btn-modal">
+        <button onClick={handleConfirm} className="btn-modal-confirm">
           Confirm
         </button>
-        <button onClick={onClose} className="uw-modal-cancel">
+        <button onClick={onClose} className="btn-modal-cancel">
           Cancel
         </button>
       </div>

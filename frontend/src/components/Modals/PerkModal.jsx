@@ -1,11 +1,11 @@
+// frontend/src/components/Modals/PerkModal.jsx
 import { useEffect, useState } from "react";
 import { useOverlay } from "../../contexts/OverlayContext";
 import { useTeam } from "../../contexts/TeamContext";
-import { api } from "../../services/api";
 import "./PerkModal.css";
 
 const PerkModal = ({ data, onClose }) => {
-  const { teamSlotIndex, heroClass, heroName } = data;
+  const { teamSlotIndex, heroClass, heroName, heroSlug } = data;
   const { updatePerks, perks } = useTeam();
   const { showOverlay, hideOverlay } = useOverlay();
 
@@ -14,58 +14,45 @@ const PerkModal = ({ data, onClose }) => {
   );
   const [usedPoints, setUsedPoints] = useState(0);
   const [perkData, setPerkData] = useState([]);
-  const [heroSkills, setHeroSkills] = useState({});
   const [loading, setLoading] = useState(true);
   const maxPoints = 95;
 
-  // Fonction pour obtenir le nom du skill
-  const getSkillName = (skillNumber) => {
-    if (!heroSkills || !heroSkills[skillNumber]) {
-      return `Skill ${skillNumber}`;
-    }
-    return heroSkills[skillNumber].name;
+  // Fonction pour encoder les noms de héros pour les URLs
+  const encodeHeroName = (name) => {
+    if (!name) return 'unknown';
+    return encodeURIComponent(name.trim());
   };
 
-  // Charger les données des perks ET les skills du héros
+  // Charger les données des perks depuis MongoDB
   useEffect(() => {
-    const loadData = async () => {
+    const loadPerkData = async () => {
       try {
         setLoading(true);
-        console.log(`📡 Loading perks for ${heroName}...`);
+        const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3002';
+        const response = await fetch(`${API_BASE_URL}/api/v2/perks`);
         
-        // Charger les perks
-        const perksData = await api.request('/v2/perks');
-        console.log(`✅ Loaded ${perksData.length} perks from database`);
-        setPerkData(perksData);
-        
-        // Charger les skills du héros
-        try {
-          const heroData = await api.request(`/v2/heroes/${heroName.toLowerCase()}`);
-          if (heroData?.skills) {
-            console.log(`✅ Loaded skills for ${heroName}:`, Object.keys(heroData.skills).length);
-            setHeroSkills(heroData.skills);
+        if (response.ok) {
+          const result = await response.json();
+          if (result.success && result.perks) {
+            setPerkData(result.perks);
           }
-        } catch (heroError) {
-          console.warn(`⚠️ Could not load skills for ${heroName}:`, heroError.message);
         }
-        
       } catch (error) {
-        console.error("❌ Error loading perk data:", error);
-        setPerkData([]);
+        console.error("Error loading perk data:", error);
       } finally {
         setLoading(false);
       }
     };
 
-    loadData();
-  }, [heroName, heroClass]);
+    loadPerkData();
+  }, []);
 
-  // Trouver une perk
+  // Fonction pour trouver une perk dans les données MongoDB
   const findPerk = (perkImageInfo, rowIndex) => {
     if (!perkImageInfo || perkData.length === 0) return null;
     
     const { name, file, tier, skill, type } = perkImageInfo;
-    const heroSlug = heroName?.toLowerCase();
+    const heroSlugLower = heroSlug || heroName?.toLowerCase();
     
     // Chercher par thumbnail exact
     let foundPerk = perkData.find(perk => perk.thumbnail === file);
@@ -79,7 +66,7 @@ const PerkModal = ({ data, onClose }) => {
     // Pour T3/T5: chercher par héro, tier, skill et type
     if (tier === 't3' || tier === 't5') {
       foundPerk = perkData.find(perk => 
-        perk.heroSlug === heroSlug &&
+        perk.heroSlug === heroSlugLower &&
         perk.tier === tier &&
         perk.skillIndex === skill &&
         perk.type === type
@@ -97,87 +84,7 @@ const PerkModal = ({ data, onClose }) => {
     return foundPerk;
   };
 
-  // Gérer le hover sur une perk - MODIFIÉ
-  const handlePerkHover = (perkInfo, perkImageInfo, e) => {
-    if (!perkImageInfo) return;
-
-    const rect = e.currentTarget.getBoundingClientRect();
-    const position = {
-      left: rect.left + rect.width / 2,
-      top: rect.top - 10,
-      transform: "translateX(-50%) translateY(-100%)",
-    };
-
-    // Déterminer le coût basé sur la ligne
-    const getRowCost = (rowIndex) => {
-      const costs = [10, 15, 15, 15, 15];
-      return costs[rowIndex] || 15;
-    };
-
-    const rowIndex = Math.floor(perkImageInfo.index / 10);
-    const cost = getRowCost(rowIndex);
-
-    // DÉTERMINER LE TITRE
-    let displayName = "Unknown Perk";
-    
-    if (perkImageInfo.tier === 't3' && perkImageInfo.skill) {
-      // Pour les perks T3: "Nom du Skill - Light/Dark"
-      const skillName = getSkillName(perkImageInfo.skill);
-      const typeName = perkImageInfo.type === 'light' ? 'Light' : 'Dark';
-      displayName = `${skillName} - ${typeName}`;
-    } else if (perkImageInfo.tier === 't5') {
-      // Pour les perks T5: "Light/Dark Transcendence"
-      const typeName = perkImageInfo.type === 'light' ? 'Light' : 'Dark';
-      displayName = `${typeName} Transcendence`;
-    } else {
-      // Pour T1/T2: nom de la perk
-      displayName = perkInfo?.name || perkImageInfo.name || "Unknown Perk";
-    }
-
-    // DESCRIPTION
-    let description = "No description available";
-    if (perkInfo?.description) {
-      description = perkInfo.description;
-    } else if (perkImageInfo?.effect) {
-      description = perkImageInfo.effect;
-    } else if (perkImageInfo) {
-      description = `Data loading for "${perkImageInfo.name}"...`;
-    }
-
-    const overlayContent = (
-      <div className="perk-overlay">
-        <h4 className="perk-title">{displayName}</h4>
-        <p className="perk-description">{description}</p>
-        
-        {/* <div className="perk-overlay-meta">
-          {perkImageInfo?.tier && (
-            <span className="perk-tier">Tier: {perkImageInfo.tier.toUpperCase()}</span>
-          )}
-          {perkInfo?.class && perkInfo.class !== "General" && (
-            <span className="perk-class">Class: {perkInfo.class}</span>
-          )}
-          {perkImageInfo?.skill && (
-            <span className="perk-skill">Skill {perkImageInfo.skill}</span>
-          )}
-        </div> */}
-        
-        {/* <div className="perk-cost-overlay">
-          Cost: {cost} points
-        </div>
-        
-        {perkInfo?.tags && perkInfo.tags.length > 0 && (
-          <div className="perk-tags">
-            Tags: {perkInfo.tags.slice(0, 3).join(', ')}
-            {perkInfo.tags.length > 3 && ` +${perkInfo.tags.length - 3} more`}
-          </div>
-        )} */}
-      </div>
-    );
-
-    showOverlay(overlayContent, position);
-  };
-
-  // Calculate used points
+  // Calculer les points utilisés
   useEffect(() => {
     const perkLayout = [
       { count: 5, cost: 10 },
@@ -222,6 +129,58 @@ const PerkModal = ({ data, onClose }) => {
     onClose();
   };
 
+  // Gérer le hover sur une perk - AVEC LES DONNÉES MONGODB
+  const handlePerkHover = (perkImageInfo, e) => {
+    if (!perkImageInfo) return;
+
+    const rect = e.currentTarget.getBoundingClientRect();
+    const position = {
+      left: rect.left + rect.width / 2,
+      top: rect.top - 10,
+      transform: "translateX(-50%) translateY(-100%)",
+    };
+
+    const getRowCost = (rowIndex) => {
+      const costs = [10, 15, 15, 15, 15];
+      return costs[rowIndex] || 15;
+    };
+
+    const rowIndex = Math.floor(perkImageInfo.index / 10);
+    const cost = getRowCost(rowIndex);
+
+    // Trouver la perk dans les données MongoDB
+    const perkInfo = findPerk(perkImageInfo, rowIndex);
+
+    let displayName = "Unknown Perk";
+    
+    if (perkImageInfo.tier === 't3' && perkImageInfo.skill) {
+      const typeName = perkImageInfo.type === 'light' ? 'Light' : 'Dark';
+      displayName = `Skill ${perkImageInfo.skill} - ${typeName}`;
+    } else if (perkImageInfo.tier === 't5') {
+      const typeName = perkImageInfo.type === 'light' ? 'Light' : 'Dark';
+      displayName = `${typeName} Transcendence`;
+    } else {
+      displayName = perkInfo?.name || perkImageInfo.name || "Unknown Perk";
+    }
+
+    // Utiliser la description de MongoDB si disponible
+    let description = "No description available";
+    if (perkInfo?.description) {
+      description = perkInfo.description;
+    } else if (perkImageInfo?.effect) {
+      description = perkImageInfo.effect;
+    }
+
+    const overlayContent = (
+      <div className="perk-overlay">
+        <h4 className="perk-title">{displayName}</h4>
+        <p className="perk-description">{description}</p>
+      </div>
+    );
+
+    showOverlay(overlayContent, position);
+  };
+
   const renderPerkGrid = () => {
     const perkLayout = [
       { count: 5, cost: 10 },
@@ -248,7 +207,7 @@ const PerkModal = ({ data, onClose }) => {
                     isSelected ? "selected" : ""
                   }`}
                   onClick={() => togglePerkSelection(perkIndex, row.cost)}
-                  onMouseEnter={(e) => handlePerkHover(perkInfo, perkImageInfo, e)}
+                  onMouseEnter={(e) => handlePerkHover(perkImageInfo, e)}
                   onMouseLeave={hideOverlay}
                 >
                   {renderPerkImage(rowIndex, i, isSelected, row.cost, perkImageInfo)}
@@ -366,7 +325,6 @@ const PerkModal = ({ data, onClose }) => {
 
   const renderPerkImage = (rowIndex, perkIndex, isSelected, cost, perkImageInfo) => {
     if (!perkImageInfo) {
-      // Fallback: show cost
       return (
         <div className="perk-cost-fallback">
           {cost}
@@ -374,17 +332,16 @@ const PerkModal = ({ data, onClose }) => {
       );
     }
 
-    // Construire le chemin d'accès à l'image
     let imagePath = "";
+    
     if (rowIndex === 0) {
-      // T1 perks
       imagePath = `/kingsraid-data/assets/perks/t1/${perkImageInfo.file}`;
     } else if (rowIndex === 1 && heroClass) {
-      // T2 class perks
       imagePath = `/kingsraid-data/assets/perks/t2/${heroClass.toLowerCase()}/${perkImageInfo.file}`;
     } else if (rowIndex >= 2 && heroName) {
-      // Hero-specific perks
-      imagePath = `/kingsraid-data/assets/heroes/${heroName}/perks/${perkImageInfo.file}`;
+      // CORRECTION : Utiliser le nom complet encodé pour les perks spécifiques au héros
+      const encodedHeroName = encodeHeroName(heroName);
+      imagePath = `/kingsraid-data/assets/heroes/${encodedHeroName}/perks/${perkImageInfo.file}`;
     }
 
     return (
@@ -395,7 +352,7 @@ const PerkModal = ({ data, onClose }) => {
           className="perk-image"
           style={{ opacity: isSelected ? 1 : 0.4 }}
           onError={(e) => {
-            console.log(`❌ Image failed to load: ${imagePath}`);
+            console.warn(`Perk image failed to load: ${imagePath}`);
             e.target.style.display = "none";
             const fallback = e.target.nextElementSibling;
             if (fallback) fallback.style.display = "flex";
@@ -423,7 +380,6 @@ const PerkModal = ({ data, onClose }) => {
     <div>
       <h3 className="perk-modal-title">Perks - {heroName}</h3>
 
-      {/* Points display */}
       <div
         className={`perk-modal-points ${
           usedPoints > maxPoints ? "over-limit" : ""
@@ -434,15 +390,13 @@ const PerkModal = ({ data, onClose }) => {
         </div>
       </div>
 
-      {/* Perk grid */}
       {renderPerkGrid()}
 
-      {/* Buttons */}
-      <div className="perk-modal-buttons">
-        <button onClick={handleConfirm} className="perk-modal-confirm">
+      <div className="btn-modal">
+        <button onClick={handleConfirm} className="btn-modal-confirm">
           Confirm
         </button>
-        <button onClick={onClose} className="perk-modal-cancel">
+        <button onClick={onClose} className="btn-modal-cancel">
           Cancel
         </button>
       </div>

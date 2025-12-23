@@ -21,18 +21,38 @@ const TeamSlots = () => {
   const [gearSetsData, setGearSetsData] = useState([]);
 
   // Charger les données des artifacts depuis MongoDB
-  useEffect(() => {
-    const loadArtifactsData = async () => {
-      try {
-        const response = await fetch("http://localhost:3002/api/v2/artifacts");
-        const data = await response.json();
-        setArtifactsData(data);
-      } catch (error) {
-        console.error("Erreur lors du chargement des artifacts:", error);
+useEffect(() => {
+  const loadArtifactsData = async () => {
+    try {
+      const response = await fetch("http://localhost:3002/api/v2/artifacts");
+      const data = await response.json();
+      
+      // Convertir en tableau si nécessaire
+      let artifactsArray = [];
+      
+      if (Array.isArray(data)) {
+        // Si c'est déjà un tableau
+        artifactsArray = data;
+      } else if (data && typeof data === 'object') {
+        // Si c'est un objet avec _id comme clé
+        if (data._id) {
+          // C'est un seul artifact
+          artifactsArray = [data];
+        } else {
+          // C'est un objet avec plusieurs artifacts
+          artifactsArray = Object.values(data).filter(item => item !== null);
+        }
       }
-    };
-    loadArtifactsData();
-  }, []);
+      
+      setArtifactsData(artifactsArray);
+      
+    } catch (error) {
+      console.error("Erreur lors du chargement des artifacts:", error);
+      setArtifactsData([]); // Toujours définir un tableau vide
+    }
+  };
+  loadArtifactsData();
+}, []);
 
   // Charger les données des GearSets depuis MongoDB
   useEffect(() => {
