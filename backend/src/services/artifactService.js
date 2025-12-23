@@ -3,33 +3,30 @@ const Artifact = require('../models/Artifact');
 
 class ArtifactService {
   async getAllArtifacts() {
-    return await Artifact.find().select('-__v').lean();
+    return await Artifact.find()
+      .select('_id slug name description thumbnail value releaseOrder')
+      .sort('releaseOrder')
+      .lean();
   }
   
   async getArtifactBySlug(slug) {
-    return await Artifact.findOne({ slug }).lean();
+    return await Artifact.findOne({ slug })
+      .select('_id slug name description thumbnail value story aliases releaseOrder')
+      .lean();
   }
   
   async searchArtifacts(searchTerm) {
     return await Artifact.find({
       $or: [
         { name: { $regex: searchTerm, $options: 'i' } },
-        { description: { $regex: searchTerm, $options: 'i' } }
+        { description: { $regex: searchTerm, $options: 'i' } },
+        { slug: { $regex: searchTerm.replace(/\s+/g, '-'), $options: 'i' } }
       ]
-    }).lean();
-  }
-}
-
-// backend/src/services/gearsetService.js
-const Gearset = require('../models/Gearset');
-
-class GearsetService {
-  async getAllGearsets() {
-    return await Gearset.find().select('-__v').lean();
-  }
-  
-  async getGearsetsByType(type) {
-    return await Gearset.find({ type }).lean();
+    })
+    .select('_id slug name description thumbnail releaseOrder')
+    .limit(20)
+    .sort('releaseOrder')
+    .lean();
   }
 }
 

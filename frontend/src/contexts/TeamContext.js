@@ -122,22 +122,26 @@ export const TeamProvider = ({ children }) => {
     });
   };
 
-  // Mettre à jour un sous-slot
-  const updateSubSlot = (teamSlotIndex, subSlotIndex, item, stars = 0) => {
-    setSubSlots((current) => {
-      const newSubSlots = [...current];
-      newSubSlots[teamSlotIndex] = [...newSubSlots[teamSlotIndex]];
-      newSubSlots[teamSlotIndex][subSlotIndex] = item;
-      return newSubSlots;
-    });
+const updateSubSlot = (teamSlotIndex, subSlotIndex, item, stars = 0) => {
+  // 🔥 LOG pour debug
+  console.log(`updateSubSlot: slot=${teamSlotIndex}, sub=${subSlotIndex}`);
+  console.log('Item reçu:', item);
+  console.log('Stars reçues:', stars);
+  
+  setSubSlots((current) => {
+    const newSubSlots = [...current];
+    newSubSlots[teamSlotIndex] = [...newSubSlots[teamSlotIndex]];
+    newSubSlots[teamSlotIndex][subSlotIndex] = item;
+    return newSubSlots;
+  });
 
-    setSubStars((current) => {
-      const newSubStars = [...current];
-      newSubStars[teamSlotIndex] = [...newSubStars[teamSlotIndex]];
-      newSubStars[teamSlotIndex][subSlotIndex] = stars;
-      return newSubStars;
-    });
-  };
+  setSubStars((current) => {
+    const newSubStars = [...current];
+    newSubStars[teamSlotIndex] = [...newSubStars[teamSlotIndex]];
+    newSubStars[teamSlotIndex][subSlotIndex] = stars;
+    return newSubStars;
+  });
+};
 
   // Mettre à jour les perks
   const updatePerks = (teamSlotIndex, newPerks) => {

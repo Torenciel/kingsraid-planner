@@ -347,8 +347,8 @@ const PerkPreview = ({
   // Pour utiliser l'Option 1, commentez la ligne Option 2 et décommentez Option 1
   // Pour utiliser l'Option 2, commentez la ligne Option 1 et décommentez Option 2
   
-  const handlePerkHover = handlePerkHoverOption1; // OPTION 1 - Overlay différent
-  // const handlePerkHover = handlePerkHoverOption2; // OPTION 2 - Pas d'overlay si non sélectionné
+  // const handlePerkHover = handlePerkHoverOption1; // OPTION 1 - Overlay différent
+  const handlePerkHover = handlePerkHoverOption2; // OPTION 2 - Pas d'overlay si non sélectionné
 
   // Même logique d'affichage que précédemment
   if (!heroName || !selectedPerks || selectedPerks.length === 0) {

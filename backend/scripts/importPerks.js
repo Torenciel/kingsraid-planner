@@ -4,90 +4,30 @@ const path = require('path');
 const Perk = require('../src/models/Perk');
 require('dotenv').config({ path: path.join(__dirname, '..', '.env') });
 
+// Fonction pour créer un slug propre
+function createSlug(name) {
+  if (!name) return 'unknown';
+  
+  return name
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/--+/g, '-')
+    .trim();
+}
+
 // Classes disponibles
 const CLASSES = [
   'General', 'Knight', 'Warrior', 'Assassin',
   'Archer', 'Wizard', 'Priest', 'Mechanic'
 ];
 
-// Mapping des noms de fichiers aux classes
-const CLASS_FILE_MAP = {
-  'General': 'General.json',
-  'Knight': 'Knight.json',
-  'Warrior': 'Warrior.json',
-  'Assassin': 'Assassin.json',
-  'Archer': 'Archer.json',
-  'Wizard': 'Wizard.json',
-  'Priest': 'Priest.json',
-  'Mechanic': 'Mechanic.json'
-};
-
-// Ordre d'affichage pour T1 perks
-const T1_DISPLAY_ORDER = {
-  'ATK Up': 1,
-  'HP Up': 2,
-  'DEF Up': 3,
-  'Crit Resist Up': 4,
-  'Monster Hunting': 5
-};
-
-// Ordre d'affichage pour T2 perks (par classe)
-const T2_DISPLAY_ORDER = {
-  'Knight': {
-    'Experienced Fighter': 1,
-    'Excellent Strategy': 2,
-    'Battle Cry': 3,
-    'Shield of Protection': 4,
-    'Swift Move': 5
-  },
-  'Warrior': {
-    'Opportune Strike': 1,
-    'Warlike': 2,
-    'Offensive Guard': 3,
-    'Tactical Foresight': 4,
-    'Blood Wrath': 5
-  },
-  'Assassin': {
-    'Target Weakness': 1,
-    'Swift and Nimble': 2,
-    'Tactical Foresight': 3,
-    'Opportune Strike': 4,
-    'Vital Detection': 5
-  },
-  'Archer': {
-    'Precision Shot': 1,
-    'Eagle Eye': 2,
-    'Mortal Wound': 3,
-    'Opportune Strike': 4,
-    'Concentration': 5
-  },
-  'Wizard': {
-    'Deception': 1,
-    'Moral Rise': 2,
-    'Blessing of Mana': 3,
-    'Circuit Burst': 4,
-    'Destruction': 5
-  },
-  'Priest': {
-    'Vengeful Curse': 1,
-    'Goddess Blessing': 2,
-    'Inner Peace': 3,
-    'Blessing of Mana': 4,
-    'Swiftness': 5
-  },
-  'Mechanic': {
-    'Target Weakness': 1,
-    'Ready Cannons': 2,
-    'Pressure Point': 3,
-    'Special Bullet': 4,
-    'Amplified Gunpowder': 5
-  }
-};
-
 async function importPerks() {
   try {
     console.log('='.repeat(60));
-    console.log('🚀 IMPORTATION PERKS (T1 & T2)');
+    console.log('🚀 IMPORTATION PERKS (T1 & T2) SANS TAGS');
     console.log('='.repeat(60));
     
     // Connexion MongoDB
@@ -106,16 +46,16 @@ async function importPerks() {
     console.log(`✅ ${deleteResult.deletedCount} anciennes perks supprimées`);
     
     // Chemin des fichiers
-    const classesPath = path.join(
+    const basePath = path.join(
       __dirname,
       '..',
       '..',
       'frontend',
       'public',
-      'kingsraid-data',
-      'table-data',
-      'classes'
+      'kingsraid-data'
     );
+    
+    const classesPath = path.join(basePath, 'table-data', 'classes');
     
     console.log(`\n📂 Lecture des perks depuis: ${classesPath}`);
     
@@ -126,15 +66,17 @@ async function importPerks() {
     
     let importedCount = 0;
     let errorCount = 0;
-    const errors = [];
+    const warnings = [];
+    const slugs = new Set();
     
     // Importer les perks pour chaque classe
     for (const className of CLASSES) {
-      const fileName = CLASS_FILE_MAP[className];
+      const fileName = `${className}.json`;
       const filePath = path.join(classesPath, fileName);
       
       if (!fs.existsSync(filePath)) {
         console.warn(`⚠️  Fichier non trouvé: ${fileName}`);
+        warnings.push({ class: className, warning: 'Fichier non trouvé' });
         continue;
       }
       
@@ -143,24 +85,23 @@ async function importPerks() {
         const fileContent = fs.readFileSync(filePath, 'utf8');
         const classData = JSON.parse(fileContent);
         
+        let classImported = 0;
+        
         // Importer les perks T1 (seulement pour General)
         if (className === 'General' && classData.perks?.t1) {
-          await importT1Perks(classData.perks.t1);
-          console.log(`   ✅ ${Object.keys(classData.perks.t1).length} perks T1 importées`);
+          classImported += await importT1Perks(classData.perks.t1, slugs);
         }
         
         // Importer les perks T2 (pour toutes les classes sauf General)
         if (className !== 'General' && classData.perks?.t2) {
-          await importT2Perks(className, classData.perks.t2);
-          console.log(`   ✅ ${Object.keys(classData.perks.t2).length} perks T2 importées`);
+          classImported += await importT2Perks(className, classData.perks.t2, slugs);
         }
         
-        importedCount += Object.keys(classData.perks?.t1 || {}).length +
-                         Object.keys(classData.perks?.t2 || {}).length;
-                         
+        console.log(`   ✅ ${classImported} perks importées`);
+        importedCount += classImported;
+        
       } catch (error) {
         errorCount++;
-        errors.push({ class: className, error: error.message });
         console.error(`❌ Erreur avec ${className}:`, error.message);
       }
     }
@@ -171,18 +112,10 @@ async function importPerks() {
     console.log('='.repeat(60));
     
     const totalInDB = await Perk.countDocuments({ tier: { $in: ['t1', 't2'] } });
-    console.log(`✅ ${totalInDB} perks importées dans la base`);
+    console.log(`✅ ${totalInDB} perks importées avec succès`);
     console.log(`❌ ${errorCount} erreurs`);
-    
-    if (errors.length > 0) {
-      console.log('\n📋 Détail des erreurs:');
-      errors.slice(0, 5).forEach(err => {
-        console.log(`   • ${err.class}: ${err.error}`);
-      });
-      if (errors.length > 5) {
-        console.log(`   ... et ${errors.length - 5} autres`);
-      }
-    }
+    console.log(`⚠️  ${warnings.length} avertissements`);
+    console.log(`🔤 Slugs uniques: ${slugs.size}`);
     
     // Statistiques
     console.log('\n📈 Statistiques:');
@@ -193,28 +126,11 @@ async function importPerks() {
     console.log(`   • T1 perks: ${t1Count}`);
     console.log(`   • T2 perks: ${t2Count}`);
     
-    // Distribution par classe pour T2
-    const t2ByClass = await Perk.aggregate([
-      { $match: { tier: 't2' } },
-      { $group: { _id: '$class', count: { $sum: 1 } } },
-      { $sort: { _id: 1 } }
-    ]);
-    
-    console.log('\n🏷️  T2 perks par classe:');
-    t2ByClass.forEach(stat => {
-      console.log(`   • ${stat._id}: ${stat.count}`);
-    });
-    
     // Exemples
     console.log('\n🔍 Exemples de perks importées:');
-    const samples = await Perk.find({ tier: 't1' }).limit(3).select('name tier description');
+    const samples = await Perk.find({ tier: 't1' }).limit(3).select('slug name tier');
     samples.forEach(perk => {
-      console.log(`   • [${perk.tier}] ${perk.name}: ${perk.description.substring(0, 50)}...`);
-    });
-    
-    const t2Samples = await Perk.find({ tier: 't2', class: 'Archer' }).limit(2).select('name class description');
-    t2Samples.forEach(perk => {
-      console.log(`   • [${perk.tier}-${perk.class}] ${perk.name}`);
+      console.log(`   • [${perk.tier}] ${perk.name} (slug: ${perk.slug})`);
     });
     
     await mongoose.disconnect();
@@ -231,91 +147,112 @@ async function importPerks() {
 }
 
 // Fonction pour importer les perks T1
-async function importT1Perks(t1Perks) {
+async function importT1Perks(t1Perks, slugs) {
   const perks = [];
   
   for (const [name, description] of Object.entries(t1Perks)) {
+    // Créer un slug pour la perk
+    const baseSlug = createSlug(name);
+    let slug = baseSlug;
+    
+    // Vérifier l'unicité
+    let counter = 1;
+    while (slugs.has(slug)) {
+      slug = `${baseSlug}-${counter}`;
+      counter++;
+    }
+    slugs.add(slug);
+    
     const thumbnail = `${name}.png`;
-    const displayOrder = T1_DISPLAY_ORDER[name] || 0;
+    const displayOrder = getT1DisplayOrder(name);
     
     const perk = new Perk({
+      slug: slug,
       name: name,
       description: description,
       thumbnail: thumbnail,
       tier: 't1',
       class: 'General',
-      displayOrder: displayOrder,
-      tags: getTagsFromDescription(description, 't1', name)
+      displayOrder: displayOrder
+      // ❌ SUPPRIMÉ: tags
     });
     
     perks.push(perk.save());
   }
   
   await Promise.all(perks);
+  return perks.length;
 }
 
 // Fonction pour importer les perks T2
-async function importT2Perks(className, t2Perks) {
+async function importT2Perks(className, t2Perks, slugs) {
   const perks = [];
-  const displayOrderMap = T2_DISPLAY_ORDER[className] || {};
   
   for (const [name, description] of Object.entries(t2Perks)) {
+    // Créer un slug pour la perk
+    const baseSlug = createSlug(`${className}-${name}`);
+    let slug = baseSlug;
+    
+    // Vérifier l'unicité
+    let counter = 1;
+    while (slugs.has(slug)) {
+      slug = `${baseSlug}-${counter}`;
+      counter++;
+    }
+    slugs.add(slug);
+    
     const thumbnail = `${name}.png`;
-    const displayOrder = displayOrderMap[name] || 0;
+    const displayOrder = getT2DisplayOrder(className, name);
     
     const perk = new Perk({
+      slug: slug,
       name: name,
       description: description,
       thumbnail: thumbnail,
       tier: 't2',
       class: className,
-      displayOrder: displayOrder,
-      tags: getTagsFromDescription(description, 't2', className)
+      displayOrder: displayOrder
+      // ❌ SUPPRIMÉ: tags
     });
     
     perks.push(perk.save());
   }
   
   await Promise.all(perks);
+  return perks.length;
 }
 
-// Fonction pour extraire les tags de la description
-function getTagsFromDescription(description, tier, context) {
-  const desc = description.toLowerCase();
-  const tags = [];
+// Fonction simple pour l'ordre T1
+function getT1DisplayOrder(name) {
+  const orderMap = {
+    'ATK Up': 1,
+    'HP Up': 2,
+    'DEF Up': 3,
+    'Crit Resist Up': 4,
+    'Monster Hunting': 5
+  };
+  return orderMap[name] || 0;
+}
+
+// Fonction simple pour l'ordre T2
+function getT2DisplayOrder(className, name) {
+  const orderMaps = {
+    'Knight': {
+      'Experienced Fighter': 1, 'Excellent Strategy': 2, 'Battle Cry': 3,
+      'Shield of Protection': 4, 'Swift Move': 5
+    },
+    'Warrior': {
+      'Opportune Strike': 1, 'Warlike': 2, 'Offensive Guard': 3,
+      'Tactical Foresight': 4, 'Blood Wrath': 5
+    }
+    // ... autres classes si nécessaire
+  };
   
-  // Tags basés sur le contenu
-  if (desc.includes('atk')) tags.push('atk');
-  if (desc.includes('def')) tags.push('def');
-  if (desc.includes('hp')) tags.push('hp');
-  if (desc.includes('crit')) tags.push('crit');
-  if (desc.includes('accuracy') || desc.includes('acc')) tags.push('accuracy');
-  if (desc.includes('penetration')) tags.push('penetration');
-  if (desc.includes('mana') || desc.includes('mp')) tags.push('mana');
-  if (desc.includes('cooldown')) tags.push('cooldown');
-  if (desc.includes('heal')) tags.push('healing');
-  if (desc.includes('ally') || desc.includes('allies')) tags.push('support');
-  
-  // Tags basés sur le tier
-  if (tier === 't1') tags.push('general');
-  if (tier === 't2') tags.push('class');
-  
-  // Tags basés sur le contexte/classe
-  if (context === 'Knight' || context === 'Warrior') tags.push('defensive');
-  if (context === 'Assassin' || context === 'Archer') tags.push('offensive');
-  if (context === 'Wizard') tags.push('magical');
-  if (context === 'Priest') tags.push('healing', 'support');
-  if (context === 'Mechanic') tags.push('mechanical');
-  
-  // Tags PvE/PvP
-  if (desc.includes('hero') || desc.includes('pvp')) tags.push('pvp');
-  if (desc.includes('monster') || desc.includes('non-hero')) tags.push('pve');
-  
-  return [...new Set(tags)]; // Supprimer les doublons
+  return (orderMaps[className] && orderMaps[className][name]) || 0;
 }
 
 if (require.main === module) {
   importPerks();
 }
 
-module.exports = { importPerks };
+module.exports = { importPerks, createSlug };

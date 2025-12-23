@@ -1,35 +1,132 @@
 const mongoose = require('mongoose');
 const fs = require('fs');
 const path = require('path');
-const Artifact = require('../src/models/Artifact');
 require('dotenv').config({ path: path.join(__dirname, '..', '.env') });
+
+// Nouveau modèle propre avec slug
+const ArtifactSchema = new mongoose.Schema({
+  // 🔥 _id: Généré automatiquement par MongoDB (ObjectId)
+  
+  // 🔥 SLUG : Identifiant URL-friendly (unique)
+  slug: { 
+    type: String, 
+    required: true, 
+    unique: true,
+    index: true 
+  },
+  
+  // 🔥 NAME : Nom d'affichage
+  name: { 
+    type: String, 
+    required: true,
+    index: true 
+  },
+  
+  description: { 
+    type: String, 
+    required: true 
+  },
+  
+  // Valeurs par étoile (structure flexible)
+  value: {
+    type: mongoose.Schema.Types.Mixed,
+    required: true,
+    default: {}
+  },
+  
+  thumbnail: { 
+    type: String, 
+    required: true 
+  },
+  
+  story: { 
+    type: String, 
+    default: '' 
+  },
+  
+  aliases: { 
+    type: [String], 
+    default: [] 
+  },
+  
+  releaseOrder: { 
+    type: Number, 
+    index: true,
+    default: 999 
+  },
+  
+  createdAt: { 
+    type: Date, 
+    default: Date.now 
+  },
+  
+  updatedAt: { 
+    type: Date, 
+    default: Date.now 
+  }
+});
+
+const Artifact = mongoose.model('Artifact', ArtifactSchema);
+
+// Fonction pour créer un slug propre
+function createSlug(name) {
+  if (!name) return 'unknown';
+  
+  return name
+    .toLowerCase()
+    .normalize('NFD') // Séparer les accents
+    .replace(/[\u0300-\u036f]/g, '') // Supprimer les accents
+    .replace(/[^a-z0-9\s-]/g, '') // Garder seulement lettres, chiffres, espaces, tirets
+    .replace(/\s+/g, '-') // Remplacer espaces par tirets
+    .replace(/'/g, '') // Supprimer apostrophes
+    .replace(/--+/g, '-') // Éviter doubles tirets
+    .trim();
+}
 
 // Fonction pour nettoyer les données d'artifact
 function cleanArtifactData(artifactData) {
   const data = JSON.parse(JSON.stringify(artifactData));
   
-  // 1. S'assurer que value existe et est un objet
+  // 1. Créer le slug à partir du nom
+  if (data.name) {
+    data.slug = createSlug(data.name);
+  }
+  
+  // 2. S'assurer que value existe et est un objet
   if (!data.value || typeof data.value !== 'object') {
     data.value = {};
   }
   
-  // 2. Nettoyer les valeurs (certains peuvent être null ou undefined)
+  // 3. Nettoyer les valeurs
   Object.keys(data.value).forEach(key => {
     if (!data.value[key]) {
       data.value[key] = '';
     }
+    // S'assurer que c'est une string (certains peuvent être null)
+    if (typeof data.value[key] !== 'string') {
+      data.value[key] = String(data.value[key] || '');
+    }
   });
   
-  // 3. S'assurer que les champs obligatoires existent
+  // 4. S'assurer que les champs obligatoires existent
   if (!data.name) data.name = 'Unknown';
   if (!data.description) data.description = '';
   if (!data.thumbnail) data.thumbnail = '';
   if (!data.story) data.story = '';
+  if (!data.aliases) data.aliases = [];
   
-  // 4. Normaliser le thumbnail
-  if (data.thumbnail && !data.thumbnail.startsWith('artifacts/')) {
-    const filename = data.thumbnail.split('/').pop() || data.thumbnail;
-    data.thumbnail = `artifacts/${filename}`;
+  // 5. Normaliser le thumbnail (format standard)
+  if (data.thumbnail) {
+    // S'assurer que le chemin commence par 'artifacts/'
+    if (!data.thumbnail.startsWith('artifacts/')) {
+      const filename = data.thumbnail.split('/').pop() || data.thumbnail;
+      data.thumbnail = `artifacts/${filename}`;
+    }
+    // Nettoyer le nom de fichier (enlever apostrophes)
+    const parts = data.thumbnail.split('/');
+    const filename = parts.pop();
+    const cleanFilename = filename.replace(/'/g, '');
+    data.thumbnail = [...parts, cleanFilename].join('/');
   }
   
   return data;
@@ -38,7 +135,7 @@ function cleanArtifactData(artifactData) {
 async function importArtifacts() {
   try {
     console.log('='.repeat(60));
-    console.log('🚀 IMPORTATION ARTIFACTS');
+    console.log('🚀 IMPORTATION ARTIFACTS AVEC SLUGS');
     console.log('='.repeat(60));
     
     // Connexion MongoDB
@@ -91,6 +188,7 @@ async function importArtifacts() {
     let importedCount = 0;
     let errorCount = 0;
     const warnings = [];
+    const slugs = new Set(); // Pour détecter les doublons
     
     // Importer chaque artifact
     for (const artifactData of artifactsData) {
@@ -104,8 +202,24 @@ async function importArtifacts() {
           continue;
         }
         
-        // Créer l'artifact
+        // Vérifier le slug unique
+        if (slugs.has(cleanedData.slug)) {
+          console.warn(`⚠️  Slug en double détecté: ${cleanedData.slug}`);
+          // Ajouter un suffixe numérique
+          let counter = 1;
+          let newSlug = cleanedData.slug;
+          while (slugs.has(newSlug)) {
+            newSlug = `${cleanedData.slug}-${counter}`;
+            counter++;
+          }
+          cleanedData.slug = newSlug;
+          console.log(`   → Changé en: ${newSlug}`);
+        }
+        slugs.add(cleanedData.slug);
+        
+        // Créer l'artifact avec le slug
         const artifact = new Artifact({
+          slug: cleanedData.slug,        // 🔥 NOUVEAU: Slug
           name: cleanedData.name,
           description: cleanedData.description,
           value: cleanedData.value,
@@ -120,7 +234,8 @@ async function importArtifacts() {
         
         // Afficher le nombre d'attributs
         const attrCount = Object.keys(cleanedData.value || {}).length;
-        console.log(`✅ ${importedCount}. ${cleanedData.name} (${attrCount} attribut(s))`);
+        console.log(`✅ ${importedCount}. ${cleanedData.name}`);
+        console.log(`   Slug: ${cleanedData.slug}, Attributs: ${attrCount}`);
         
       } catch (error) {
         errorCount++;
@@ -140,6 +255,7 @@ async function importArtifacts() {
     console.log(`✅ ${importedCount} artifacts importés avec succès`);
     console.log(`❌ ${errorCount} erreurs`);
     console.log(`⚠️  ${warnings.length} avertissements`);
+    console.log(`🔤 Slugs uniques: ${slugs.size}`);
     
     if (warnings.length > 0) {
       console.log('\n📋 Avertissements:');
@@ -155,40 +271,21 @@ async function importArtifacts() {
     const totalInDB = await Artifact.countDocuments();
     console.log(`\n📊 Total dans la base: ${totalInDB} artifacts`);
     
-    // Statistiques par nombre d'attributs
-    const allArtifacts = await Artifact.find({}, { name: 1, value: 1 });
-    const stats = {
-      0: 0, 1: 0, 2: 0, 3: 0, 4: 0
-    };
-    
-    allArtifacts.forEach(artifact => {
-      const attrCount = Object.keys(artifact.value || {}).length;
-      stats[attrCount] = (stats[attrCount] || 0) + 1;
-    });
-    
-    console.log('\n📈 Distribution par nombre d\'attributs:');
-    Object.entries(stats).forEach(([count, total]) => {
-      if (total > 0) {
-        console.log(`   • ${count} attribut(s): ${total} artifacts`);
-      }
-    });
-    
-    // Exemples
+    // Afficher quelques exemples avec leurs slugs
     console.log('\n🔍 Exemples d\'artifacts importés:');
-    const samples = await Artifact.find().limit(5).select('name value thumbnail');
+    const samples = await Artifact.find().limit(5).select('slug name thumbnail');
     samples.forEach(artifact => {
-      const attrCount = Object.keys(artifact.value || {}).length;
-      console.log(`   • ${artifact.name} (${attrCount} attribut(s))`);
+      console.log(`   • ${artifact.name} (slug: ${artifact.slug})`);
     });
     
-    // Trouver un artifact avec plusieurs attributs
-    const multiAttr = await Artifact.findOne({ 
-      $expr: { $gt: [{ $size: { $objectToArray: "$value" } }, 1] } 
-    }).select('name value');
-    
-    if (multiAttr) {
-      console.log(`\n🔧 Exemple d'artifact avec plusieurs attributs: ${multiAttr.name}`);
-      console.log(`   Attributs: ${Object.keys(multiAttr.value).join(', ')}`);
+    // Vérifier que tous les artifacts ont un slug
+    const artifactsWithoutSlug = await Artifact.countDocuments({ slug: { $exists: false } });
+    if (artifactsWithoutSlug > 0) {
+      console.log(`\n⚠️  ${artifactsWithoutSlug} artifacts sans slug!`);
+      const toFix = await Artifact.find({ slug: { $exists: false } }).select('name');
+      toFix.forEach(artifact => {
+        console.log(`   • ${artifact.name}`);
+      });
     }
     
     await mongoose.disconnect();
@@ -208,4 +305,4 @@ if (require.main === module) {
   importArtifacts();
 }
 
-module.exports = { importArtifacts };
+module.exports = { importArtifacts, createSlug };

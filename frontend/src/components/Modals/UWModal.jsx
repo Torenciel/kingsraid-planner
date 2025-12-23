@@ -27,29 +27,48 @@ const UWModal = ({ data, onClose }) => {
   const [heroData, setHeroData] = useState(null);
   const uwItemRef = useRef(null);
 
-  // Charger les données du héros depuis MongoDB
-  useEffect(() => {
-    const loadHeroData = async () => {
+// Charger les données du héros depuis MongoDB API v2
+useEffect(() => {
+  const loadHeroData = async () => {
+    try {
+      // Convertir le nom en slug (ex: "Arch" → "arch", "Kasel" → "kasel")
+      const heroSlug = heroName.toLowerCase().replace(/\s+/g, '-');
+      
+      const response = await fetch(`http://localhost:3002/api/v2/heroes/${heroSlug}`); // <-- CHANGÉ
+      
+      
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+      
+      const data = await response.json();
+
+      console.log("📦 UW and Advancement data from MongoDB:", data);
+      
+      setHeroData(data);
+    } catch (error) {
+      console.error("Error loading hero data from MongoDB API v2:", error);
+      
+      // Fallback vers l'ancien système (fichiers JSON)
       try {
-        const response = await fetch(`/api/heroes/${heroName}`);
-        const data = await response.json();
-        setHeroData(data);
-      } catch (error) {
-        console.error("Error loading hero data from MongoDB:", error);
-        // Fallback vers l'ancien système
-        try {
-          const fallbackResponse = await fetch(
-            `/kingsraid-data/table-data/heroes/${heroName}.json`
-          );
+        const fallbackResponse = await fetch(
+          `/kingsraid-data/table-data/heroes/${heroName}.json`
+        );
+        
+        if (fallbackResponse.ok) {
           const fallbackData = await fallbackResponse.json();
           setHeroData(fallbackData);
-        } catch (fallbackError) {
-          console.error("Error loading fallback hero data:", fallbackError);
         }
+      } catch (fallbackError) {
+        console.error("Error loading fallback hero data:", fallbackError);
       }
-    };
+    }
+  };
+  
+  if (heroName) {
     loadHeroData();
-  }, [heroName]);
+  }
+}, [heroName]);
 
   const handleConfirm = (e) => {
     e.preventDefault();

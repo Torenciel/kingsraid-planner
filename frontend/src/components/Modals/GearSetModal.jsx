@@ -17,7 +17,7 @@ const GearSetModal = ({ data, onClose }) => {
     const loadGearSetsData = async () => {
       try {
         // Charger depuis l'API MongoDB
-        const response = await fetch("/api/gearsets");
+        const response = await fetch("http://localhost:3002/api/v2/gearsets");
         const data = await response.json();
         
         console.log("📦 Gear sets data from MongoDB:", data);

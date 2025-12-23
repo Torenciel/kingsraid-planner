@@ -2,7 +2,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 
 // Configuration
-const API_BASE = process.env.REACT_APP_API_URL || '/api/v2';
+const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:3002/api/v2';
 const DEFAULT_OPTIONS = {
   method: 'GET',
   headers: {

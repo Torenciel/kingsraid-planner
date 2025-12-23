@@ -20,13 +20,11 @@ const TeamSlots = () => {
   const [heroesData, setHeroesData] = useState({});
   const [gearSetsData, setGearSetsData] = useState([]);
 
-  // Charger les données des artifacts
+  // Charger les données des artifacts depuis MongoDB
   useEffect(() => {
     const loadArtifactsData = async () => {
       try {
-        const response = await fetch(
-          "/kingsraid-data/table-data/artifacts.json"
-        );
+        const response = await fetch("http://localhost:3002/api/v2/artifacts");
         const data = await response.json();
         setArtifactsData(data);
       } catch (error) {
@@ -36,13 +34,11 @@ const TeamSlots = () => {
     loadArtifactsData();
   }, []);
 
-  // Charger les données des GearSets
+  // Charger les données des GearSets depuis MongoDB
   useEffect(() => {
     const loadGearSetsData = async () => {
       try {
-        const response = await fetch(
-          "/kingsraid-data/table-data/gearsets.json"
-        );
+        const response = await fetch("http://localhost:3002/api/v2/gearsets");
         const data = await response.json();
         setGearSetsData(data);
       } catch (error) {
@@ -52,27 +48,49 @@ const TeamSlots = () => {
     loadGearSetsData();
   }, []);
 
-  // Charger les données des héros de l'équipe
+  // 🆕 CHARGER LES DONNÉES DES HÉROS DEPUIS MONGODB (compatible overlay)
   useEffect(() => {
     const loadHeroesData = async () => {
       const loadedHeroesData = {};
-
-      // Filtrer uniquement les héros non-null
       const validHeroes = team.filter((hero) => hero !== null);
 
       for (const hero of validHeroes) {
         if (hero && !heroesData[hero.name]) {
           try {
-            const response = await fetch(
-              `/kingsraid-data/table-data/heroes/${hero.name}.json`
+            // Essayer MongoDB d'abord
+            const heroSlug = hero.name.toLowerCase().replace(/\s+/g, '-');
+            const mongoResponse = await fetch(
+              `http://localhost:3002/api/v2/heroes/${heroSlug}`
             );
-            const data = await response.json();
-            loadedHeroesData[hero.name] = data;
-          } catch (error) {
-            console.error(
-              `Erreur lors du chargement des données de ${hero.name}:`,
-              error
-            );
+            
+            if (mongoResponse.ok) {
+              const mongoData = await mongoResponse.json();
+              
+              // 🎯 TRANSFORMER LES DONNÉES MONGODB EN FORMAT COMPATIBLE OVERLAY
+              // L'overlay attend: { uw: { name, description, value }, uts: { ... }, sw: { ... } }
+              // MongoDB a: { uw: { name, description, value }, uts: { ... }, sw: { ... } } → MÊME STRUCTURE !
+              // Donc on peut utiliser directement les données MongoDB
+              loadedHeroesData[hero.name] = mongoData;
+              
+              console.log(`✅ Héros ${hero.name} chargé depuis MongoDB`);
+            } else {
+              // Fallback vers JSON si MongoDB échoue
+              throw new Error("MongoDB non disponible");
+            }
+            
+          } catch (mongoError) {
+            console.log(`🔄 Fallback JSON pour ${hero.name}`);
+            try {
+              const jsonResponse = await fetch(
+                `/kingsraid-data/table-data/heroes/${hero.name}.json`
+              );
+              if (jsonResponse.ok) {
+                const jsonData = await jsonResponse.json();
+                loadedHeroesData[hero.name] = jsonData;
+              }
+            } catch (jsonError) {
+              console.error(`Erreur pour ${hero.name}:`, jsonError);
+            }
           }
         }
       }
@@ -96,6 +114,7 @@ const TeamSlots = () => {
       teamSlotIndex,
       subSlotIndex,
       heroName: hero.name,
+      heroSlug: hero.name.toLowerCase().replace(/\s+/g, '-'), // 🆕 AJOUTÉ pour les modals
       currentItem: subSlots[teamSlotIndex]?.[subSlotIndex],
       currentStars: subStars[teamSlotIndex]?.[subSlotIndex] || 0,
       currentAdvancement: advancements[teamSlotIndex] || "none",
@@ -109,10 +128,16 @@ const TeamSlots = () => {
         openModal("ut", modalData);
         break;
       case 2: // Artifact
-        openModal("artifact", modalData);
+        openModal("artifact", {
+          ...modalData,
+          artifacts: artifactsData // Passer les données pour le modal
+        });
         break;
       case 3: // GearSet
-        openModal("gearset", modalData);
+        openModal("gearset", {
+          ...modalData,
+          gearSets: gearSetsData // Passer les données pour le modal
+        });
         break;
       default:
         break;
@@ -130,19 +155,13 @@ const TeamSlots = () => {
       teamSlotIndex,
       heroClass: hero.role,
       heroName: hero.name,
+      heroSlug: hero.name.toLowerCase().replace(/\s+/g, '-'), // 🆕 AJOUTÉ
       currentPerks: perks[teamSlotIndex] || [],
     };
 
     openModal("perk", modalData);
   };
 
-  // Debug log
-  // console.log("TeamSlots - Rendering with team:", team);
-  // console.log("TeamSlots - team length:", team?.length);
-  // console.log("TeamSlots - subSlots:", subSlots);
-  // console.log("TeamSlots - subStars:", subStars);
-
-  // Vérification que team est un tableau
   if (!Array.isArray(team)) {
     console.error("Team is not an array:", team);
     return (
@@ -158,18 +177,17 @@ const TeamSlots = () => {
     <div className="team-slots-container">
       <div className="team-slots-grid" id="team-slots">
         {team.map((hero, index) => {
-          // console.log(`Rendering slot ${index}:`, hero);
           return (
             <TeamSlot
               key={index}
               hero={hero}
               teamSlotIndex={index}
-              subSlots={subSlots[index]} // Passer tout le tableau de sous-slots pour ce slot
-              subStars={subStars[index]} // Passer tout le tableau d'étoiles pour ce slot
+              subSlots={subSlots[index]}
+              subStars={subStars[index]}
               advancement={advancements[index] || "none"}
               perks={perks[index] || []}
               artifactsData={artifactsData}
-              heroesData={heroesData}
+              heroesData={heroesData} // 🎯 MÊME NOM, MÊME STRUCTURE
               gearSetsData={gearSetsData}
               onRemoveHero={removeHeroFromTeam}
               onSubSlotClick={handleSubSlotClick}

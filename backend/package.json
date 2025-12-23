@@ -7,35 +7,27 @@
   "scripts": {
     "start": "node src/server.js",
     "dev": "nodemon src/server.js",
-    
-
     "import-heroes": "node scripts/importHeroes.js",
     "import-artifacts": "node scripts/importArtifacts.js",
     "import-gearsets": "node scripts/importGearSets.js",
     "import-perks": "node scripts/importPerks.js",
     "import-hero-perks": "node scripts/importHeroPerks.js",
     "import-all": "npm run import-heroes && npm run import-artifacts && npm run import-gearsets && npm run import-perks && npm run import-hero-perks",
-
     "verify-heroes": "node scripts/verifyHeroes.js",
     "verify-data": "node scripts/verifyData.js",
-    
-
     "clear-db": "node scripts/clearDatabase.js",
     "backup-db": "node scripts/backupDatabase.js",
-    
-
     "test-api": "node scripts/testAPI.js",
     "test-mongo": "node scripts/testMongoConnection.js",
-    
-
     "lint": "eslint src/",
     "format": "prettier --write \"src/**/*.js\""
   },
   "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
     "express": "^4.21.2",
     "mongoose": "^8.9.6",
-    "cors": "^2.8.5",
-    "dotenv": "^16.4.7"
+    "mongoose-paginate-v2": "^1.9.1"
   },
   "devDependencies": {
     "nodemon": "^3.1.11"

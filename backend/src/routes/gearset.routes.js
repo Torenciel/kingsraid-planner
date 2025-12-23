@@ -9,38 +9,99 @@ const gearsetService = new GearsetService();
 router.get('/', async (req, res) => {
   try {
     const gearsets = await gearsetService.getAllGearsets();
-    res.json(gearsets);
+    
+    const formattedGearsets = gearsets.map(gearset => ({
+      id: gearset._id.toString(),
+      slug: gearset.slug,
+      name: gearset.name,
+      thumbnail: gearset.thumbnail,
+      bonus2P: gearset.bonus2P,
+      bonus4P: gearset.bonus4P,
+      sortOrder: gearset.sortOrder || 999
+    }));
+    
+    res.json({
+      success: true,
+      count: formattedGearsets.length,
+      gearsets: formattedGearsets
+    });
+    
   } catch (error) {
     console.error('Error fetching gearsets:', error);
-    res.status(500).json({ error: 'Failed to fetch gearsets' });
+    res.status(500).json({ 
+      success: false,
+      error: 'Failed to fetch gearsets',
+      message: error.message 
+    });
   }
 });
 
-// GET /api/gearsets/type/:type - Gear sets par type
-router.get('/type/:type', async (req, res) => {
+// GET /api/gearsets/:slug - Un gear set par slug
+router.get('/:slug', async (req, res) => {
   try {
-    const gearsets = await gearsetService.getGearsetsByType(req.params.type);
-    res.json(gearsets);
-  } catch (error) {
-    console.error(`Error fetching gearsets for type ${req.params.type}:`, error);
-    res.status(500).json({ error: 'Failed to fetch gearsets by type' });
-  }
-});
-
-// GET /api/gearsets/:id - Un gear set spécifique
-router.get('/:id', async (req, res) => {
-  try {
-    // Si vous avez un champ slug ou ID unique
-    const gearset = await Gearset.findById(req.params.id).lean();
+    const gearset = await gearsetService.getGearsetBySlug(req.params.slug);
     
     if (!gearset) {
-      return res.status(404).json({ error: 'Gearset not found' });
+      return res.status(404).json({ 
+        success: false,
+        error: 'Gearset not found',
+        message: `No gearset found with slug: ${req.params.slug}`
+      });
     }
     
-    res.json(gearset);
+    const formattedGearset = {
+      id: gearset._id.toString(),
+      slug: gearset.slug,
+      name: gearset.name,
+      thumbnail: gearset.thumbnail,
+      bonus2P: gearset.bonus2P,
+      bonus4P: gearset.bonus4P,
+      sortOrder: gearset.sortOrder || 999
+    };
+    
+    res.json({
+      success: true,
+      gearset: formattedGearset
+    });
+    
   } catch (error) {
-    console.error(`Error fetching gearset ${req.params.id}:`, error);
-    res.status(500).json({ error: 'Failed to fetch gearset' });
+    console.error(`Error fetching gearset ${req.params.slug}:`, error);
+    res.status(500).json({ 
+      success: false,
+      error: 'Failed to fetch gearset',
+      details: error.message 
+    });
+  }
+});
+
+// Optionnel : route de recherche
+router.get('/search/:term', async (req, res) => {
+  try {
+    const gearsets = await gearsetService.searchGearsets(req.params.term);
+    
+    const formattedGearsets = gearsets.map(gearset => ({
+      id: gearset._id.toString(),
+      slug: gearset.slug,
+      name: gearset.name,
+      thumbnail: gearset.thumbnail,
+      bonus2P: gearset.bonus2P.substring(0, 50) + '...',
+      bonus4P: gearset.bonus4P.substring(0, 50) + '...',
+      sortOrder: gearset.sortOrder || 999
+    }));
+    
+    res.json({
+      success: true,
+      count: formattedGearsets.length,
+      gearsets: formattedGearsets
+    });
+    
+  } catch (error) {
+    console.error(`Error searching gearsets for ${req.params.term}:`, error);
+    res.status(500).json({ 
+      success: false,
+      error: 'Failed to search gearsets',
+      details: error.message 
+    });
   }
 });
 

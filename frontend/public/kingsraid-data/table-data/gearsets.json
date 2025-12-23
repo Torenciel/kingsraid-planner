@@ -1,62 +1,53 @@
 [
   {
-    "id": "beast_of_chaos",
     "name": "Beast of Chaos",
     "image": "/kingsraid-data/assets/gearsets/beast_of_chaos.png",
     "bonus2P": "Hero deals 12% more DMG and takes 12% less DMG from bosses",
     "bonus4P": "Hero deals 15% more DMG and takes 15% less DMG from bosses"
   },
   {
-    "id": "dark_legion",
     "name": "Dark Legion",
     "image": "/kingsraid-data/assets/gearsets/dark_legion.png",
     "bonus2P": "Increases Crit DMG of all allies by 5%",
     "bonus4P": "Increases Crit DMG of all allies by 8%"
   },
   {
-    "id": "lava_gear",
     "name": "Lava Gear",
     "image": "/kingsraid-data/assets/gearsets/lava_gear.png",
     "bonus2P": "Crit DMG +20%",
     "bonus4P": "Crit DMG +26%"
   },
   {
-    "id": "black_dragon",
     "name": "Black Dragon",
     "image": "/kingsraid-data/assets/gearsets/black_dragon.png",
     "bonus2P": "MP Recovery/Attack +200",
     "bonus4P": "MP Recovery/Attack +260"
   },
   {
-    "id": "fire_dragon",
     "name": "Fire Dragon",
     "image": "/kingsraid-data/assets/gearsets/fire_dragon.png",
     "bonus2P": "Crit +100",
     "bonus4P": "Crit +130"
   },
   {
-    "id": "frost_dragon",
     "name": "Frost Dragon",
     "image": "/kingsraid-data/assets/gearsets/frost_dragon.png",
     "bonus2P": "Max HP +10%",
     "bonus4P": "Max HP +13%"
   },
   {
-    "id": "poison_dragon",
     "name": "Poison Dragon",
     "image": "/kingsraid-data/assets/gearsets/poison_dragon.png",
     "bonus2P": "Crit Resistance +100",
     "bonus4P": "Crit Resistance +130"
   },
   {
-    "id": "hero_suppression_gear",
     "name": "Hero Suppression Gear",
     "image": "/kingsraid-data/assets/gearsets/hero_suppression_gear.png",
     "bonus2P": "Increases DMG to Heroes by 7%",
     "bonus4P": "Increases DMG to Heroes by 13%"
   },
   {
-    "id": "hero_protection_gear",
     "name": "Hero Protection Gear",
     "image": "/kingsraid-data/assets/gearsets/hero_protection_gear.png",
     "bonus2P": "Reduces DMG received from Heroes by 6%",

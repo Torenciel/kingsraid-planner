@@ -23,7 +23,6 @@ console.log('📂 Exists?', fs.existsSync(KINGSRAID_DATA_PATH));
 app.use(cors());
 app.use(express.json());
 
-
 // Connexion MongoDB
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/kingsraid-planner';
 
@@ -40,30 +39,24 @@ mongoose.connect(MONGODB_URI, {
   // Continuer même si MongoDB échoue (mode dégradé)
 });
 
-// =============== ROUTES MONGODB (API V2) ===============
-// Routes déjà existantes
-const heroRoutes = require('./routes/hero.routes');
-const teamRoutes = require('./routes/team.routes');
+// =============== 🔥 MODIFICATION PRINCIPALE ===============
+// Importer les routes centralisées depuis index.js
+const routes = require('./src/routes'); // Ceci va importer ./src/routes/index.js
 
-// Nouvelles routes MongoDB
-const perkRoutes = require('./routes/perk.routes');
-const artifactRoutes = require('./routes/artifact.routes');
-const gearsetRoutes = require('./routes/gearset.routes');
+// Utiliser TOUTES les routes via l'index
+app.use('/', routes);
 
-// API v2 - MongoDB
-app.use('/api/v2/heroes', heroRoutes);
-app.use('/api/v2/teams', teamRoutes);
-app.use('/api/v2/perks', perkRoutes);
-app.use('/api/v2/artifacts', artifactRoutes);
-app.use('/api/v2/gearsets', gearsetRoutes);
+// =============== GARDE TES ROUTES EXISTANTES SI BESOIN ===============
+// (Si tu veux garder certaines routes v1 temporairement)
+// Mais il vaut mieux les déplacer aussi dans src/routes/
 
-// =============== ROUTES EXISTANTES (API V1 - FICHIERS JSON) ===============
-// Gardez TOUTES vos routes existantes ici...
+// =============== ROUTES EXISTANTES À DÉPLACER DANS L'INDEX ===============
+// Les routes suivantes doivent être déplacées dans src/routes/index.js :
 
-// Servir les fichiers statiques KingsRaid
+// 1. Servir les fichiers statiques KingsRaid (déjà présent)
 app.use('/kingsraid-data', express.static(KINGSRAID_DATA_PATH));
 
-// Route de debug existante
+// 2. Route de debug (à déplacer ou garder ici)
 app.get('/api/debug', (req, res) => {
   const masangPath = path.join(KINGSRAID_DATA_PATH, 'hero_release_order_masang.json');
   const heroesDataPath = path.join(KINGSRAID_DATA_PATH, 'table-data', 'heroes');
@@ -116,6 +109,23 @@ app.get('/api/debug', (req, res) => {
       }
     }
   });
+});
+
+// Handle 404 pour les routes non trouvées
+app.use('*', (req, res) => {
+  res.status(404).json({ 
+    success: false,
+    error: 'Route not found', 
+    path: req.originalUrl,
+    message: `La route ${req.originalUrl} n'existe pas`
+  });
+});
+
+// Start server
+app.listen(SERVER_PORT, () => {
+  console.log(`🚀 Server running on http://localhost:${SERVER_PORT}`);
+  console.log(`📚 API v2 available at http://localhost:${SERVER_PORT}/api/v2`);
+  console.log(`🔍 Debug info: http://localhost:${SERVER_PORT}/api/debug`);
 });
 
 // Route pour le fichier masang

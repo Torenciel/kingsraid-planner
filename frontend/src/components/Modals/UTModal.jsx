@@ -21,12 +21,19 @@ const UTModal = ({ data, onClose }) => {
   useEffect(() => {
     const loadHeroData = async () => {
       try {
-        const response = await fetch(`/api/heroes/${heroName}`);
+              // Convertir le nom en slug (ex: "Arch" → "arch", "Kasel" → "kasel")
+        const heroSlug = heroName.toLowerCase().replace(/\s+/g, '-');
+        
+        const response = await fetch(`http://localhost:3002/api/v2/heroes/${heroSlug}`);
         const data = await response.json();
+
+        console.log("📦 UT data from MongoDB:", data);
+        
         setHeroData(data);
       } catch (error) {
         console.error("Error loading hero data from MongoDB:", error);
         try {
+          // Fallback vers l'ancien système (fichiers JSON)
           const fallbackResponse = await fetch(
             `/kingsraid-data/table-data/heroes/${heroName}.json`
           );

@@ -1,7 +1,21 @@
 const mongoose = require('mongoose');
 
-// === SCHÉMAS IMBRIQUÉS (rendus flexibles) ===
+// 🔥 FONCTION COMMUNE POUR LES SLUGS (comme les autres scripts)
+function createSlug(name) {
+  if (!name) return 'unknown';
+  
+  return name
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/'/g, '')
+    .replace(/--+/g, '-')
+    .trim();
+}
 
+// === SCHÉMAS IMBRIQUÉS (gardez ceux-ci) ===
 const SkillSchema = new mongoose.Schema({
   name: { type: String, default: '' },
   cost: { type: String, default: null },
@@ -66,7 +80,7 @@ const SWSchema = new mongoose.Schema({
   story: { type: String, default: '' }
 }, { _id: false });
 
-// === SCHÉMA PRINCIPAL HERO (flexible) ===
+// === SCHÉMA PRINCIPAL HERO (CORRIGÉ) ===
 const HeroSchema = new mongoose.Schema({
   infos: {
     name: { type: String, required: true, index: true },
@@ -145,21 +159,16 @@ const HeroSchema = new mongoose.Schema({
   strict: false
 });
 
-// === MIDDLEWARE CORRIGÉ (sans récursion infinie) ===
+// === MIDDLEWARE CORRIGÉ (SANS BUG) ===
 HeroSchema.pre('save', function(next) {
   this.updatedAt = Date.now();
   
-  // Créer le slug si manquant
+  // 1. S'assurer que le slug existe (CORRIGÉ)
   if (!this.slug && this.infos?.name) {
-    this.slug = this.infos.name
-      .toLowerCase()
-      .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-      .replace(/[^\w\s-]/g, '')
-      .replace(/\s+/g, '-')
-      .replace(/-+/g, '-');
+    this.slug = createSlug(this.infos.name); // ✅ Utilise la vraie fonction
   }
   
-  // Fonction helper pour normaliser un chemin d'image
+  // 2. Fonction pour normaliser UNIQUEMENT les chemins d'images
   const normalizeImagePath = (imagePath) => {
     if (!imagePath || imagePath === '' || imagePath === null || imagePath === undefined) {
       return '';
@@ -170,104 +179,54 @@ HeroSchema.pre('save', function(next) {
       return imagePath;
     }
     
-    // Sinon, ajouter le préfixe du héros
-    return `heroes/${this.infos.name}/${imagePath}`;
+    // Si c'est juste un nom de fichier, ajouter le chemin du héros
+    const heroName = this.infos?.name || 'unknown';
+    return `heroes/${heroName}/${imagePath}`;
   };
   
-  // Normaliser les chemins d'images de manière SÉCURISÉE (sans récursion)
+  // 🔥 CORRECTION : NE PAS NORMALISER this.infos.name !
+  // this.infos.name reste le nom du héros, pas un chemin d'image
   
-  // 1. Infos
+  // 3. Normaliser les VRAIS chemins d'images
+  // Infos thumbnail
   if (this.infos?.thumbnail) {
     this.infos.thumbnail = normalizeImagePath(this.infos.thumbnail);
   }
   
-  // 2. Skills
-  if (this.skills && typeof this.skills === 'object') {
-    try {
-      const skillsObj = this.skills instanceof Map ? 
-        Object.fromEntries(this.skills) : this.skills;
-      
-      for (const skillKey in skillsObj) {
-        if (skillsObj[skillKey]?.thumbnail) {
-          skillsObj[skillKey].thumbnail = normalizeImagePath(skillsObj[skillKey].thumbnail);
-        }
+  // Skills
+  if (this.skills && this.skills instanceof Map) {
+    for (const [key, skill] of this.skills) {
+      if (skill?.thumbnail) {
+        skill.thumbnail = normalizeImagePath(skill.thumbnail);
       }
-      
-      // Reconvertir en Map si nécessaire
-      if (this.skills instanceof Map) {
-        this.skills = new Map(Object.entries(skillsObj));
-      }
-    } catch (error) {
-      console.warn('Warning: Could not normalize skill images:', error.message);
     }
   }
   
-  // 3. Perks - t3
-  if (this.perks?.t3 && typeof this.perks.t3 === 'object') {
-    try {
-      const t3Obj = this.perks.t3 instanceof Map ?
-        Object.fromEntries(this.perks.t3) : this.perks.t3;
-      
-      for (const perkKey in t3Obj) {
-        if (t3Obj[perkKey]?.light?.thumbnail) {
-          t3Obj[perkKey].light.thumbnail = normalizeImagePath(t3Obj[perkKey].light.thumbnail);
-        }
-        if (t3Obj[perkKey]?.dark?.thumbnail) {
-          t3Obj[perkKey].dark.thumbnail = normalizeImagePath(t3Obj[perkKey].dark.thumbnail);
-        }
-      }
-      
-      if (this.perks.t3 instanceof Map) {
-        this.perks.t3 = new Map(Object.entries(t3Obj));
-      }
-    } catch (error) {
-      console.warn('Warning: Could not normalize perk t3 images:', error.message);
-    }
-  }
-  
-  // 4. Perks - t5
-  if (this.perks?.t5?.light?.thumbnail) {
-    this.perks.t5.light.thumbnail = normalizeImagePath(this.perks.t5.light.thumbnail);
-  }
-  if (this.perks?.t5?.dark?.thumbnail) {
-    this.perks.t5.dark.thumbnail = normalizeImagePath(this.perks.t5.dark.thumbnail);
-  }
-  
-  // 5. UW
+  // UW
   if (this.uw?.thumbnail) {
     this.uw.thumbnail = normalizeImagePath(this.uw.thumbnail);
   }
   
-  // 6. UTs
-  if (this.uts && typeof this.uts === 'object') {
-    try {
-      const utsObj = this.uts instanceof Map ?
-        Object.fromEntries(this.uts) : this.uts;
-      
-      for (const utKey in utsObj) {
-        if (utsObj[utKey]?.thumbnail) {
-          utsObj[utKey].thumbnail = normalizeImagePath(utsObj[utKey].thumbnail);
-        }
+  // UTs
+  if (this.uts && this.uts instanceof Map) {
+    for (const [key, ut] of this.uts) {
+      if (ut?.thumbnail) {
+        ut.thumbnail = normalizeImagePath(ut.thumbnail);
       }
-      
-      if (this.uts instanceof Map) {
-        this.uts = new Map(Object.entries(utsObj));
-      }
-    } catch (error) {
-      console.warn('Warning: Could not normalize UT images:', error.message);
     }
   }
   
-  // 7. SW
+  // SW
   if (this.sw?.thumbnail) {
     this.sw.thumbnail = normalizeImagePath(this.sw.thumbnail);
   }
   
-  // 8. Splashart et costumes
+  // Splashart
   if (this.splashart) {
     this.splashart = normalizeImagePath(this.splashart);
   }
   
+  // Costumes
   if (this.costumes) {
     this.costumes = normalizeImagePath(this.costumes);
   }
@@ -275,7 +234,37 @@ HeroSchema.pre('save', function(next) {
   next();
 });
 
-// === INDEXES ===
+// === MÉTHODES POUR L'API (COMME LES AUTRES MODÈLES) ===
+HeroSchema.methods.toAPIFormat = function() {
+  return {
+    _id: this._id,                     // 🔥 ObjectId MongoDB
+    slug: this.slug,                   // 🔥 Slug URL-friendly
+    name: this.infos?.name || '',      // 🔥 Nom d'affichage
+    title: this.infos?.title || '',
+    class: this.infos?.class || 'Unknown',
+    position: this.infos?.position || 'Unknown',
+    thumbnail: this.infos?.thumbnail || '',
+    releaseOrder: this.releaseOrder || 999,
+    
+    // Stats utiles pour le frontend
+    hasUW: !!this.uw?.name,
+    hasSW: !!this.sw?.requirement,
+    utsCount: this.uts ? this.uts.size : 0,
+    skillsCount: this.skills ? this.skills.size : 0
+  };
+};
+
+HeroSchema.methods.toSimpleJSON = function() {
+  return {
+    id: this._id.toString(),          // String pour le frontend
+    slug: this.slug,
+    name: this.infos?.name || '',
+    class: this.infos?.class || 'Unknown',
+    thumbnail: this.infos?.thumbnail || ''
+  };
+};
+
+// === INDEXES (déjà bons) ===
 HeroSchema.index({ slug: 1 });
 HeroSchema.index({ 'infos.name': 1 });
 HeroSchema.index({ 'infos.class': 1 });

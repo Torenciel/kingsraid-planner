@@ -71,34 +71,37 @@ class ApiService {
 
   // ============ ÉQUIPES ============
 
-  async saveTeam(teamData) {
-    return this.request('/teams', {
-      method: 'POST',
-      body: JSON.stringify(teamData),
-    });
-  }
 
-  async loadTeam(teamId) {
-    return this.request(`/teams/${teamId}`);
-  }
+async saveTeam(teamData) {
+  return this.request('/v2/teams', {
+    method: 'POST',
+    body: JSON.stringify({
+      teamData,
+      createdBy: 'current-user' // À remplacer plus tard
+    })
+  });
+}
 
-  async getTeams(params = {}) {
-    const query = new URLSearchParams(params).toString();
-    return this.request(`/teams${query ? `?${query}` : ''}`);
-  }
+async loadTeam(teamId) {
+  return this.request(`/v2/teams/${teamId}?format=teamcontext`);
+}
 
-  async updateTeam(teamId, teamData) {
-    return this.request(`/teams/${teamId}`, {
-      method: 'PUT',
-      body: JSON.stringify(teamData),
-    });
-  }
+async getTeams() {
+  return this.request('/v2/teams');
+}
 
-  async deleteTeam(teamId) {
-    return this.request(`/teams/${teamId}`, {
-      method: 'DELETE',
-    });
-  }
+  // async updateTeam(teamId, teamData) {
+  //   return this.request(`/teams/${teamId}`, {
+  //     method: 'PUT',
+  //     body: JSON.stringify(teamData),
+  //   });
+  // }
+
+  // async deleteTeam(teamId) {
+  //   return this.request(`/teams/${teamId}`, {
+  //     method: 'DELETE',
+  //   });
+  // }
 
   // ============ UTILITAIRES ============
 

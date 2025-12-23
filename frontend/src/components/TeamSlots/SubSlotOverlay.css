@@ -134,9 +134,9 @@
 }
 
 .subslot-overlay.top .subslot-overlay-content::before {
-  border-left: 7px solid transparent;
-  border-right: 7px solid transparent;
-  border-top: 7px solid var(--color-primary); /* Fond de la flèche */
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+  border-top: 8px solid var(--color-primary); /* Fond de la flèche */
   bottom: -7px; /* Positionnée en BAS du contenu */
   left: 50%;
   transform: translateX(-50%);
@@ -153,9 +153,9 @@
 }
 
 .subslot-overlay.bottom .subslot-overlay-content::before {
-  border-left: 7px solid transparent;
-  border-right: 7px solid transparent;
-  border-bottom: 7px solid var(--color-primary); /* Fond de la flèche */
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+  border-bottom: 8px solid var(--color-primary); /* Fond de la flèche */
   top: -7px; /* Positionnée en HAUT du contenu */
   left: 50%;
   transform: translateX(-50%);

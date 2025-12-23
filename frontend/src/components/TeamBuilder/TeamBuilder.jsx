@@ -4,6 +4,7 @@ import HeroGrid from "../HeroGrid/HeroGrid";
 import TeamSlots from "../TeamSlots/TeamSlots";
 import "./TeamBuilder.css"; // Import du CSS
 import TeamSizeSelector from "./TeamSizeSelector";
+import SaveTeamButton from './SaveTeamButton';
 
 const TeamBuilder = () => {
   const { teamTitle } = useTeam();
@@ -34,6 +35,9 @@ const TeamBuilder = () => {
 
       {/* Team Slots */}
       <TeamSlots />
+
+
+      <SaveTeamButton />
 
       {/* Available Heroes */}
       <HeroGrid />
