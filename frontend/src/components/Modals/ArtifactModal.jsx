@@ -129,10 +129,11 @@ const getArtifactImageUrl = (artifact) => {
     if (!artifact) return null;
     
     return {
+      _type: 'artifact',
       name: artifact.name,
+      slug: artifact.slug,
       description: artifact.description || "",
       values: artifact.values || artifact.value || {},
-      slug: artifact.slug,
       id: artifact._id || artifact.id
     };
   };
@@ -144,13 +145,13 @@ const getArtifactImageUrl = (artifact) => {
     const artifactFilename = getArtifactFilename(artifact);
     
     return {
-      artifactSlug: artifact.slug || artifact._id?.toString(),
-      artifactInfo: {
-        name: artifact.name,
-        thumbnail: artifact.thumbnail,
-        description: artifact.description
-      },
-      stars: stars
+    artifactSlug: artifact.slug || artifact._id?.toString(),
+    artifactInfo: {
+      name: artifact.name,
+      thumbnail: artifact.thumbnail || getArtifactImageUrl(artifact),
+      description: artifact.description || ""
+    },
+    stars: stars
     };
   };
 
@@ -211,6 +212,7 @@ const getArtifactImageUrl = (artifact) => {
     const name = artifact.name || artifact.slug || '';
     
     if (name) {
+      
       // 1. Essayer avec encodage
       const encodedName = encodeURIComponent(`${name}.png`);
       const encodedPath = `/kingsraid-data/assets/artifacts/${encodedName}`;

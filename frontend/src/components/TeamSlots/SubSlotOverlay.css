@@ -7,7 +7,7 @@
   max-width: 350px;
   pointer-events: none;
   animation: fadeInOverlaySubslot 0.15s ease-out;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.8);
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.8);
   border-radius: 8px;
 }
 
@@ -43,27 +43,32 @@
 .subslot-overlay-content {
   background: var(--color-primary);
   border-radius: 8px;
-  border: 2px solid var(--color-primary-darker); /* Bordure sombre à l'extérieur */
   padding: 12px;
   pointer-events: auto;
   position: relative;
 }
 
-/* Bordures spéciales pour les UW avec advancement */
-.subslot-overlay-content.border-blue {
+/* Bordure par défaut - SANS advancement */
+.subslot-overlay:not(.border-blue):not(.border-purple):not(.border-red) {
+  border: 2px solid var(--color-primary-darker);
+}
+
+/* Bordures d'advancement pour l'overlay UW */
+.subslot-overlay.border-blue {
   border: 2px solid #2175bb !important;
-  box-shadow: 0 0 5px rgba(59, 130, 246, 0.5);
+  box-shadow: 0 0 10px rgba(33, 117, 187, 0.8) !important;
 }
 
-.subslot-overlay-content.border-purple {
+.subslot-overlay.border-purple {
   border: 2px solid #ae4f99 !important;
-  box-shadow: 0 0 5px rgba(174, 79, 153, 0.5);
+  box-shadow: 0 0 10px rgba(174, 79, 153, 0.8) !important;
 }
 
-.subslot-overlay-content.border-red {
+.subslot-overlay.border-red {
   border: 2px solid #cc2615 !important;
-  box-shadow: 0 0 5px rgba(239, 68, 68, 0.5);
+  box-shadow: 0 0 10px rgba(204, 38, 21, 0.8) !important;
 }
+
 
 /* ===== FLÈCHES CORRECTEMENT ORIENTÉES ===== */
 /* Flèche extérieure (bordure noire) - SUR LE CONTENU */
@@ -387,3 +392,5 @@
   color: var(--color-item-selected);
   font-weight: bold;
 }
+
+/* ========================================== */

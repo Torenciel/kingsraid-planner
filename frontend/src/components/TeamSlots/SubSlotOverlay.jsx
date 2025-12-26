@@ -7,7 +7,7 @@ const SubSlotOverlay = ({
   subSlotIndex,
   item,
   stars,
-  advancement,
+  advancement, // 🔥 Maintenant null/0/1/2
   heroSlug,
   slotRef,
   onMouseEnter,
@@ -23,6 +23,72 @@ const SubSlotOverlay = ({
   const { getHeroBySlug, loadHeroDetails } = useHeroContext();
   const { allArtifacts, getArtifactBySlug } = useArtifacts();
   const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3002';
+
+  // 🔥 Fonction pour convertir null/0/1/2 en string
+  const getAdvancementString = useCallback((advValue) => {
+    console.log(`🔄 SubSlotOverlay - getAdvancementString appelé avec:`, {
+      advValue,
+      type: typeof advValue,
+      '=== 0': advValue === 0,
+      '=== null': advValue === null
+    });
+    
+    if (advValue === null || advValue === undefined) {
+      console.log('   → "none"');
+      return "none";
+    }
+    if (advValue === 0) {
+      console.log('   → "blue"');
+      return "blue";
+    }
+    if (advValue === 1) {
+      console.log('   → "purple"');
+      return "purple";
+    }
+    if (advValue === 2) {
+      console.log('   → "red"');
+      return "red";
+    }
+    console.warn('❌ Valeur advancement inconnue:', advValue);
+    return "none";
+  }, []);
+
+  // 🔥 Fonction pour obtenir le chemin de l'icône
+  const getAdvancementIconPath = useCallback((advValue) => {
+    const advString = getAdvancementString(advValue);
+    if (advString !== "none") {
+      const path = `/kingsraid-data/assets/advancements/${advString}.png`;
+      console.log(`🖼 SubSlotOverlay - Advancement Icon Path: ${path}`);
+      return path;
+    }
+    return "";
+  }, [getAdvancementString]);
+
+  // 🔥 Fonction pour obtenir la classe de bordure
+  const getBorderClassForOverlay = useCallback(() => {
+    console.log(`🎨 SubSlotOverlay - getBorderClassForOverlay pour slot ${subSlotIndex}:`, {
+      advancement,
+      type: typeof advancement,
+      'subSlotIndex': subSlotIndex
+    });
+    
+    if (subSlotIndex !== 0) {
+      console.log('   ❌ Pas UW slot');
+      return ""; // UW seulement
+    }
+    
+    const advString = getAdvancementString(advancement);
+    console.log(`   advString: "${advString}"`);
+    
+    if (advString !== "none") {
+      const borderClass = `border-${advString}`;
+      console.log(`   ✅ Classe bordure: ${borderClass}`);
+      return borderClass;
+    }
+    
+    console.log('   ❌ Pas d\'advancement');
+    return "";
+  }, [subSlotIndex, advancement, getAdvancementString]);
 
   // Charger les détails du héros
   useEffect(() => {
@@ -43,7 +109,114 @@ const SubSlotOverlay = ({
     loadHeroData();
   }, [heroSlug, loadHeroDetails]);
 
-  // Fonction de formatage pour UW, UT et ARTIFACT - CORRIGÉE
+  // Fonction pour obtenir les infos des gear sets
+  const getGearSetInfo = useCallback((item) => {
+    if (!item) return null;
+    
+    // CAS MULTIPLE : 2 gear sets (2P/2P)
+    if (item.isMultiSet && item.sets && Array.isArray(item.sets)) {
+      const stats = [];
+      
+      // Header unique pour multi-set
+      stats.push({
+        type: "header",
+        content: "Multiple Gear Sets",
+        isMultiSet: true,
+        pieces: "2P/2P",
+      });
+      
+      // Si on a les infos détaillées
+      if (item.set1Info && item.set2Info) {
+        // Premier set
+        stats.push({
+          type: "set_name",
+          content: item.set1Info.name || item.sets[0],
+        });
+        
+        stats.push({
+          type: "bonus",
+          content: item.set1Info.bonus2P,
+          level: "2P",
+          setName: item.set1Info.name || item.sets[0],
+        });
+        
+        // Deuxième set
+        stats.push({
+          type: "set_name",
+          content: item.set2Info.name || item.sets[1],
+        });
+        
+        stats.push({
+          type: "bonus",
+          content: item.set2Info.bonus2P,
+          level: "2P",
+          setName: item.set2Info.name || item.sets[1],
+        });
+      } else {
+        // Sinon, juste afficher les slugs
+        item.sets.forEach((setSlug, index) => {
+          stats.push({
+            type: "set_name",
+            content: setSlug,
+          });
+          
+          stats.push({
+            type: "bonus",
+            content: "2-piece bonus active",
+            level: "2P",
+            setName: setSlug,
+          });
+        });
+      }
+      
+      return {
+        stats: stats,
+        isMultiSet: true,
+      };
+    }
+    
+    // CAS SIMPLE : 1 gear set
+    const gearSetSlug = item.gearSetSlug;
+    const pieces = item.pieces || 0;
+    
+    const stats = [];
+    
+    // Header pour single set
+    stats.push({
+      type: "header",
+      content: item.gearSetInfo?.name || gearSetSlug,
+      isSingle: true,
+      pieces: `${pieces}P`,
+    });
+
+    // Bonus 2P
+    if (item.gearSetInfo?.bonus2P && pieces >= 2) {
+      stats.push({
+        type: "bonus",
+        content: item.gearSetInfo.bonus2P,
+        level: "2P",
+        isActive: true,
+      });
+    }
+
+    // Bonus 4P
+    if (item.gearSetInfo?.bonus4P) {
+      stats.push({
+        type: "bonus",
+        content: item.gearSetInfo.bonus4P,
+        level: "4P",
+        isActive: pieces >= 4,
+        note: pieces < 4 ? "(requires 4 pieces)" : null,
+      });
+    }
+
+    return {
+      stats: stats,
+      isMultiSet: false,
+    };
+  }, []);
+
+  // Fonction de formatage pour UW, UT et ARTIFACT
   const formatUWUTDescription = useCallback((description, values, starLevel) => {
     if (!description) return [{ type: "text", content: "No description available" }];
     if (!values || Object.keys(values).length === 0) {
@@ -53,21 +226,15 @@ const SubSlotOverlay = ({
     let parts = [];
     let currentText = description;
 
-    // Pour les artefacts, les valeurs sont au format "2%, 2.4%, 2.8%, 3.4%, 4.2%, 5%"
-    // Pour UW/UT, c'est souvent au format { "0": "10%", "1": "12%", ... }
-    
     Object.keys(values).forEach((key) => {
       const valueObj = values[key];
       let selectedValue;
       
       if (typeof valueObj === 'string') {
-        // Format artefact: "2%, 2.4%, 2.8%, 3.4%, 4.2%, 5%"
         const valueArray = valueObj.split(",").map(v => v.trim());
-        // starLevel peut être de 0 à 5, correspondant aux 6 valeurs
         const valueIndex = Math.min(starLevel, valueArray.length - 1);
         selectedValue = valueArray[valueIndex] || valueArray[0];
       } else if (typeof valueObj === 'object') {
-        // Format UW/UT: { "0": "10%", "1": "12%", ... }
         selectedValue = valueObj[starLevel.toString()] || valueObj["0"];
       } else {
         selectedValue = "N/A";
@@ -94,43 +261,36 @@ const SubSlotOverlay = ({
 
   // Getters d'information d'overlay
   const getOverlayInfo = useCallback(() => {
+    console.log(`🔍 SubSlotOverlay - getOverlayInfo pour slot ${subSlotIndex}:`, {
+      itemExists: !!item,
+      advancement,
+      'typeof advancement': typeof advancement,
+      'subSlotIndex': subSlotIndex
+    });
+
     if (!item) return null;
 
     // GearSet (slot 3)
     if (subSlotIndex === 3) {
-      if (typeof item === 'object' && item.gearSetSlug) {
-        const gearSetSlug = item.gearSetSlug;
-        const pieces = item.pieces || 0;
-        
-        const stats = [];
-        
-        stats.push({
-          type: "gearset_header",
-          content: `${item.gearSetInfo?.name || gearSetSlug} (${pieces}P)`,
-          isSingle: true,
-        });
-
-        if (item.gearSetInfo?.bonus2P) {
-          stats.push({
-            type: "gearset_bonus",
-            content: item.gearSetInfo.bonus2P,
-            level: "2P",
-          });
-        }
-
-        if (item.gearSetInfo?.bonus4P && pieces >= 4) {
-          stats.push({
-            type: "gearset_bonus",
-            content: item.gearSetInfo.bonus4P,
-            level: "4P",
-          });
-        }
-
+      const gearSetData = getGearSetInfo(item);
+      
+      if (!gearSetData || !gearSetData.stats || gearSetData.stats.length === 0) {
         return {
-          title: item.gearSetInfo?.name || gearSetSlug,
-          stats: stats,
+          title: "Gear Set",
+          stats: [
+            { type: "text", content: "No gear set selected" }
+          ],
+          isGearSet: true,
         };
       }
+      
+      return {
+        title: gearSetData.isMultiSet ? "Multiple Gear Sets" : "Gear Set",
+        stats: gearSetData.stats,
+        isGearSet: true,
+        isMultiSet: gearSetData.isMultiSet,
+        pieces: gearSetData.stats[0].pieces,
+      };
     }
 
     // UW (slot 0)
@@ -142,13 +302,14 @@ const SubSlotOverlay = ({
             `${stars}★`,
             { 
               type: "text", 
-              content: advancement !== "none" ? 
-                `Soul Weapon: ${advancement}` : 
+              content: getAdvancementString(advancement) !== "none" ? 
+                `Soul Weapon: ${getAdvancementString(advancement)}` : 
                 "No Soul Weapon" 
             }
           ],
           isUW: true,
           advancement: advancement,
+          advancementString: getAdvancementString(advancement),
         };
       }
 
@@ -163,16 +324,18 @@ const SubSlotOverlay = ({
         { type: "formatted", content: formattedDescription },
       ];
 
-      if (advancement !== "none" && heroDetails.sw) {
+      // 🔥 Vérifier si advancement n'est pas null/undefined et >= 0
+      if (advancement !== null && advancement !== undefined && advancement >= 0 && heroDetails.sw) {
+        const advString = getAdvancementString(advancement);
         const advancementColor = {
           blue: "#2175bb",
           purple: "#ae4f99",
           red: "#cc2615",
-        }[advancement] || "#ae4f99";
+        }[advString] || "#ae4f99";
 
         stats.push({
           type: "separator",
-          content: "Soul Weapon",
+          content: `Soul Weapon (${advString})`,
           color: advancementColor,
         });
 
@@ -185,8 +348,8 @@ const SubSlotOverlay = ({
 
         if (heroDetails.sw.advancement) {
           Object.entries(heroDetails.sw.advancement).forEach(([level, description]) => {
-            const isSelected = (level === "1" && (advancement === "purple" || advancement === "red")) ||
-                              (level === "2" && advancement === "red");
+            const isSelected = (level === "1" && (advancement >= 1)) ||
+                              (level === "2" && advancement >= 2);
             
             const levelColor = level === "1" ? "#ae4f99" : "#cc2615";
 
@@ -213,6 +376,7 @@ const SubSlotOverlay = ({
         stats: stats,
         isUW: true,
         advancement: advancement,
+        advancementString: getAdvancementString(advancement),
       };
     }
 
@@ -252,7 +416,7 @@ const SubSlotOverlay = ({
       };
     }
 
-    // Artifact (slot 2) - CORRIGÉ pour utiliser la même logique que UT
+    // Artifact (slot 2)
     if (subSlotIndex === 2) {
       let artifactSlug = "";
       let artifactInfo = null;
@@ -275,14 +439,12 @@ const SubSlotOverlay = ({
         };
       }
 
-      // Chercher l'artefact dans la liste
       let artifactData = null;
       
       if (allArtifacts && allArtifacts.length > 0) {
         artifactData = allArtifacts.find(a => a && a.slug === artifactSlug);
       }
 
-      // Si pas trouvé dans allArtifacts, utiliser artifactInfo
       if (!artifactData && artifactInfo) {
         artifactData = {
           name: artifactInfo.name,
@@ -302,7 +464,6 @@ const SubSlotOverlay = ({
         };
       }
 
-      // Utiliser la MÊME fonction que pour UW/UT
       const formattedDescription = formatUWUTDescription(
         artifactData.description || "",
         artifactData.value || artifactData.values || {},
@@ -322,8 +483,8 @@ const SubSlotOverlay = ({
     return null;
   }, [
     item, stars, advancement, heroDetails, 
-    subSlotIndex, formatUWUTDescription,
-    allArtifacts, getArtifactBySlug
+    subSlotIndex, formatUWUTDescription, getGearSetInfo,
+    allArtifacts, getAdvancementString
   ]);
 
   // Mettre à jour l'overlay info
@@ -331,6 +492,7 @@ const SubSlotOverlay = ({
     if (loading) return;
     
     const info = getOverlayInfo();
+    console.log("📊 SubSlotOverlay - Overlay info mise à jour:", info);
     setOverlayInfo(info);
   }, [getOverlayInfo, loading]);
 
@@ -345,8 +507,13 @@ const SubSlotOverlay = ({
       const viewportWidth = window.innerWidth;
       const viewportHeight = window.innerHeight;
       
-      const estimatedWidth = 320;
-      const estimatedHeight = 200;
+      let estimatedWidth = 320;
+      let estimatedHeight = 200;
+      
+      if (overlayInfo.isGearSet && overlayInfo.isMultiSet) {
+        estimatedHeight = 220;
+      }
+      
       const margin = 10;
 
       let targetX = slotRect.left + slotRect.width / 2;
@@ -403,32 +570,31 @@ const SubSlotOverlay = ({
     if (!overlayInfo) return null;
 
     return (
-      <div className={`subslot-overlay-content ${
-        overlayInfo.isUW && overlayInfo.advancement === "blue"
-          ? "border-blue"
-          : overlayInfo.isUW && overlayInfo.advancement === "purple"
-          ? "border-purple"
-          : overlayInfo.isUW && overlayInfo.advancement === "red"
-          ? "border-red"
-          : ""
-      }`}>
-        
-        {/* Header */}
+      <div className="subslot-overlay-content">
+        {/* Header commun pour tous les types */}
         <div className="subslot-overlay-header">
-          <div className="subslot-overlay-stars">
-            {typeof overlayInfo.stats[0] === 'object' 
-              ? overlayInfo.stats[0].content 
-              : overlayInfo.stats[0]}
-          </div>
-          
           <div className="subslot-overlay-title">{overlayInfo.title}</div>
           
-          {overlayInfo.isUW && overlayInfo.advancement !== "none" && (
+          {/* Étoiles pour UW/UT/Artifact, Pieces pour GearSet */}
+          {overlayInfo.isGearSet ? (
+            <div className="subslot-overlay-pieces">{overlayInfo.pieces}</div>
+          ) : (
+            <div className="subslot-overlay-stars">
+              {typeof overlayInfo.stats[0] === 'object' 
+                ? overlayInfo.stats[0].content 
+                : overlayInfo.stats[0]}
+            </div>
+          )}
+          
+          {/* 🔥 Icône d'avancement pour UW */}
+          {overlayInfo.isUW && overlayInfo.advancement !== null && 
+           overlayInfo.advancement !== undefined && overlayInfo.advancement >= 0 && (
             <img
-              src={`/kingsraid-data/assets/advancements/${overlayInfo.advancement}.png`}
-              alt={overlayInfo.advancement}
+              src={getAdvancementIconPath(overlayInfo.advancement)}
+              alt={overlayInfo.advancementString}
               className="subslot-advancement-icon"
               onError={(e) => {
+                console.warn(`❌ SubSlotOverlay - Advancement icon failed to load: ${overlayInfo.advancementString}`);
                 e.target.style.display = "none";
               }}
             />
@@ -437,92 +603,97 @@ const SubSlotOverlay = ({
 
         {/* Contenu des stats */}
         <div className="subslot-overlay-stats">
-          {(subSlotIndex === 3 ? overlayInfo.stats : overlayInfo.stats.slice(1))
-            .map((stat, index) => {
-              if (typeof stat === 'string') {
-                return (
-                  <div key={index} className="subslot-text">
-                    {stat}
-                  </div>
-                );
-              }
-              
-              if (stat && typeof stat === 'object') {
-                switch (stat.type) {
-                  case "gearset_header":
-                    return (
-                      <div key={`${index}-${stat.index || 0}`} className="subslot-gearset-header">
-                        {stat.content}
-                      </div>
-                    );
-                  case "gearset_bonus":
-                    return (
-                      <div key={`${index}-${stat.level}-${stat.index || 0}`} className="subslot-gearset-bonus">
-                        <span className="gearset-bonus-level">{stat.level}:</span>
-                        <span>{stat.content}</span>
-                      </div>
-                    );
-                  case "separator":
-                    return (
-                      <div
-                        key={index}
-                        className="subslot-separator"
-                        style={{ color: stat.color }}
-                      >
-                        {stat.content}
-                      </div>
-                    );
-                  case "sw_advancement":
-                    return (
-                      <div
-                        key={index}
-                        className={`subslot-sw-advancement ${
-                          stat.isSelected ? "selected" : "unselected"
-                        }`}
-                        style={{
-                          color: stat.isSelected ? stat.color : "#6b7280",
-                        }}
-                      >
-                        <span className="subslot-sw-level">{stat.level}:</span>{" "}
-                        {stat.content}
-                      </div>
-                    );
-                  case "cooldown":
-                    return (
-                      <div key={index} className="subslot-cooldown">
-                        {stat.content}
-                      </div>
-                    );
-                  case "text":
-                    return (
-                      <div key={index} className="subslot-text">
-                        {stat.content}
-                      </div>
-                    );
-                  case "formatted":
-                    return (
-                      <div key={index} className="subslot-formatted">
-                        {stat.content.map((part, partIndex) =>
-                          part.type === "value" ? (
-                            <span key={partIndex} className="subslot-value">
-                              {part.content}
-                            </span>
-                          ) : (
-                            <span key={partIndex}>{part.content}</span>
-                          )
-                        )}
-                      </div>
-                    );
-                  default:
-                    return null;
-                }
-              }
-
-              return null;
-            })}
+          {overlayInfo.isGearSet ? (
+            // Afficher toutes les stats pour GearSet
+            overlayInfo.stats.map((stat, index) => (
+              <GearSetStatRenderer key={`gear-${index}`} stat={stat} />
+            ))
+          ) : (
+            // Pour UW/UT/Artifact, sauter les étoiles (déjà dans le header)
+            overlayInfo.stats.slice(1).map((stat, index) => (
+              <OtherSlotStatRenderer key={`other-${index}`} stat={stat} />
+            ))
+          )}
         </div>
       </div>
     );
+  };
+
+  // Composants helpers pour le rendu
+  const GearSetStatRenderer = ({ stat }) => {
+    if (!stat || typeof stat !== 'object') return null;
+    
+    switch (stat.type) {
+      case "header":
+        return null;
+      
+      case "set_name":
+        return (
+          <div key={`setname-${stat.content}`} className="subslot-set-name">
+            {stat.content}
+          </div>
+        );
+      
+      case "bonus":
+        return (
+          <div key={`${stat.level}-${stat.content}`} className={`subslot-bonus ${stat.isActive === false ? 'inactive' : ''}`}>
+            <span className="subslot-bonus-level">{stat.level}:</span>
+            <span className="subslot-bonus-content">
+              {stat.content}
+              {stat.note && <span className="bonus-note"> {stat.note}</span>}
+            </span>
+          </div>
+        );
+      
+      default:
+        return null;
+    }
+  };
+
+  const OtherSlotStatRenderer = ({ stat }) => {
+    if (typeof stat === 'string') {
+      return (
+        <div className="subslot-text">{stat}</div>
+      );
+    }
+    
+    if (!stat || typeof stat !== 'object') return null;
+    
+    switch (stat.type) {
+      case "separator":
+        return (
+          <div className="subslot-separator" style={{ color: stat.color }}>
+            {stat.content}
+          </div>
+        );
+      case "sw_advancement":
+        return (
+          <div className={`subslot-sw-advancement ${stat.isSelected ? "selected" : "unselected"}`}
+               style={{ color: stat.isSelected ? stat.color : "#6b7280" }}>
+            <span className="subslot-sw-level">{stat.level}:</span> {stat.content}
+          </div>
+        );
+      case "cooldown":
+        return <div className="subslot-cooldown">{stat.content}</div>;
+      case "text":
+        return <div className="subslot-text">{stat.content}</div>;
+      case "formatted":
+        return (
+          <div className="subslot-formatted">
+            {stat.content.map((part, partIndex) =>
+              part.type === "value" ? (
+                <span key={partIndex} className="subslot-value">
+                  {part.content}
+                </span>
+              ) : (
+                <span key={partIndex}>{part.content}</span>
+              )
+            )}
+          </div>
+        );
+      default:
+        return null;
+    }
   };
 
   // Rendu pendant le chargement
@@ -551,18 +722,13 @@ const SubSlotOverlay = ({
     return null;
   }
 
+  const borderClass = getBorderClassForOverlay();
+  console.log(`🎨 SubSlotOverlay - Rendu avec borderClass: "${borderClass}"`);
+
   return (
     <div
       ref={overlayRef}
-      className={`subslot-overlay ${
-        overlayInfo.isUW && overlayInfo.advancement === "blue"
-          ? "border-blue"
-          : overlayInfo.isUW && overlayInfo.advancement === "purple"
-          ? "border-purple"
-          : overlayInfo.isUW && overlayInfo.advancement === "red"
-          ? "border-red"
-          : ""
-      }`}
+      className={`subslot-overlay ${borderClass}`}
       style={{
         position: "fixed",
         left: `${position.x}px`,

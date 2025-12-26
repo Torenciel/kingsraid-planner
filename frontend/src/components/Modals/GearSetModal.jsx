@@ -1,131 +1,101 @@
-// frontend/src/components/Modals/GearSetModal.jsx
 import { useEffect, useState } from "react";
 import { useTeam } from "../../contexts/TeamContext";
 import { useOverlay } from "../../contexts/OverlayContext";
+import { useGearSets } from "../../contexts/GearSetContext";
 import "./GearSetModal.css";
 
 const GearSetModal = ({ data, onClose }) => {
   const { teamSlotIndex, subSlotIndex, currentItem } = data;
   const { updateSubSlot } = useTeam();
   const { showOverlay, hideOverlay } = useOverlay();
+  const { 
+    allGearSets: gearSets, 
+    loading, 
+    getGearSetBySlug,
+    getGearSetImageUrl,
+    createGearSetForSave 
+  } = useGearSets();
 
-  // Format pour le nouveau système
+  // 🔥 NOUVELLE FONCTION - Format direct pour la sauvegarde
+  const createSimpleGearSetObject = (selectedSlugs) => {
+    if (selectedSlugs.length === 0) return null;
+    
+    if (selectedSlugs.length === 1) {
+      const gearSet = getGearSetBySlug(selectedSlugs[0]);
+      if (!gearSet) return null;
+      
+      return {
+        gearSetSlug: gearSet.slug,
+        gearSetInfo: {
+          name: gearSet.name,
+          thumbnail: getGearSetImageUrl(gearSet),
+          bonus2P: gearSet.bonus2P,
+          bonus4P: gearSet.bonus4P
+        },
+        pieces: 4,
+        sets: [gearSet.slug]
+      };
+    }
+    
+    if (selectedSlugs.length === 2) {
+      const gearSet1 = getGearSetBySlug(selectedSlugs[0]);
+      const gearSet2 = getGearSetBySlug(selectedSlugs[1]);
+      if (!gearSet1 || !gearSet2) return null;
+      
+      return {
+        isMultiSet: true,
+        sets: [gearSet1.slug, gearSet2.slug],
+        gearSetSlug: gearSet1.slug, // Pour compatibilité
+        gearSetInfo: {
+          name: `${gearSet1.name} + ${gearSet2.name}`,
+          thumbnail: getGearSetImageUrl(gearSet1),
+          bonus2P: "Multiple sets selected",
+          bonus4P: "Not applicable for multiple sets"
+        },
+        pieces: 2,
+        set1Info: {
+          name: gearSet1.name,
+          slug: gearSet1.slug,
+          bonus2P: gearSet1.bonus2P
+        },
+        set2Info: {
+          name: gearSet2.name,
+          slug: gearSet2.slug,
+          bonus2P: gearSet2.bonus2P
+        }
+      };
+    }
+    
+    return null;
+  };
+
   const getInitialSelection = () => {
     if (!currentItem) return [];
     
-    // Si c'est un objet (nouveau format)
+    // 🔥 AMÉLIORATION : Meilleure extraction des slugs
     if (typeof currentItem === 'object') {
+      // Format multi-set
+      if (currentItem.isMultiSet && currentItem.sets) {
+        return currentItem.sets;
+      }
+      
+      // Format avec gearSetSlug
       if (currentItem.gearSetSlug) {
         return [currentItem.gearSetSlug];
       }
-      return [];
-    }
-    
-    // Si c'est un JSON string (ancien format)
-    if (typeof currentItem === 'string') {
-      try {
-        return JSON.parse(currentItem);
-      } catch (e) {
-        return [];
+      
+      // Format avec sets (compatibilité)
+      if (currentItem.sets && Array.isArray(currentItem.sets)) {
+        return currentItem.sets;
       }
+      
+      return [];
     }
     
     return [];
   };
 
   const [selectedSets, setSelectedSets] = useState(getInitialSelection());
-  const [gearSets, setGearSets] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  // Charger les données depuis MongoDB
-  useEffect(() => {
-    const loadGearSetsData = async () => {
-      try {
-        setLoading(true);
-        const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3002';
-        const response = await fetch(`${API_BASE_URL}/api/v2/gearsets`);
-        
-        if (!response.ok) {
-          throw new Error(`HTTP ${response.status}`);
-        }
-        
-        const result = await response.json();
-        
-        if (result.success && result.gearsets) {
-          // Transformer les données pour le frontend
-          const transformedSets = result.gearsets.map(set => ({
-            id: set._id?.toString() || set.id,
-            slug: set.slug,
-            name: set.name,
-            thumbnail: set.thumbnail,
-            bonus2P: set.bonus2P,
-            bonus4P: set.bonus4P,
-            sortOrder: set.sortOrder || 999
-          }));
-          
-          setGearSets(transformedSets);
-          console.log(`✅ Loaded ${transformedSets.length} gear sets from MongoDB`);
-        } else {
-          throw new Error("No gear sets data found");
-        }
-      } catch (error) {
-        console.error("Error loading gear sets from MongoDB:", error);
-        
-        // Fallback vers l'ancien système
-        try {
-          const fallbackResponse = await fetch(
-            "/kingsraid-data/table-data/gearsets.json"
-          );
-          
-          if (fallbackResponse.ok) {
-            const fallbackData = await fallbackResponse.json();
-            
-            // Transformer les données fallback
-            const transformedFallback = fallbackData.map(set => ({
-              id: set._id?.toString() || set.id,
-              slug: set.slug || set.name?.toLowerCase().replace(/\s+/g, '-'),
-              name: set.name,
-              thumbnail: set.thumbnail || `/kingsraid-data/assets/gearsets/${set.name?.toLowerCase().replace(/\s+/g, '_')}.png`,
-              bonus2P: set.bonus2P,
-              bonus4P: set.bonus4P,
-              sortOrder: set.sortOrder || 999
-            }));
-            
-            setGearSets(transformedFallback);
-            console.log(`✅ Loaded ${transformedFallback.length} gear sets from fallback`);
-          }
-        } catch (fallbackError) {
-          console.error("Error loading fallback gear sets:", fallbackError);
-        }
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadGearSetsData();
-  }, []);
-
-  // Fonction pour obtenir le chemin d'image
-  const getGearSetImagePath = (gearSet) => {
-    if (!gearSet) return '';
-    
-    // Si on a un thumbnail valide
-    if (gearSet.thumbnail) {
-      // Si c'est un chemin relatif, ajouter le base path
-      if (!gearSet.thumbnail.startsWith('http') && !gearSet.thumbnail.startsWith('/')) {
-        return `/kingsraid-data/assets/${gearSet.thumbnail}`;
-      }
-      return gearSet.thumbnail;
-    }
-    
-    // Fallback: construire depuis le slug
-    const slug = gearSet.slug || gearSet.name?.toLowerCase().replace(/\s+/g, '_');
-    if (slug) {
-      return `/kingsraid-data/assets/gearsets/${slug}.png`;
-    }
-    
-    return '';
-  };
 
   const handleSetClick = (setSlug) => {
     if (setSlug === "empty") {
@@ -142,32 +112,28 @@ const GearSetModal = ({ data, onClose }) => {
   };
 
   const handleConfirm = () => {
+    console.log("🎯 GearSetModal - handleConfirm");
+    console.log("Selected sets:", selectedSets);
+    
     if (selectedSets.length === 0) {
-      // Aucun gear set sélectionné
+      console.log("➡️ Setting gear set to null");
       updateSubSlot(teamSlotIndex, subSlotIndex, null, 0);
     } else {
-      // Créer l'objet pour la sauvegarde (nouveau format)
-      const selectedSet = gearSets.find(set => set.slug === selectedSets[0]);
+      // 🔥 UTILISER la nouvelle fonction simple
+      const gearSetData = createSimpleGearSetObject(selectedSets);
       
-      if (selectedSet) {
-        const gearSetData = {
-          gearSetSlug: selectedSet.slug,
-          gearSetInfo: {
-            name: selectedSet.name,
-            thumbnail: getGearSetImagePath(selectedSet),
-            bonus2P: selectedSet.bonus2P,
-            bonus4P: selectedSet.bonus4P
-          },
-          pieces: selectedSets.length === 1 ? 4 : 2 // 4 pieces si 1 set, 2 pieces si 2 sets
-        };
-        
+      console.log("➡️ Gear set data to save:", gearSetData);
+      
+      if (gearSetData) {
         updateSubSlot(teamSlotIndex, subSlotIndex, gearSetData, 0);
+      } else {
+        console.error("❌ Failed to create gear set data");
       }
     }
+    
     onClose();
   };
 
-  // Gérer le hover sur un gear set
   const handleGearSetHover = (gearSet, e) => {
     if (!gearSet) return;
 
@@ -179,42 +145,52 @@ const GearSetModal = ({ data, onClose }) => {
     };
 
     const isSelected = selectedSets.includes(gearSet.slug);
-    const wouldHave4Pieces = selectedSets.length === 0 || (selectedSets.length === 1 && !isSelected);
-    const pieces = wouldHave4Pieces ? 4 : 2;
+    
+    let pieces = 0;
+    if (selectedSets.length === 0) {
+      pieces = 4;
+    } else if (selectedSets.length === 1 && !isSelected) {
+      pieces = 4;
+    } else {
+      pieces = 2;
+    }
 
     const overlayContent = (
-      <div className="gearset-overlay">
-        <h4 className="item-overlay-title">{gearSet.name}</h4>
+      <div className="gearset-hover-overlay">
+        <h4 className="hover-title">{gearSet.name}</h4>
         
-
-          <div className="gearset-bonus-row">
-            <span className="item-overlay-description bold">2P:</span>
-            <span className="item-overlay-description ">{gearSet.bonus2P}</span>
-          </div>
-          
-          <div className="gearset-bonus-row">
-            <span className="item-overlay-description bold">4P:</span>
-            <span className={`item-overlay-description ${pieces >= 4 ? "active" : "inactive"}`}>
-              {gearSet.bonus4P}
-            </span>
-          </div>
+        <div className="hover-preview">
+          <span className="preview-pieces">
+            {pieces}P {isSelected ? "(selected)" : "if selected"}
+          </span>
         </div>
-
+        
+        <div className="hover-bonus-row">
+          <span className="hover-bonus-label">2P:</span>
+          <span className="hover-bonus-text">{gearSet.bonus2P}</span>
+        </div>
+        
+        <div className="hover-bonus-row">
+          <span className="hover-bonus-label">4P:</span>
+          <span className={`hover-bonus-text ${pieces >= 4 ? "active" : "inactive"}`}>
+            {gearSet.bonus4P}
+            {pieces < 4 && <span className="bonus-note"> (requires 4 pieces)</span>}
+          </span>
+        </div>
+      </div>
     );
 
     showOverlay(overlayContent, position);
   };
 
   const getSelectedSet = (setSlug) => {
-    return gearSets.find((set) => set.slug === setSlug);
+    return getGearSetBySlug(setSlug);
   };
 
-  // Trier les gear sets par ordre
   const sortedGearSets = [...gearSets].sort((a, b) => 
     (a.sortOrder || 999) - (b.sortOrder || 999)
   );
 
-  // Combiner l'option Empty avec les autres sets
   const allOptions = [
     {
       id: "empty",
@@ -252,26 +228,25 @@ const GearSetModal = ({ data, onClose }) => {
 
               return (
                 <div key={setSlug} className="gearset-bonus-item">
-                  <div className="gearset-set-name">{set.name}</div>
-
-
-                  {/* Bonus 2P - Toujours actif */}
-                  <div className="gearset-bonus-row">
-                    <span className="gearset-bonus-label">2P:</span>
-                    <span className="gearset-bonus-2p">{set.bonus2P}</span>
+                  <div className="gearset-set-header">
+                    <div className="gearset-set-name">{set.name}</div>
+                    <div className="gearset-set-config">
+                      {selectedSets.length === 1 ? '4P' : `Set ${index + 1} (2P)`}
+                    </div>
                   </div>
 
-                  {/* Bonus 4P - Actif seulement si 1 set sélectionné */}
-                  <div className="gearset-bonus-row">
-                    <span className="gearset-bonus-label">4P:</span>
-                    <span
-                      className={`gearset-bonus-4p ${
-                        pieces >= 4 ? "active" : "inactive"
-                      }`}
-                    >
-                      {set.bonus4P}
-                      {pieces < 4 && <span className="bonus-note"> (requires 4 pieces)</span>}
-                    </span>
+                  <div className="gearset-bonus-content">
+                    <div className="gearset-bonus-row">
+                      <span className="gearset-bonus-label">2P:</span>
+                      <span className="gearset-bonus-text">{set.bonus2P}</span>
+                    </div>
+
+                    {selectedSets.length === 1 && (
+                      <div className="gearset-bonus-row">
+                        <span className="gearset-bonus-label">4P:</span>
+                        <span className="gearset-bonus-text active">{set.bonus4P}</span>
+                      </div>
+                    )}
                   </div>
                 </div>
               );
@@ -281,55 +256,97 @@ const GearSetModal = ({ data, onClose }) => {
       </div>
 
       {/* SECTION BASSE : Grid des sets */}
-      <div className="gearset-grid">
-        {allOptions.map((set) => {
-          const isSelected = set.isEmpty
-            ? selectedSets.length === 0
-            : selectedSets.includes(set.slug);
-          const isDisabled =
-            !set.isEmpty && selectedSets.length >= 2 && !isSelected;
+      <div className="gearset-grid-section">
+        <div className="gearset-grid-header">
+          <span>Available Sets</span>
+          <span className="selection-counter">
+            {selectedSets.length}/2 selected
+          </span>
+        </div>
+        
+        <div className="gearset-grid">
+          {allOptions.map((set) => {
+            const isSelected = set.isEmpty
+              ? selectedSets.length === 0
+              : selectedSets.includes(set.slug);
+            const isDisabled =
+              !set.isEmpty && selectedSets.length >= 2 && !isSelected;
+            
+            const selectionIndex = isSelected ? selectedSets.indexOf(set.slug) + 1 : 0;
 
-          return (
-            <div
-              key={set.slug || set.id}
-              className={`gearset-option ${isSelected ? "selected" : ""} ${
-                isDisabled ? "disabled" : ""
-              } ${set.isEmpty ? "empty-option" : ""}`}
-              onClick={() => !isDisabled && handleSetClick(set.slug || "empty")}
-              onMouseEnter={(e) => !set.isEmpty && handleGearSetHover(set, e)}
-              onMouseLeave={hideOverlay}
-            >
-              {set.isEmpty ? (
-                <div className="empty-slot-label">Empty</div>
-              ) : (
-                <>
-                  <img
-                    src={getGearSetImagePath(set)}
-                    alt={set.name}
-                    className="gearset-image"
-                    onError={(e) => {
-                      console.warn(`Gear set image failed to load: ${e.target.src}`);
-                      e.target.style.display = "none";
-                      const fallback = e.target.nextElementSibling;
-                      if (fallback) fallback.style.display = "flex";
-                    }}
-                  />
-                  <div className="gearset-fallback">
-                    {set.name}
+            return (
+              <div
+                key={set.slug || set.id}
+                className={`gearset-option ${isSelected ? "selected" : ""} ${
+                  isDisabled ? "disabled" : ""
+                } ${set.isEmpty ? "empty-option" : ""}`}
+                onClick={() => !isDisabled && handleSetClick(set.slug || "empty")}
+                onMouseEnter={(e) => !set.isEmpty && handleGearSetHover(set, e)}
+                onMouseLeave={hideOverlay}
+                title={set.name}
+              >
+                {set.isEmpty ? (
+                  <div className="empty-slot-content">
+                    <div className="empty-label">Empty</div>
                   </div>
-                  {isSelected && (
-                    <div className="gearset-selected-indicator">✓</div>
-                  )}
-                </>
-              )}
-            </div>
-          );
-        })}
+                ) : (
+                  <>
+                    <img
+                      src={getGearSetImageUrl(set)}
+                      alt={set.name}
+                      className="gearset-image"
+                      onError={(e) => {
+                        e.target.style.display = "none";
+                        const fallback = e.target.nextElementSibling;
+                        if (fallback) fallback.style.display = "flex";
+                      }}
+                    />
+                    <div className="gearset-fallback">
+                      {set.name.length > 12 ? set.name.substring(0, 10) + '...' : set.name}
+                    </div>
+                    
+                    {isSelected && (
+                      <div className="gearset-selected-indicator">
+                        {selectedSets.length === 1 ? "✓" : selectionIndex}
+                      </div>
+                    )}
+                    
+                    {isDisabled && (
+                      <div className="gearset-disabled-overlay">
+                        <div className="gearset-disabled-icon">✗</div>
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+            );
+          })}
+        </div>
       </div>
 
-      {/* Boutons */}
+      {/* Instructions */}
+      <div className="gearset-instructions">
+        <div className="instructions-content">
+          {selectedSets.length === 0 ? (
+            <span>Select <strong>1 set for 4P</strong> or <strong>2 sets for 2P/2P</strong></span>
+          ) : selectedSets.length === 1 ? (
+            <span>Click another set for <strong>2P/2P</strong> configuration</span>
+          ) : (
+            <span>Click a selected set to remove it</span>
+          )}
+        </div>
+      </div>
+
+      {/* Boutons avec logs de débug */}
       <div className="btn-modal">
-        <button onClick={handleConfirm} className="btn-modal-confirm">
+        <button 
+          onClick={() => {
+            console.log("🔍 Debug - Current selectedSets:", selectedSets);
+            console.log("🔍 Debug - Would create:", createSimpleGearSetObject(selectedSets));
+            handleConfirm();
+          }} 
+          className="btn-modal-confirm"
+        >
           Confirm
         </button>
         <button onClick={onClose} className="btn-modal-cancel">

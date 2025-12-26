@@ -1,26 +1,26 @@
-// backend/src/utils/teamConverter.js
 /**
  * Convertisseur entre TeamContext (frontend) et TeamSchema (MongoDB)
- * Version corrigée pour gérer les slugs des héros
- */
-
-/**
- * Convertit TeamContext -> format DB
- * hero.id dans TeamContext = slug ("aisha"), pas ObjectId
+ * Version compatible avec advancements null/0/1/2
  */
 
 const mongoose = require('mongoose');
 
 const convertTeamContextToDB = (teamContext, teamName = "My Team", createdBy = "anonymous") => {
   const {
-    team = [],           // [hero1, hero2, hero3, hero4] où hero = {id: "aisha", name: "Aisha", ...}
-    subSlots = [],       // Array(slots)[Array(4)]
-    subStars = [],       // Même structure
-    perks = [],          // Array(slots)
-    advancements = [],
+    team = [],
+    subSlots = [],
+    subStars = [],
+    perks = [],
+    advancements = [], // 🔥 Maintenant null/0/1/2
     teamSize = 4,
     teamTitle = "My Team"
   } = teamContext;
+
+  console.log('🔧 teamConverter - convertTeamContextToDB - Début');
+  console.log('- teamTitle:', teamTitle);
+  console.log('- teamSize:', teamSize);
+  console.log('- advancements:', advancements);
+  console.log('- Type advancements[0]:', advancements[0] !== undefined ? typeof advancements[0] : 'undefined');
 
   const dbHeroes = [];
 
@@ -28,11 +28,8 @@ const convertTeamContextToDB = (teamContext, teamName = "My Team", createdBy = "
     const hero = team[slotIndex];
     if (!hero) continue;
 
-    // IMPORTANT: hero.id dans TeamContext est le slug ("aisha"), pas l'ObjectId
-    // On va stocker le slug, et le middleware pre-save convertira en ObjectId
     const heroSlug = hero.slug || hero.id || hero.name?.toLowerCase().replace(/\s+/g, '-');
 
-    // S'assurer que heroInfo a tous les champs requis
     const heroInfo = {
       name: hero.name || hero.infos?.name || "Unknown Hero",
       class: hero.class || hero.infos?.class || "Unknown",
@@ -42,7 +39,6 @@ const convertTeamContextToDB = (teamContext, teamName = "My Team", createdBy = "
     };
 
     // UW (subSlots[0])
-    const uwItem = subSlots[slotIndex]?.[0];
     const uwStars = subStars[slotIndex]?.[0] || 0;
 
     // UT (subSlots[1])
@@ -52,126 +48,109 @@ const convertTeamContextToDB = (teamContext, teamName = "My Team", createdBy = "
     if (utItem && utItem.id) {
       utChoice = parseInt(utItem.id) || 1;
     } else if (utItem && utItem.name) {
-      // Essayer d'extraire le numéro de "UT1", "UT2", etc.
       const match = utItem.name.match(/UT(\d)/i);
       utChoice = match ? parseInt(match[1]) : 1;
     }
 
     // Artifact (subSlots[2])
- const artifactItem = subSlots[slotIndex]?.[2];
-  const artifactStars = subStars[slotIndex]?.[2] || 0;
-  
-  let artifactId = null;
-  let artifactInfo = null;
-  
-  if (artifactItem) {
-    // 🔥 CORRECTION: Convertir string en ObjectId mongoose
-    if (artifactItem._id && mongoose.Types.ObjectId.isValid(artifactItem._id)) {
-      artifactId = new mongoose.Types.ObjectId(artifactItem._id);
-    } else if (artifactItem.id && mongoose.Types.ObjectId.isValid(artifactItem.id)) {
-      artifactId = new mongoose.Types.ObjectId(artifactItem.id);
-    }
-    
-    artifactInfo = {
-      name: artifactItem.name || artifactItem._name || "Unknown Artifact",
-      thumbnail: artifactItem.thumbnail || artifactItem._thumbnail || "/assets/artifacts/default.png",
-      description: artifactItem.description || artifactItem._description || ""
-    };
-  }
+    const artifactItem = subSlots[slotIndex]?.[2];
+    const artifactStars = subStars[slotIndex]?.[2] || 0;
+
     // GearSet (subSlots[3])
- const gearSetItem = subSlots[slotIndex]?.[3];
-  
-  let gearSetId = null;
-  let gearSetInfo = null;
-  
-  if (gearSetItem) {
-    // 🔥 CORRECTION: Deux possibilités
-    if (gearSetItem._id && mongoose.Types.ObjectId.isValid(gearSetItem._id)) {
-      // Si c'est un ObjectId (depuis la DB)
-      gearSetId = new mongoose.Types.ObjectId(gearSetItem._id);
-    } else if (gearSetItem.id) {
-      // Sinon garder comme string (ex: "beast_of_chaos")
-      gearSetId = gearSetItem.id;
-    }
-    
-    gearSetInfo = {
-      id: gearSetItem.id || gearSetItem._id || "unknown",
-      name: gearSetItem.name || gearSetItem._name || "Unknown Gear Set",
-      image: gearSetItem.image || gearSetItem._image || "/assets/gearsets/default.png",
-      bonus2P: gearSetItem.bonus2P || gearSetItem._bonus2P || "",
-      bonus4P: gearSetItem.bonus4P || gearSetItem._bonus4P || ""
-    };
-  }
+    const gearSetItem = subSlots[slotIndex]?.[3];
+
     // Perks
     const heroPerks = perks[slotIndex];
 
-    // SW Advancement
-    const swAdvancement = advancements[slotIndex] || "none";
+    // 🔥 SW Advancement - Maintenant null/0/1/2 venant du frontend
+    let swAdvancement = advancements[slotIndex];
+    console.log(`  Slot ${slotIndex} - swAdvancement reçu:`, swAdvancement, 'type:', typeof swAdvancement);
+    
+    // Validation et nettoyage de l'avancement
+    if (swAdvancement === undefined) {
+      swAdvancement = null;
+    } else if (typeof swAdvancement === 'string') {
+      // Convertir les strings
+      if (swAdvancement === "null" || swAdvancement === "none") {
+        swAdvancement = null;
+      } else if (["0", "1", "2"].includes(swAdvancement)) {
+        swAdvancement = parseInt(swAdvancement);
+      } else {
+        console.warn(`  ⚠️ Valeur string invalide "${swAdvancement}", conversion en null`);
+        swAdvancement = null;
+      }
+    } else if (typeof swAdvancement !== 'number' && swAdvancement !== null) {
+      console.warn(`  ⚠️ Type invalide "${typeof swAdvancement}", conversion en null`);
+      swAdvancement = null;
+    } else if (swAdvancement !== null && ![0, 1, 2].includes(swAdvancement)) {
+      console.warn(`  ⚠️ Valeur number invalide "${swAdvancement}", conversion en null`);
+      swAdvancement = null;
+    }
+    
+    console.log(`  Slot ${slotIndex} - swAdvancement nettoyé:`, swAdvancement, 'type:', typeof swAdvancement);
 
     // Construction de la configuration du héros
     const heroConfig = {
-      // Stocker le slug pour la recherche
       heroSlug: heroSlug,
-      // heroId sera rempli par le middleware pre-save
-      heroId: null,
-      
       slotPosition: slotIndex,
       heroInfo: heroInfo,
       
-      // UW
       uw: {
-        stars: Math.max(0, Math.min(5, uwStars)) // 0-5 étoiles
+        stars: Math.max(0, Math.min(5, uwStars))
       },
       
-      // UT
       ut: {
-        choice: Math.max(0, Math.min(4, utChoice)), // 0-4
-        stars: Math.max(0, Math.min(5, utStars)),
-        enhancement: 0
+        choice: Math.max(0, Math.min(4, utChoice)),
+        stars: Math.max(0, Math.min(5, utStars))
       },
       
-      // SW
+      // 🔥 SW avec advancement nettoyé
       sw: {
-        advancement: ["none", "blue", "purple", "red"].includes(swAdvancement) 
-          ? swAdvancement 
-          : "none",
-        level: 0
+        advancement: swAdvancement
       },
       
-      // Artifact
-      artifact: {
-        artifactId: artifactItem?.id || null,
-        artifactInfo: artifactItem ? {
-          name: artifactItem.name || "Unknown Artifact",
-          thumbnail: artifactItem.thumbnail || "/assets/artifacts/default.png",
-          description: artifactItem.description || ""
-        } : null,
+      artifact: artifactItem ? {
+        artifactSlug: artifactItem.artifactSlug,
+        artifactInfo: {
+          name: artifactItem.artifactInfo?.name || "Unknown Artifact",
+          thumbnail: artifactItem.artifactInfo?.thumbnail || "/assets/artifacts/default.png",
+          description: artifactItem.artifactInfo?.description || ""
+        },
         stars: Math.max(0, Math.min(5, artifactStars)),
         level: 0
+      } : {
+        artifactSlug: null,
+        artifactInfo: null,
+        stars: 0,
+        level: 0
       },
       
-      // GearSet
-      gearSet: {
-        gearSetId: gearSetItem?.id || null,
-        gearSetInfo: gearSetItem ? {
-          id: gearSetItem.id || gearSetItem.name?.toLowerCase().replace(/\s+/g, '_') || "unknown",
-          name: gearSetItem.name || "Unknown Gear Set",
-          image: gearSetItem.image || "/assets/gearsets/default.png",
-          bonus2P: gearSetItem.bonus2P || "",
-          bonus4P: gearSetItem.bonus4P || ""
-        } : null,
-        pieces: gearSetItem ? 4 : 0
-      },
-      
-      // Perks
-      perks: {
-        t3: {
-          s1: heroPerks?.s1 || null,
-          s2: heroPerks?.s2 || null,
-          s3: heroPerks?.s3 || null,
-          s4: heroPerks?.s4 || null
+      gearSet: gearSetItem ? {
+        gearSetSlug: gearSetItem.gearSetSlug,
+        gearSetInfo: {
+          name: gearSetItem.gearSetInfo?.name || "Unknown Gear Set",
+          thumbnail: gearSetItem.gearSetInfo?.thumbnail || "/assets/gearsets/default.png",
+          bonus2P: gearSetItem.gearSetInfo?.bonus2P || "",
+          bonus4P: gearSetItem.gearSetInfo?.bonus4P || ""
         },
-        t5: heroPerks?.t5 || null
+        pieces: gearSetItem.pieces || 0
+      } : {
+        gearSetSlug: null,
+        gearSetInfo: null,
+        pieces: 0
+      },
+      
+      perks: heroPerks ? {
+        t3: {
+          s1: heroPerks.t3?.s1 || null,
+          s2: heroPerks.t3?.s2 || null,
+          s3: heroPerks.t3?.s3 || null,
+          s4: heroPerks.t3?.s4 || null
+        },
+        t5: heroPerks.t5 || null
+      } : {
+        t3: { s1: null, s2: null, s3: null, s4: null },
+        t5: null
       },
       
       transcendence: 0,
@@ -179,11 +158,11 @@ const convertTeamContextToDB = (teamContext, teamName = "My Team", createdBy = "
       updatedAt: new Date()
     };
 
+    console.log(`  Héros ${slotIndex} SW config:`, heroConfig.sw);
     dbHeroes.push(heroConfig);
   }
 
-  // Retourner l'objet équipe complet
-  return {
+  const dbTeam = {
     name: teamTitle || teamName,
     description: "",
     teamSize: teamSize,
@@ -198,8 +177,16 @@ const convertTeamContextToDB = (teamContext, teamName = "My Team", createdBy = "
     tags: [],
     gameMode: 'other',
     authorNotes: '',
-    formatVersion: 2
+    formatVersion: 3
   };
+
+  console.log('✅ teamConverter - Conversion terminée');
+  console.log('  Nombre de héros:', dbHeroes.length);
+  if (dbHeroes.length > 0) {
+    console.log('  Premier héros SW:', dbHeroes[0]?.sw);
+  }
+
+  return dbTeam;
 };
 
 /**
@@ -213,86 +200,105 @@ const convertDBToTeamContext = (teamDB) => {
   const subSlots = Array(teamSize).fill(null).map(() => Array(4).fill(null));
   const subStars = Array(teamSize).fill(null).map(() => Array(4).fill(0));
   const perks = Array(teamSize).fill(null);
-  const advancements = Array(teamSize).fill("none");
+  const advancements = Array(teamSize).fill(null);
+
+  console.log('🔄 convertDBToTeamContext - Début');
+  console.log('teamDB.heroes:', teamDB.heroes?.length || 0);
 
   // Remplir avec les données
   (teamDB.heroes || []).forEach(heroConfig => {
     const slotIndex = heroConfig.slotPosition;
 
+    console.log(`  Traitement héros slot ${slotIndex}: ${heroConfig.heroSlug}`);
+    console.log(`    SW advancement DB:`, heroConfig.sw?.advancement, 'type:', typeof heroConfig.sw?.advancement);
+
     // Héros
     team[slotIndex] = {
-      id: heroConfig.heroId?.toString() || heroConfig.heroSlug,
-      name: heroConfig.heroInfo.name,
-      class: heroConfig.heroInfo.class,
-      position: heroConfig.heroInfo.position,
-      thumbnail: heroConfig.heroInfo.thumbnail,
-      slug: heroConfig.heroInfo.slug || heroConfig.heroSlug
+      id: heroConfig.heroSlug,
+      slug: heroConfig.heroSlug,
+      name: heroConfig.heroInfo?.name || "Unknown",
+      class: heroConfig.heroInfo?.class || "Unknown",
+      position: heroConfig.heroInfo?.position || "Back",
+      thumbnail: heroConfig.heroInfo?.thumbnail || "/assets/heroes/default.png",
+      infos: heroConfig.heroInfo || {}
     };
 
-    // UW
+    // UW (slot 0)
     if (heroConfig.uw && heroConfig.uw.stars > 0) {
-      subSlots[slotIndex][0] = {
-        type: 'uw',
-        name: 'Unique Weapon',
-        stars: heroConfig.uw.stars
-      };
       subStars[slotIndex][0] = heroConfig.uw.stars;
     }
 
-    // UT
-    if (heroConfig.ut && heroConfig.ut.choice > 0) {
+    // UT (slot 1)
+    if (heroConfig.ut) {
       subSlots[slotIndex][1] = {
-        type: 'ut',
-        id: heroConfig.ut.choice,
-        name: `UT${heroConfig.ut.choice}`,
-        stars: heroConfig.ut.stars
+        choice: heroConfig.ut.choice || 0
       };
-      subStars[slotIndex][1] = heroConfig.ut.stars;
+      subStars[slotIndex][1] = heroConfig.ut.stars || 0;
     }
 
-    // Artifact
-    if (heroConfig.artifact && heroConfig.artifact.artifactId) {
-      subSlots[slotIndex][2] = {
-        type: 'artifact',
-        id: heroConfig.artifact.artifactId,
-        name: heroConfig.artifact.artifactInfo?.name,
-        thumbnail: heroConfig.artifact.artifactInfo?.thumbnail,
-        description: heroConfig.artifact.artifactInfo?.description,
-        stars: heroConfig.artifact.stars
-      };
-      subStars[slotIndex][2] = heroConfig.artifact.stars;
-    }
-
-    // GearSet
-    if (heroConfig.gearSet && heroConfig.gearSet.gearSetId) {
-      subSlots[slotIndex][3] = {
-        type: 'gearset',
-        id: heroConfig.gearSet.gearSetId,
-        name: heroConfig.gearSet.gearSetInfo?.name,
-        image: heroConfig.gearSet.gearSetInfo?.image,
-        bonus2P: heroConfig.gearSet.gearSetInfo?.bonus2P,
-        bonus4P: heroConfig.gearSet.gearSetInfo?.bonus4P
-      };
-    }
-
-    // SW Advancement
+    // SW Advancement (slot 2)
     if (heroConfig.sw) {
-      advancements[slotIndex] = heroConfig.sw.advancement || "none";
+      let advancementValue = heroConfig.sw.advancement;
+      
+      // Nettoyer l'avancement pour le frontend
+      if (advancementValue === undefined) {
+        advancementValue = null;
+      } else if (typeof advancementValue === 'string') {
+        if (advancementValue === "null" || advancementValue === "none") {
+          advancementValue = null;
+        } else if (["0", "1", "2"].includes(advancementValue)) {
+          advancementValue = parseInt(advancementValue);
+        } else {
+          console.warn(`    ⚠️ Valeur SW invalide en DB: "${advancementValue}", conversion en null`);
+          advancementValue = null;
+        }
+      } else if (advancementValue !== null && ![0, 1, 2].includes(advancementValue)) {
+        console.warn(`    ⚠️ Valeur SW invalide en DB: ${advancementValue}, conversion en null`);
+        advancementValue = null;
+      }
+      
+      advancements[slotIndex] = advancementValue;
+      console.log(`    SW advancement nettoyé pour frontend:`, advancementValue);
+    }
+
+    // Artifact (slot 3 dans subSlots, mais slot 2 dans la DB)
+    if (heroConfig.artifact?.artifactSlug) {
+      subSlots[slotIndex][2] = {
+        artifactSlug: heroConfig.artifact.artifactSlug,
+        artifactInfo: heroConfig.artifact.artifactInfo || {
+          name: "Unknown Artifact",
+          thumbnail: "/assets/artifacts/default.png",
+          description: ""
+        },
+        stars: heroConfig.artifact.stars || 0
+      };
+      subStars[slotIndex][2] = heroConfig.artifact.stars || 0;
+    }
+
+    // Gear Set (slot 4 dans subSlots, mais slot 3 dans la DB)
+    if (heroConfig.gearSet?.gearSetSlug) {
+      subSlots[slotIndex][3] = {
+        gearSetSlug: heroConfig.gearSet.gearSetSlug,
+        gearSetInfo: heroConfig.gearSet.gearSetInfo || {
+          name: "Unknown Gear Set",
+          thumbnail: "/assets/gearsets/default.png",
+          bonus2P: "",
+          bonus4P: ""
+        },
+        pieces: heroConfig.gearSet.pieces || 0
+      };
     }
 
     // Perks
     if (heroConfig.perks) {
       perks[slotIndex] = {
-        s1: heroConfig.perks.t3?.s1,
-        s2: heroConfig.perks.t3?.s2,
-        s3: heroConfig.perks.t3?.s3,
-        s4: heroConfig.perks.t3?.s4,
-        t5: heroConfig.perks.t5
+        t3: heroConfig.perks.t3 || { s1: null, s2: null, s3: null, s4: null },
+        t5: heroConfig.perks.t5 || null
       };
     }
   });
 
-  return {
+  const result = {
     team,
     teamTitle: teamDB.name || "My Team",
     teamSize,
@@ -301,11 +307,53 @@ const convertDBToTeamContext = (teamDB) => {
     perks,
     advancements
   };
+
+  console.log('✅ convertDBToTeamContext - Conversion terminée');
+  console.log('- advancements final:', result.advancements);
+  console.log('- Type advancements[0]:', result.advancements[0] !== undefined ? typeof result.advancements[0] : 'undefined');
+
+  return result;
+};
+
+/**
+ * Fonction utilitaire pour convertir advancement pour l'affichage
+ */
+const convertAdvancementForDisplay = (advancement) => {
+  if (advancement === null || advancement === undefined) return "none";
+  
+  switch(advancement) {
+    case 0: return "blue";
+    case 1: return "purple";
+    case 2: return "red";
+    default: return "none";
+  }
+};
+
+/**
+ * Fonction utilitaire pour convertir advancement depuis l'affichage
+ */
+const convertAdvancementFromDisplay = (advancement) => {
+  if (advancement === null || advancement === undefined) return null;
+  
+  if (typeof advancement === 'number') {
+    return [0, 1, 2, null].includes(advancement) ? advancement : null;
+  }
+  
+  if (typeof advancement === 'string') {
+    const mapping = {
+      'none': null,
+      'blue': 0,
+      'purple': 1,
+      'red': 2
+    };
+    return mapping[advancement.toLowerCase()] !== undefined ? mapping[advancement.toLowerCase()] : null;
+  }
+  
+  return null;
 };
 
 /**
  * Trouve l'ObjectId d'un héros par son slug
- * Utilisé par le middleware pre-save
  */
 const findHeroIdBySlug = async (mongoose, heroSlug) => {
   try {
@@ -317,10 +365,10 @@ const findHeroIdBySlug = async (mongoose, heroSlug) => {
       return {
         heroId: hero._id,
         heroInfo: {
-          name: hero.infos.name,
-          class: hero.infos.class,
-          position: hero.infos.position,
-          thumbnail: hero.infos.thumbnail,
+          name: hero.infos?.name || "Unknown",
+          class: hero.infos?.class || "Unknown",
+          position: hero.infos?.position || "Back",
+          thumbnail: hero.infos?.thumbnail || "/assets/heroes/default.png",
           slug: hero.slug
         }
       };
@@ -336,5 +384,7 @@ const findHeroIdBySlug = async (mongoose, heroSlug) => {
 module.exports = {
   convertTeamContextToDB,
   convertDBToTeamContext,
+  convertAdvancementForDisplay,
+  convertAdvancementFromDisplay,
   findHeroIdBySlug
 };

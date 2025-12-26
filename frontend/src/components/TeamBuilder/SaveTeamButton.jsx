@@ -1,469 +1,353 @@
-// src/components/TeamBuilder/SaveTeamButton.jsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTeam } from '../../contexts/TeamContext';
-import api from '../../services/api';
+import './SaveTeamButton.css';
 
 const SaveTeamButton = () => {
   const { 
     team, 
-    teamTitle, 
+    teamName: currentTeamName,
     subSlots, 
     subStars, 
     perks, 
     advancements,
-    teamSize 
+    teamSize,
+    saveTeam
   } = useTeam();
   
-  const [isSaving, setIsSaving] = useState(false);
-  const [message, setMessage] = useState('');
   const [showModal, setShowModal] = useState(false);
-  const [teamName, setTeamName] = useState(teamTitle);
-  const [savedTeamId, setSavedTeamId] = useState(null);
+  const [teamName, setTeamName] = useState(currentTeamName || 'New Team');
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveMessage, setSaveMessage] = useState('');
 
   const handleSaveClick = () => {
-    setTeamName(teamTitle);
+    setTeamName(currentTeamName || 'New Team');
     setShowModal(true);
   };
 
-  // Fonction pour extraire les infos d'un item
-  const extractItemInfo = (item, slotIndex, subIndex) => {
-    if (!item) return null;
-    
-    console.log(`🔍 Extraction item: slot=${slotIndex}, sub=${subIndex}`, item);
-    
-    // NOUVEAU FORMAT: Objet spécial avec _type (de ArtifactModal)
-    if (typeof item === 'object' && item._type) {
-      console.log('📦 Objet spécial détecté:', item._type, item);
-      
-      switch (item._type) {
-        case 'artifact':
-          return {
-            type: 'artifact',
-            id: item._id, // ObjectId MongoDB
-            name: item._name || 'Artifact',
-            thumbnail: item._thumbnail || item.toString(),
-            description: item._description || '',
-            value: item._values || {}
-          };
-          
-        case 'uw':
-          return {
-            type: 'uw',
-            name: item._name || 'Unique Weapon'
-          };
-          
-        case 'ut':
-          return {
-            type: 'ut',
-            id: item._id || 1,
-            name: item._name || `UT${item._id || 1}`
-          };
-          
-        case 'gearset':
-          return {
-            type: 'gearset',
-            id: item._id,
-            name: item._name || 'Gear Set',
-            image: item._image || item.toString(),
-            bonus2P: item._bonus2P || '',
-            bonus4P: item._bonus4P || ''
-          };
-          
-        default:
-          console.warn('❌ Type d\'objet spécial inconnu:', item._type);
-          return null;
-      }
-    }
-    
-    // ANCIEN FORMAT: String (chemin d'image)
-    if (typeof item === 'string') {
-      console.log('📄 String détectée:', item);
-      
-      // UW (slot 0)
-      if (slotIndex === 0 && item.includes('unique_weapon')) {
-        return {
-          type: 'uw',
-          name: 'Unique Weapon'
-        };
-      }
-      
-      // UT (slot 1)
-      if (slotIndex === 1 && item.includes('ut')) {
-        const utMatch = item.match(/ut(\d)/i);
-        const utNumber = utMatch ? parseInt(utMatch[1]) : 1;
-        
-        return {
-          type: 'ut',
-          id: utNumber,
-          name: `UT${utNumber}`
-        };
-      }
-      
-      // Artifact (slot 2)
-      if (slotIndex === 2 && item.includes('artifact')) {
-        const artifactName = item.split('/artifacts/')[1]?.replace('.png', '');
-        
-        return {
-          type: 'artifact',
-          name: artifactName ? artifactName.replace(/_/g, ' ') : 'Artifact',
-          thumbnail: item,
-          description: ''
-        };
-      }
-      
-      // GearSet (slot 3) - Peut être une string JSON ou un chemin
-      if (slotIndex === 3) {
-        // Essayer de parser comme JSON d'abord
-        try {
-          const gearSets = JSON.parse(item);
-          if (Array.isArray(gearSets) && gearSets.length > 0) {
-            // Si c'est un tableau de noms de gearsets
-            if (gearSets.length === 1) {
-              return {
-                type: 'gearset',
-                name: gearSets[0].replace(/_/g, ' '),
-                id: gearSets[0]
-              };
-            } else {
-              return {
-                type: 'gearset_combo',
-                sets: gearSets,
-                name: 'Mixed Gear Sets'
-              };
-            }
-          }
-        } catch (e) {
-          // Ce n'est pas du JSON, c'est probablement un chemin d'image
-          if (item.includes('gearset')) {
-            const gearsetName = item.split('/gearsets/')[1]?.replace('.png', '');
-            return {
-              type: 'gearset',
-              name: gearsetName ? gearsetName.replace(/_/g, ' ') : 'Gear Set',
-              image: item,
-              id: gearsetName
-            };
-          }
-        }
-      }
-    }
-    
-    // SI c'est déjà un objet normal (format intermédiaire)
-    if (typeof item === 'object' && item.type) {
-      console.log('📊 Objet normal détecté:', item.type);
-      return item;
-    }
-    
-    console.warn('❌ Format d\'item non reconnu:', typeof item, item);
-    return null;
-  };
-
   const handleSaveTeam = async () => {
-    // Vérification basique
-    const heroCount = team.filter(h => h !== null).length;
-    if (heroCount === 0) {
-      setMessage('❌ Ajoutez au moins un héros avant de sauvegarder !');
-      setShowModal(false);
-      setTimeout(() => setMessage(''), 3000);
+    if (!teamName || !teamName.trim()) {
+      setSaveMessage('❌ Le nom de l\'équipe est requis');
       return;
     }
-
+    
     setIsSaving(true);
-    setMessage('💾 Sauvegarde en cours...');
-
-    try {
-      // Préparer les données pour l'API
-      const teamData = {
-        teamSize,
-        teamTitle: teamName || teamTitle,
-        team: team.map(hero => {
-          if (!hero) return null;
-          
-          return {
-            id: hero.slug || hero.id, // IMPORTANT: slug pour la recherche
-            slug: hero.slug || hero.id,
-            name: hero.name,
-            class: hero.class,
-            position: hero.position,
-            thumbnail: hero.thumbnail
-            // Note: Si vos héros ont d'autres infos (transcendence, etc.), ajoutez-les ici
-          };
-        }),
-        subSlots: subSlots.map((slot, slotIndex) => 
-          slot.map((item, subIndex) => {
-            return extractItemInfo(item, slotIndex, subIndex);
-          })
-        ),
-        subStars,
-        perks,
-        advancements
-      };
-
-      console.log('📤 Données prêtes à envoyer:', teamData);
-      
-      // Afficher un résumé détaillé
-      console.log('📊 === RÉSUMÉ DE L\'ÉQUIPE ===');
-      console.log(`Nom: ${teamData.teamTitle}`);
-      console.log(`Taille: ${teamData.teamSize} slots`);
-      console.log(`Héros: ${teamData.team.filter(h => h).length}`);
-      
-      console.log('\n🎮 Héros:');
-      teamData.team.forEach((hero, i) => {
-        if (hero) {
-          console.log(`  ${i}. ${hero.name} (${hero.class}) - Slug: ${hero.slug}`);
-        }
-      });
-      
-      console.log('\n🎯 Items équipés:');
-      teamData.subSlots.forEach((slot, i) => {
-        const items = slot.filter(item => item !== null);
-        if (items.length > 0) {
-          console.log(`Slot ${i} (${['UW', 'UT', 'Artifact', 'GearSet'][i]}):`);
-          items.forEach((item, j) => {
-            if (item) {
-              console.log(`  → ${item.type}: ${item.name}${item.id ? ` (ID: ${item.id})` : ''}`);
-              if (item.stars) console.log(`    ⭐ ${item.stars} étoiles`);
-            }
-          });
-        }
-      });
-
-      // Envoyer à l'API
-      const response = await api.saveTeam(teamData);
-      
-      console.log('📥 Réponse du serveur:', response);
-
-      if (response.success) {
-        setMessage(`✅ Équipe "${response.team.teamTitle}" sauvegardée !`);
-        setSavedTeamId(response.teamId);
+    setSaveMessage('⏳ Sauvegarde en cours...');
+    
+    console.log('=== 🚀 DÉBUT SAUVEGARDE ===');
+    
+    const teamData = {
+      teamTitle: teamName.trim(),
+      teamSize: teamSize,
+      team: team,
+      subSlots: subSlots,
+      subStars: subStars,
+      perks: perks,
+      advancements: advancements
+    };
+    
+    // Log détaillé
+    console.log('📤 Données à envoyer:');
+    console.log('- Nom équipe:', teamData.teamTitle);
+    console.log('- Taille:', teamData.teamSize);
+    console.log('- Nombre héros:', team.filter(h => h).length);
+    
+    team.forEach((hero, idx) => {
+      if (hero) {
+        const artifact = subSlots[idx]?.[2];
+        const gearSet = subSlots[idx]?.[3];
         
-        // Stocker l'ID pour référence
-        if (response.teamId) {
-          localStorage.setItem('lastSavedTeamId', response.teamId);
-          console.log(`🆔 Team ID sauvegardé: ${response.teamId}`);
-          
-          // Copier l'ID dans le clipboard
-          try {
-            await navigator.clipboard.writeText(response.teamId);
-            console.log('📋 ID copié dans le clipboard');
-            setMessage(prev => prev + ' (ID copié)');
-          } catch (err) {
-            console.warn('⚠️ Impossible de copier l\'ID:', err);
-          }
+        console.log(`\n👤 Héros ${idx} (${hero.name}):`);
+        console.log('  - ID:', hero.id);
+        console.log('  - Slug:', hero.slug);
+        
+        if (artifact) {
+          console.log('  🎯 Artifact trouvé:');
+          console.log('    - artifactSlug:', artifact.artifactSlug);
+          console.log('    - has artifactInfo:', !!artifact.artifactInfo);
+          console.log('    - Stars:', subStars[idx]?.[2] || 0);
         }
+        
+        if (gearSet) {
+          console.log('  ⚙️ Gear Set trouvé:');
+          console.log('    - gearSetSlug:', gearSet.gearSetSlug);
+          console.log('    - has gearSetInfo:', !!gearSet.gearSetInfo);
+          console.log('    - Pieces:', gearSet.pieces);
+        }
+      }
+    });
+    
+    try {
+      const result = await saveTeam(teamName.trim());
+      
+      console.log('📥 Réponse backend:', result);
+      
+      if (result.success) {
+        setSaveMessage(`✅ Équipe "${teamName}" sauvegardée avec succès!`);
+        setTimeout(() => {
+          setShowModal(false);
+          setSaveMessage('');
+        }, 2000);
       } else {
-        setMessage(`❌ Erreur: ${response.error || 'Sauvegarde échouée'}`);
+        setSaveMessage(`❌ Erreur: ${result.error || 'Échec de sauvegarde'}`);
       }
     } catch (error) {
-      console.error('🔥 Erreur de sauvegarde:', error);
-      setMessage(`❌ Erreur: ${error.message || 'Connexion au serveur échouée'}`);
+      console.error('💥 Erreur lors de la sauvegarde:', error);
+      setSaveMessage(`❌ Erreur: ${error.message}`);
     } finally {
       setIsSaving(false);
-      setShowModal(false);
-      setTimeout(() => setMessage(''), 5000);
     }
   };
+
+  const testBackendDirectly = async () => {
+    console.log('=== 🧪 TEST BACKEND DIRECT ===');
+    
+    const testPayload = {
+      teamData: {
+        teamTitle: "Test Direct",
+        teamSize: 4,
+        team: [
+          {
+            id: "kasel",
+            slug: "kasel",
+            name: "Kasel",
+            class: "Warrior",
+            thumbnail: "/kingsraid-data/assets/heroes/Kasel/ico.png"
+          },
+          null, null, null
+        ],
+        subSlots: [
+          [
+            null,
+            null,
+            {
+              artifactSlug: "madames_bronze_mirrors",
+              artifactInfo: {
+                name: "Madame's Bronze Mirrors",
+                thumbnail: "/kingsraid-data/assets/artifacts/Madame's Bronze Mirrors.png",
+                description: "Increase ATK by 10%"
+              }
+            },
+            {
+              gearSetSlug: "beast_of_chaos",
+              gearSetInfo: {
+                name: "Beast of Chaos",
+                thumbnail: "/kingsraid-data/assets/gearsets/beast_of_chaos.png",
+                bonus2P: "ATK +500",
+                bonus4P: "Skill damage +15%"
+              },
+              pieces: 4,
+              sets: ["beast_of_chaos"]
+            }
+          ],
+          [null, null, null, null],
+          [null, null, null, null],
+          [null, null, null, null]
+        ],
+        subStars: [
+          [0, 0, 3, 0],
+          [0, 0, 0, 0],
+          [0, 0, 0, 0],
+          [0, 0, 0, 0]
+        ],
+        perks: [
+          { t3: { s1: "light", s2: null, s3: null, s4: null }, t5: null },
+          null,
+          null,
+          null
+        ],
+        advancements: [null, null, null, null]
+      },
+      createdBy: "debug-test"
+    };
+
+    console.log('📤 Envoi test:', JSON.stringify(testPayload, null, 2));
+
+    try {
+      const response = await fetch('http://localhost:3002/api/v2/teams', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify(testPayload)
+      });
+      
+      const data = await response.json();
+      console.log('📥 Réponse backend:', data);
+      
+      if (data.success) {
+        alert(`✅ Test réussi! ID: ${data.teamId}`);
+      } else {
+        alert(`❌ Échec: ${data.error || 'Erreur inconnue'}`);
+        console.error('Détails erreur:', data.details);
+      }
+    } catch (error) {
+      console.error('💥 Erreur réseau:', error);
+      alert(`❌ Erreur réseau: ${error.message}`);
+    }
+  };
+
+  useEffect(() => {
+    if (saveMessage) {
+      const timer = setTimeout(() => {
+        setSaveMessage('');
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [saveMessage]);
+
+  const canSaveTeam = () => {
+    const hasHeroes = team.filter(h => h).length > 0;
+    const validName = teamName && teamName.trim().length > 0;
+    return hasHeroes && validName && !isSaving;
+  };
+
+  const getArtifactCount = () => subSlots.flat().filter(item => item && item.artifactSlug).length;
+  const getGearSetCount = () => subSlots.flat().filter(item => item && item.gearSetSlug).length;
+  const getUWCount = () => subSlots.flat().filter(item => item && item.uwPath).length;
+  const getUTCount = () => subSlots.flat().filter(item => item && item.choice).length;
 
   return (
     <>
-      {/* Bouton principal */}
-      <div style={{ margin: '20px 0', textAlign: 'center' }}>
-        <button
-          onClick={handleSaveClick}
-          disabled={isSaving}
-          style={{
-            padding: '12px 24px',
-            backgroundColor: '#4CAF50',
-            color: 'white',
-            border: 'none',
-            borderRadius: '8px',
-            cursor: 'pointer',
-            fontSize: '16px',
-            fontWeight: 'bold',
-            opacity: isSaving ? 0.7 : 1,
-            transition: 'all 0.3s',
-            boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
-          }}
-          onMouseEnter={(e) => e.target.style.backgroundColor = '#45a049'}
-          onMouseLeave={(e) => e.target.style.backgroundColor = '#4CAF50'}
-        >
-          {isSaving ? (
-            <>
-              <span style={{ marginRight: '8px' }}>⏳</span>
-              Sauvegarde...
-            </>
-          ) : (
-            <>
-              <span style={{ marginRight: '8px' }}>💾</span>
-              Sauvegarder l'équipe
-            </>
-          )}
-        </button>
-        
-        {/* Message de statut */}
-        {message && (
-          <div style={{
-            marginTop: '15px',
-            padding: '12px',
-            borderRadius: '6px',
-            backgroundColor: message.includes('✅') ? '#d4edda' : '#f8d7da',
-            color: message.includes('✅') ? '#155724' : '#721c24',
-            border: `1px solid ${message.includes('✅') ? '#c3e6cb' : '#f5c6cb'}`,
-            maxWidth: '500px',
-            marginLeft: 'auto',
-            marginRight: 'auto'
-          }}>
-            {message}
-            {savedTeamId && (
-              <div style={{ marginTop: '8px', fontSize: '0.9em' }}>
-                <strong>ID de l'équipe:</strong> 
-                <div style={{ 
-                  background: '#f8f9fa', 
-                  padding: '4px 8px', 
-                  borderRadius: '4px',
-                  marginTop: '4px',
-                  fontFamily: 'monospace',
-                  fontSize: '0.85em',
-                  wordBreak: 'break-all'
-                }}>
-                  {savedTeamId}
-                </div>
-                <small style={{ color: '#6c757d', display: 'block', marginTop: '4px' }}>
-                  Cet ID a été copié dans votre presse-papiers
-                </small>
-              </div>
+      <div className="save-team-container">
+        <div className="save-team-buttons">
+          <button
+            onClick={handleSaveClick}
+            disabled={!canSaveTeam()}
+            className={`save-button-main ${!canSaveTeam() ? 'disabled' : ''}`}
+          >
+            {isSaving ? (
+              <>
+                <span className="button-icon">⏳</span>
+                Sauvegarde...
+              </>
+            ) : (
+              <>
+                <span className="button-icon">💾</span>
+                Sauvegarder l'équipe
+              </>
             )}
+          </button>
+
+          <button
+            onClick={testBackendDirectly}
+            className="test-backend-button"
+          >
+            🔧 Test Backend
+          </button>
+        </div>
+        
+        {saveMessage && (
+          <div className={`save-message ${saveMessage.includes('✅') ? 'success' : saveMessage.includes('⏳') ? 'warning' : 'error'}`}>
+            {saveMessage}
           </div>
         )}
         
-        {/* Petit indicateur d'état */}
-        <div style={{ 
-          marginTop: '10px', 
-          fontSize: '0.9em', 
-          color: '#6c757d',
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          gap: '10px'
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center' }}>
-            <div style={{
-              width: '8px',
-              height: '8px',
-              borderRadius: '50%',
-              backgroundColor: team.filter(h => h).length > 0 ? '#28a745' : '#dc3545',
-              marginRight: '6px'
-            }}></div>
-            Héros: {team.filter(h => h).length}/{teamSize}
+        <div className="team-stats">
+          <div className="stats-row">
+            <div className="stat-item">
+              <div className={`stat-indicator ${team.filter(h => h).length > 0 ? 'active' : 'inactive'}`}></div>
+              <span className="stat-label">Héros:</span>
+              <span className="stat-value">{team.filter(h => h).length}/{teamSize}</span>
+            </div>
+            
+            <div className="stat-item">
+              <div className={`stat-indicator ${subSlots.flat().filter(item => item).length > 0 ? 'active' : 'inactive'}`}></div>
+              <span className="stat-label">Équipements:</span>
+              <span className="stat-value">{subSlots.flat().filter(item => item).length}</span>
+            </div>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center' }}>
-            <div style={{
-              width: '8px',
-              height: '8px',
-              borderRadius: '50%',
-              backgroundColor: subSlots.flat().filter(item => item).length > 0 ? '#28a745' : '#6c757d',
-              marginRight: '6px'
-            }}></div>
-            Items: {subSlots.flat().filter(item => item).length}
+          
+          <div className="equipment-details">
+            <span className="equipment-item">Artifacts: {getArtifactCount()}</span>
+            <span className="equipment-item">Gear Sets: {getGearSetCount()}</span>
+            <span className="equipment-item">UW: {getUWCount()}</span>
+            <span className="equipment-item">UT: {getUTCount()}</span>
           </div>
         </div>
       </div>
 
-      {/* Modal pour le nom de l'équipe */}
       {showModal && (
-        <div style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          backgroundColor: 'rgba(0,0,0,0.5)',
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          zIndex: 1000
-        }}>
-          <div style={{
-            backgroundColor: 'white',
-            padding: '30px',
-            borderRadius: '12px',
-            minWidth: '400px',
-            maxWidth: '500px',
-            boxShadow: '0 10px 30px rgba(0,0,0,0.3)'
-          }}>
-            <h3 style={{ marginTop: 0, color: '#333' }}>💾 Sauvegarder l'équipe</h3>
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <h3 className="modal-title">
+              <span className="modal-icon">💾</span>
+              Sauvegarder l'équipe
+            </h3>
             
-            <div style={{ margin: '20px 0' }}>
-              <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold' }}>
-                Nom de l'équipe:
+            <div className="modal-body">
+              <label className="modal-label">
+                Nom de l'équipe *
               </label>
               <input
                 type="text"
                 value={teamName}
                 onChange={(e) => setTeamName(e.target.value)}
                 placeholder="Ex: Mon équipe PVP"
-                style={{
-                  width: '100%',
-                  padding: '10px',
-                  border: '2px solid #ddd',
-                  borderRadius: '6px',
-                  fontSize: '16px',
-                  boxSizing: 'border-box',
-                  marginBottom: '15px'
-                }}
+                className={`modal-input ${teamName && teamName.trim() ? 'valid' : 'invalid'}`}
                 autoFocus
               />
               
-              {/* Aperçu de l'équipe */}
-              <div style={{ 
-                background: '#f8f9fa', 
-                color: `#0a0a0a`,
-                padding: '15px', 
-                borderRadius: '8px',
-                border: '1px solid #e9ecef'
-              }}>
-                <div style={{ fontWeight: 'bold', marginBottom: '10px', color: '#495057' }}>
-                  📊 Aperçu de l'équipe:
+              {(!teamName || !teamName.trim()) && (
+                <div className="validation-error">
+                  <span className="error-icon">⚠️</span>
+                  Le nom de l'équipe est requis
                 </div>
-                <div style={{ fontSize: '0.9em' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
-                    <span>Héros:</span>
-                    <span style={{ fontWeight: 'bold' }}>
-                      {team.filter(h => h !== null).length}/{teamSize}
+              )}
+              
+              <div className="team-preview">
+                <div className="preview-title">📊 Aperçu de l'équipe:</div>
+                
+                <div className="preview-grid">
+                  <div className="preview-item">
+                    <span className="preview-label">Héros:</span>
+                    <span className="preview-value">
+                      {team.filter(h => h).length}/{teamSize}
                     </span>
                   </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
-                    <span>Items équipés:</span>
-                    <span style={{ fontWeight: 'bold' }}>
-                      {subSlots.flat().filter(item => item !== null).length}/{(team.filter(h => h).length * 4)}
+                  <div className="preview-item">
+                    <span className="preview-label">Équipements:</span>
+                    <span className="preview-value">
+                      {subSlots.flat().filter(item => item).length}
                     </span>
                   </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                    <span>Perks configurés:</span>
-                    <span style={{ fontWeight: 'bold' }}>
-                      {perks.filter(p => p !== null).length}
+                  <div className="preview-item">
+                    <span className="preview-label">Artifacts:</span>
+                    <span className="preview-value">
+                      {getArtifactCount()}
+                    </span>
+                  </div>
+                  <div className="preview-item">
+                    <span className="preview-label">Gear Sets:</span>
+                    <span className="preview-value">
+                      {getGearSetCount()}
                     </span>
                   </div>
                 </div>
                 
-                {/* Liste des héros */}
                 {team.filter(h => h).length > 0 && (
-                  <div style={{ marginTop: '15px' }}>
-                    <div style={{ fontSize: '0.85em', color: '#6c757d', marginBottom: '5px' }}>
-                      Héros dans l'équipe:
-                    </div>
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px' }}>
+                  <div className="heroes-list">
+                    <div className="heroes-title">Héros dans l'équipe:</div>
+                    <div className="heroes-container">
                       {team.map((hero, idx) => (
                         hero && (
-                          <span key={idx} style={{
-                            background: '#e3f2fd',
-                            padding: '3px 8px',
-                            borderRadius: '12px',
-                            fontSize: '0.8em',
-                            color: '#1976d2',
-                            border: '1px solid #bbdefb'
-                          }}>
-                            {hero.name}
-                          </span>
+                          <div key={idx} className="hero-card">
+                            <div className="hero-name">
+                              {hero.name} <span className="hero-class">({hero.class})</span>
+                            </div>
+                            <div className="hero-equipment">
+                              {subSlots[idx]?.[2] && (
+                                <span className="equipment-badge artifact">
+                                  🎯 {subSlots[idx][2].artifactInfo?.name}
+                                </span>
+                              )}
+                              {subSlots[idx]?.[3] && (
+                                <span className="equipment-badge gearset">
+                                  ⚙️ {subSlots[idx][3].gearSetInfo?.name}
+                                </span>
+                              )}
+                            </div>
+                          </div>
                         )
                       ))}
                     </div>
@@ -472,59 +356,29 @@ const SaveTeamButton = () => {
               </div>
             </div>
 
-            <div style={{ 
-              display: 'flex', 
-              justifyContent: 'flex-end',
-              gap: '10px',
-              marginTop: '20px'
-            }}>
+            <div className="modal-actions">
               <button
-                onClick={() => setShowModal(false)}
-                style={{
-                  padding: '10px 20px',
-                  backgroundColor: '#6c757d',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '6px',
-                  cursor: 'pointer',
-                  transition: 'background 0.2s'
+                onClick={() => {
+                  setShowModal(false);
+                  setSaveMessage('');
                 }}
-                onMouseEnter={(e) => e.target.style.backgroundColor = '#5a6268'}
-                onMouseLeave={(e) => e.target.style.backgroundColor = '#6c757d'}
+                className="modal-button cancel"
               >
                 Annuler
               </button>
               <button
                 onClick={handleSaveTeam}
-                disabled={isSaving || !teamName.trim()}
-                style={{
-                  padding: '10px 20px',
-                  backgroundColor: teamName.trim() ? (isSaving ? '#6c757d' : '#28a745') : '#ccc',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '6px',
-                  cursor: teamName.trim() && !isSaving ? 'pointer' : 'not-allowed',
-                  transition: 'background 0.2s'
-                }}
-                onMouseEnter={(e) => {
-                  if (teamName.trim() && !isSaving) {
-                    e.target.style.backgroundColor = '#218838';
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (teamName.trim() && !isSaving) {
-                    e.target.style.backgroundColor = '#28a745';
-                  }
-                }}
+                disabled={isSaving || !teamName || !teamName.trim()}
+                className={`modal-button save ${(!teamName || !teamName.trim() || isSaving) ? 'disabled' : ''}`}
               >
                 {isSaving ? (
                   <>
-                    <span style={{ marginRight: '8px' }}>⏳</span>
+                    <span className="button-icon">⏳</span>
                     Sauvegarde...
                   </>
                 ) : (
                   <>
-                    <span style={{ marginRight: '8px' }}>💾</span>
+                    <span className="button-icon">💾</span>
                     Sauvegarder
                   </>
                 )}

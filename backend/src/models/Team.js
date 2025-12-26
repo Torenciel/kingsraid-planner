@@ -1,4 +1,3 @@
-// backend/src/models/Team.js
 const mongoose = require('mongoose');
 const mongoosePaginate = require('mongoose-paginate-v2');
 
@@ -37,7 +36,14 @@ const GearSetConfigSchema = new mongoose.Schema({
     type: Number,
     enum: [0, 2, 4],
     default: 0
-  }
+  },
+  isMultiSet: {
+    type: Boolean,
+    default: false
+  },
+  sets: [String],
+  set1Info: Object,
+  set2Info: Object
 }, { _id: false });
 
 const PerksConfigSchema = new mongoose.Schema({
@@ -68,14 +74,73 @@ const UTConfigSchema = new mongoose.Schema({
   }
 }, { _id: false });
 
-// 🔥 CORRIGÉ : SW avec advancement numérique
+// 🔥 SCHÉMA SW CORRIGÉ : Mixed pour accepter null/number
 const SWConfigSchema = new mongoose.Schema({
   advancement: {
-    type: Number,
-    enum: [0, 1, 2, null], // 0 = blue, 1 = purple, 2 = red
-    default: null
+    type: mongoose.Schema.Types.Mixed, // 🔥 Changé de Number à Mixed
+    default: null,
+    validate: {
+      validator: function(value) {
+        // Accepter null, 0, 1, 2 (nombres) ou "0", "1", "2" (strings)
+        return value === null || 
+               value === 0 || value === 1 || value === 2 ||
+               value === "0" || value === "1" || value === "2" ||
+               value === "null" || value === "none";
+      },
+      message: 'advancement doit être null, 0, 1, 2, "0", "1", "2", "null" ou "none"'
+    }
   }
 }, { _id: false });
+
+// 🔥 MIDDLEWARE POUR NETTOYER LE SW
+SWConfigSchema.pre('validate', function(next) {
+  console.log('🔄 SW pre-validate - Entrée:', {
+    advancement: this.advancement,
+    type: typeof this.advancement
+  });
+  
+  if (this.advancement === undefined) {
+    this.advancement = null;
+  }
+  
+  // Convertir les strings en null/number
+  if (typeof this.advancement === 'string') {
+    switch(this.advancement) {
+      case "null":
+      case "none":
+        console.log('  -> Converti string "null"/"none" en null');
+        this.advancement = null;
+        break;
+      case "0":
+      case "1":
+      case "2":
+        console.log(`  -> Converti string "${this.advancement}" en number`);
+        this.advancement = parseInt(this.advancement);
+        break;
+      default:
+        console.log(`  -> Valeur string invalide "${this.advancement}", conversion en null`);
+        this.advancement = null;
+    }
+  }
+  
+  // S'assurer que c'est bien null ou number 0/1/2
+  if (this.advancement !== null && typeof this.advancement !== 'number') {
+    console.warn(`  ⚠️ Type invalide "${typeof this.advancement}", conversion en null`);
+    this.advancement = null;
+  }
+  
+  if (this.advancement !== null && ![0, 1, 2].includes(this.advancement)) {
+    console.warn(`  ⚠️ Valeur invalide "${this.advancement}", conversion en null`);
+    this.advancement = null;
+  }
+  
+  console.log('🔄 SW pre-validate - Sortie:', {
+    advancement: this.advancement,
+    type: typeof this.advancement
+  });
+  
+  next();
+});
 
 // === SCHÉMA HÉROS DANS LA TEAM ===
 const HeroConfigSchema = new mongoose.Schema({
@@ -323,6 +388,14 @@ TeamSchema.pre('save', async function(next) {
           }
         }
         
+        // 🔥 LOGS POUR LE SW
+        if (heroConfig.sw) {
+          console.log(`SW pour ${heroConfig.heroSlug}:`, {
+            advancement: heroConfig.sw.advancement,
+            type: typeof heroConfig.sw.advancement
+          });
+        }
+        
         heroConfig.updatedAt = Date.now();
         
       } catch (error) {
@@ -347,7 +420,7 @@ HeroConfigSchema.methods.getSWBonus = function() {
   const sw = this.sw || {};
   const advancement = sw.advancement;
   
-  if (advancement === null) return [];
+  if (advancement === null || advancement === undefined) return [];
   
   const bonuses = [];
   

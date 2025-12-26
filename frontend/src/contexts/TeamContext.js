@@ -21,7 +21,11 @@ export const TeamProvider = ({ children }) => {
   
   // États des perks et advancements
   const [perks, setPerks] = useState(Array(teamSize).fill(null));
-  const [advancements, setAdvancements] = useState(Array(teamSize).fill("none"));
+  
+  // 🔥 Stocker null/0/1/2 (nombres)
+  const [advancements, setAdvancements] = useState(
+    Array(teamSize).fill(null)
+  );
   
   // États de sauvegarde
   const [savedTeams, setSavedTeams] = useState([]);
@@ -41,7 +45,6 @@ export const TeamProvider = ({ children }) => {
         const result = await response.json();
         
         if (result.success) {
-          // Convertir les données du backend au format frontend
           const formattedTeams = result.teams?.map(teamData => 
             convertDBToTeamContext(teamData)
           ) || [];
@@ -64,7 +67,11 @@ export const TeamProvider = ({ children }) => {
     try {
       setLoading(true);
       
-      // Préparer les données pour le backend
+      console.log('=== 🚀 TEAMCONTEXT - saveTeam ===');
+      console.log('Advancements avant envoi:', advancements);
+      console.log('Types:', advancements.map(a => typeof a));
+      console.log('Valeurs:', advancements);
+      
       const teamData = {
         teamTitle: teamName,
         teamSize: teamSize,
@@ -72,10 +79,12 @@ export const TeamProvider = ({ children }) => {
         subSlots: subSlots,
         subStars: subStars,
         perks: perks,
-        advancements: advancements,
+        advancements: advancements,  // 🔥 Doit être [null, 0, 1, 2]
         isPublic: isPublic,
         gameMode: gameMode
       };
+      
+      console.log('📤 Données complètes envoyées:', teamData);
       
       const response = await fetch(`${API_BASE_URL}/api/v2/teams`, {
         method: 'POST',
@@ -88,18 +97,29 @@ export const TeamProvider = ({ children }) => {
         })
       });
       
+      console.log('Response status:', response.status);
+      
       if (response.ok) {
         const result = await response.json();
         
         if (result.success) {
-          // Charger les équipes mises à jour
           await loadTeams();
           return { success: true, teamId: result.teamId };
+        } else {
+          console.error('Backend error:', result.error);
+          return { success: false, error: result.error || 'Échec de sauvegarde' };
         }
+      } else {
+        const errorText = await response.text();
+        console.error('HTTP Error:', response.status, errorText);
+        return { 
+          success: false, 
+          error: `HTTP ${response.status}: Échec de sauvegarde` 
+        };
       }
-      return { success: false, error: 'Échec de sauvegarde' };
+      
     } catch (error) {
-      console.error('Erreur sauvegarde équipe:', error);
+      console.error('Erreur réseau sauvegarde équipe:', error);
       return { success: false, error: error.message };
     } finally {
       setLoading(false);
@@ -116,7 +136,6 @@ export const TeamProvider = ({ children }) => {
         const result = await response.json();
         
         if (result.success && result.team) {
-          // Convertir les données du backend et appliquer
           const teamContextData = convertDBToTeamContext(result.team);
           applyTeamData(teamContextData);
           setCurrentTeamId(teamId);
@@ -144,7 +163,15 @@ export const TeamProvider = ({ children }) => {
     setSubSlots(newSubSlots || Array(newSize).fill(null).map(() => Array(4).fill(null)));
     setSubStars(newSubStars || Array(newSize).fill(null).map(() => Array(4).fill(0)));
     setPerks(newPerks || Array(newSize).fill(null));
-    setAdvancements(newAdvancements || Array(newSize).fill("none"));
+    
+    // 🔥 S'assurer que advancements est bien [null, 0, 1, 2]
+    const validatedAdvancements = (newAdvancements || Array(newSize).fill(null)).map(adv => {
+      if ([null, 0, 1, 2].includes(adv)) return adv;
+      console.warn('⚠️ Advancement invalide converti en null:', adv);
+      return null;
+    });
+    
+    setAdvancements(validatedAdvancements);
   };
 
   // 🔥 CONVERTIR LES DONNÉES DU BACKEND AU FORMAT FRONTEND
@@ -155,11 +182,16 @@ export const TeamProvider = ({ children }) => {
     const frontendSubSlots = Array(dbTeam.teamSize).fill(null).map(() => Array(4).fill(null));
     const frontendSubStars = Array(dbTeam.teamSize).fill(null).map(() => Array(4).fill(0));
     const frontendPerks = Array(dbTeam.teamSize).fill(null);
-    const frontendAdvancements = Array(dbTeam.teamSize).fill("none");
+    const frontendAdvancements = Array(dbTeam.teamSize).fill(null);
+    
+    console.log('=== 🔄 convertDBToTeamContext ===');
+    console.log('Nombre de héros:', dbTeam.heroes?.length);
     
     // Traiter chaque héros
     dbTeam.heroes?.forEach(heroConfig => {
       const slotIndex = heroConfig.slotPosition;
+      
+      console.log(`\n👤 Héros ${slotIndex} (${heroConfig.heroSlug}):`);
       
       // Héros principal
       if (heroConfig.heroInfo) {
@@ -186,13 +218,40 @@ export const TeamProvider = ({ children }) => {
         frontendSubStars[slotIndex][1] = heroConfig.ut.stars || 0;
       }
       
-      // SW (slot 2) - Conversion advancement
+      // 🔥 SW (slot 2) - Conversion correcte
       if (heroConfig.sw) {
-        const advancementMap = { null: "none", 0: "none", 1: "blue", 2: "purple", 3: "red" };
-        frontendAdvancements[slotIndex] = advancementMap[heroConfig.sw.advancement] || "none";
+        let advancementValue = heroConfig.sw.advancement;
+        console.log('  SW advancement from DB:', {
+          value: advancementValue,
+          type: typeof advancementValue
+        });
+        
+        // Si c'est un objet (erreur), on prend null
+        if (advancementValue && typeof advancementValue === 'object') {
+          console.warn('  ⚠️ SW advancement est un objet, conversion en null');
+          advancementValue = null;
+        }
+        
+        // Convertir string en number si nécessaire
+        if (typeof advancementValue === 'string') {
+          if (advancementValue === "null" || advancementValue === "none") {
+            advancementValue = null;
+          } else if (["0", "1", "2"].includes(advancementValue)) {
+            advancementValue = parseInt(advancementValue);
+          }
+        }
+        
+        // Valider la valeur finale
+        if (![null, 0, 1, 2].includes(advancementValue)) {
+          console.warn(`  ⚠️ SW advancement invalide "${advancementValue}", conversion en null`);
+          advancementValue = null;
+        }
+        
+        frontendAdvancements[slotIndex] = advancementValue;
+        console.log('  SW advancement final:', advancementValue);
       }
       
-      // Artifact (slot 3)
+      // Artifact (slot 3 dans subSlots)
       if (heroConfig.artifact?.artifactSlug) {
         frontendSubSlots[slotIndex][2] = {
           artifactSlug: heroConfig.artifact.artifactSlug,
@@ -201,12 +260,25 @@ export const TeamProvider = ({ children }) => {
         frontendSubStars[slotIndex][2] = heroConfig.artifact.stars || 0;
       }
       
-      // Gear Set (slot 4)
-      if (heroConfig.gearSet?.gearSetSlug) {
-        frontendSubSlots[slotIndex][3] = {
-          gearSetSlug: heroConfig.gearSet.gearSetSlug,
-          ...heroConfig.gearSet.gearSetInfo
-        };
+      // Gear Set (slot 4 dans subSlots)
+      if (heroConfig.gearSet) {
+        if (heroConfig.gearSet.isMultiSet && heroConfig.gearSet.sets) {
+          frontendSubSlots[slotIndex][3] = {
+            sets: heroConfig.gearSet.sets,
+            isMultiSet: true,
+            gearSetSlug: heroConfig.gearSet.sets[0],
+            gearSetInfo: heroConfig.gearSet.gearSetInfo,
+            set1Info: heroConfig.gearSet.set1Info,
+            set2Info: heroConfig.gearSet.set2Info,
+            pieces: 2
+          };
+        } else {
+          frontendSubSlots[slotIndex][3] = {
+            gearSetSlug: heroConfig.gearSet.gearSetSlug,
+            gearSetInfo: heroConfig.gearSet.gearSetInfo,
+            pieces: heroConfig.gearSet.pieces || 0
+          };
+        }
       }
       
       // Perks
@@ -214,6 +286,8 @@ export const TeamProvider = ({ children }) => {
         frontendPerks[slotIndex] = heroConfig.perks;
       }
     });
+    
+    console.log('Advancements convertis:', frontendAdvancements);
     
     return {
       id: dbTeam._id?.toString() || dbTeam.id,
@@ -289,7 +363,7 @@ export const TeamProvider = ({ children }) => {
       
       setAdvancements(current => {
         const newAdvancements = [...current];
-        newAdvancements[heroIndex] = "none";
+        newAdvancements[heroIndex] = null;
         return newAdvancements;
       });
       
@@ -321,7 +395,7 @@ export const TeamProvider = ({ children }) => {
     setSubSlots(Array(newSize).fill(null).map(() => Array(4).fill(null)));
     setSubStars(Array(newSize).fill(null).map(() => Array(4).fill(0)));
     setPerks(Array(newSize).fill(null));
-    setAdvancements(Array(newSize).fill("none"));
+    setAdvancements(Array(newSize).fill(null));
   };
 
   // 🔥 METTRE À JOUR LES PERKS
@@ -335,9 +409,25 @@ export const TeamProvider = ({ children }) => {
 
   // 🔥 METTRE À JOUR L'ADVANCEMENT
   const updateAdvancement = (slotIndex, advancement) => {
+    console.log('📝 [TeamContext] updateAdvancement appelé:', { 
+      slotIndex, 
+      advancement,
+      type: typeof advancement 
+    });
+    
+    // 🔥 Valider strictement la valeur
+    let validatedAdvancement = null;
+    if ([null, 0, 1, 2].includes(advancement)) {
+      validatedAdvancement = advancement;
+    } else {
+      console.warn('⚠️ Valeur advancement invalide, conversion en null:', advancement);
+      validatedAdvancement = null;
+    }
+    
     setAdvancements(current => {
       const newAdvancements = [...current];
-      newAdvancements[slotIndex] = advancement;
+      newAdvancements[slotIndex] = validatedAdvancement;
+      console.log('✅ Advancements mis à jour:', newAdvancements);
       return newAdvancements;
     });
   };
@@ -348,9 +438,20 @@ export const TeamProvider = ({ children }) => {
     setSubSlots(Array(teamSize).fill(null).map(() => Array(4).fill(null)));
     setSubStars(Array(teamSize).fill(null).map(() => Array(4).fill(0)));
     setPerks(Array(teamSize).fill(null));
-    setAdvancements(Array(teamSize).fill("none"));
+    setAdvancements(Array(teamSize).fill(null));
     setTeamName('New Team');
     setCurrentTeamId(null);
+  };
+
+  // 🔥 FONCTION UTILITAIRE : Convertir advancement pour l'affichage
+  const getAdvancementDisplay = (advancementValue) => {
+    switch(advancementValue) {
+      case null: return "none";
+      case 0: return "blue";
+      case 1: return "purple";
+      case 2: return "red";
+      default: return "none";
+    }
   };
 
   // Charger les équipes au démarrage
@@ -391,8 +492,12 @@ export const TeamProvider = ({ children }) => {
     resetTeam,
     loadTeams,
     
+    // Utilitaires
+    getAdvancementDisplay,
+    
     // Constantes
-    MAX_TEAM_SLOTS: teamSize
+    MAX_TEAM_SLOTS: teamSize,
+    API_BASE_URL
   };
 
   return <TeamContext.Provider value={value}>{children}</TeamContext.Provider>;
