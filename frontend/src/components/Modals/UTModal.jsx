@@ -60,7 +60,7 @@ const UTModal = ({ data, onClose }) => {
         const result = await response.json();
 
         if (result.success && result.hero) {
-          console.log("UT data loaded from MongoDB for:", slug);
+          // console.log("UT data loaded from MongoDB for:", slug);
           setHeroData(result.hero);
         } else {
           throw new Error("No hero data found");

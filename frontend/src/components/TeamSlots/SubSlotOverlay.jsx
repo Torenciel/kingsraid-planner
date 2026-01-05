@@ -26,27 +26,27 @@ const SubSlotOverlay = ({
 
   // 🔥 Fonction pour convertir null/0/1/2 en string
   const getAdvancementString = useCallback((advValue) => {
-    console.log(`🔄 SubSlotOverlay - getAdvancementString appelé avec:`, {
-      advValue,
-      type: typeof advValue,
-      '=== 0': advValue === 0,
-      '=== null': advValue === null
-    });
+    // console.log(`🔄 SubSlotOverlay - getAdvancementString appelé avec:`, {
+    //   advValue,
+    //   type: typeof advValue,
+    //   '=== 0': advValue === 0,
+    //   '=== null': advValue === null
+    // });
     
     if (advValue === null || advValue === undefined) {
-      console.log('   → "none"');
+      // console.log('   → "none"');
       return "none";
     }
     if (advValue === 0) {
-      console.log('   → "blue"');
+      // console.log('   → "blue"');
       return "blue";
     }
     if (advValue === 1) {
-      console.log('   → "purple"');
+      // console.log('   → "purple"');
       return "purple";
     }
     if (advValue === 2) {
-      console.log('   → "red"');
+      // console.log('   → "red"');
       return "red";
     }
     console.warn('❌ Valeur advancement inconnue:', advValue);
@@ -58,7 +58,7 @@ const SubSlotOverlay = ({
     const advString = getAdvancementString(advValue);
     if (advString !== "none") {
       const path = `/kingsraid-data/assets/advancements/${advString}.png`;
-      console.log(`🖼 SubSlotOverlay - Advancement Icon Path: ${path}`);
+      // console.log(`🖼 SubSlotOverlay - Advancement Icon Path: ${path}`);
       return path;
     }
     return "";
@@ -66,27 +66,27 @@ const SubSlotOverlay = ({
 
   // 🔥 Fonction pour obtenir la classe de bordure
   const getBorderClassForOverlay = useCallback(() => {
-    console.log(`🎨 SubSlotOverlay - getBorderClassForOverlay pour slot ${subSlotIndex}:`, {
-      advancement,
-      type: typeof advancement,
-      'subSlotIndex': subSlotIndex
-    });
+    // console.log(`🎨 SubSlotOverlay - getBorderClassForOverlay pour slot ${subSlotIndex}:`, {
+    //   advancement,
+    //   type: typeof advancement,
+    //   'subSlotIndex': subSlotIndex
+    // });
     
     if (subSlotIndex !== 0) {
-      console.log('   ❌ Pas UW slot');
+      // console.log('   ❌ Pas UW slot');
       return ""; // UW seulement
     }
     
     const advString = getAdvancementString(advancement);
-    console.log(`   advString: "${advString}"`);
+    // console.log(`   advString: "${advString}"`);
     
     if (advString !== "none") {
       const borderClass = `border-${advString}`;
-      console.log(`   ✅ Classe bordure: ${borderClass}`);
+      // console.log(`   ✅ Classe bordure: ${borderClass}`);
       return borderClass;
     }
     
-    console.log('   ❌ Pas d\'advancement');
+    // console.log('   ❌ Pas d\'advancement');
     return "";
   }, [subSlotIndex, advancement, getAdvancementString]);
 
@@ -261,12 +261,12 @@ const SubSlotOverlay = ({
 
   // Getters d'information d'overlay
   const getOverlayInfo = useCallback(() => {
-    console.log(`🔍 SubSlotOverlay - getOverlayInfo pour slot ${subSlotIndex}:`, {
-      itemExists: !!item,
-      advancement,
-      'typeof advancement': typeof advancement,
-      'subSlotIndex': subSlotIndex
-    });
+    // console.log(`🔍 SubSlotOverlay - getOverlayInfo pour slot ${subSlotIndex}:`, {
+    //   itemExists: !!item,
+    //   advancement,
+    //   'typeof advancement': typeof advancement,
+    //   'subSlotIndex': subSlotIndex
+    // });
 
     if (!item) return null;
 
@@ -492,7 +492,7 @@ const SubSlotOverlay = ({
     if (loading) return;
     
     const info = getOverlayInfo();
-    console.log("📊 SubSlotOverlay - Overlay info mise à jour:", info);
+    // console.log("📊 SubSlotOverlay - Overlay info mise à jour:", info);
     setOverlayInfo(info);
   }, [getOverlayInfo, loading]);
 
@@ -723,7 +723,7 @@ const SubSlotOverlay = ({
   }
 
   const borderClass = getBorderClassForOverlay();
-  console.log(`🎨 SubSlotOverlay - Rendu avec borderClass: "${borderClass}"`);
+  // console.log(`🎨 SubSlotOverlay - Rendu avec borderClass: "${borderClass}"`);
 
   return (
     <div

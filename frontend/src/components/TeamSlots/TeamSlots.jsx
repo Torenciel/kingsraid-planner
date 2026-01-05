@@ -16,18 +16,6 @@ const TeamSlots = () => {
   } = useTeam();
   const { openModal } = useModal();
 
-  // 🔥 AJOUT: Logs pour déboguer
-  useEffect(() => {
-    console.log("🔍 TeamSlots - advancements:", {
-      raw: advancements,
-      types: advancements.map(a => typeof a),
-      "advancements[0]": advancements[0],
-      "advancements[0] === 0": advancements[0] === 0,
-      "advancements[0] === 'none'": advancements[0] === "none",
-      "0 || 'none'": 0 || "none", // Pour montrer le problème
-      "0 ?? 'none'": 0 ?? "none", // Pour montrer la solution
-    });
-  }, [advancements]);
 
   const [artifactsData, setArtifactsData] = useState([]);
   const [heroesData, setHeroesData] = useState({});

@@ -13,6 +13,7 @@ const SubSlot = ({
   heroSlug,
   heroName,
 }) => {
+
   const [showOverlay, setShowOverlay] = useState(false);
   const slotRef = useRef(null);
   const subSlotNames = ["UW", "UT", "Artifact", "GearSet"];
@@ -38,27 +39,27 @@ const SubSlot = ({
 
   // 🔥 Fonction pour convertir null/0/1/2 en string pour le CSS
 const getAdvancementString = () => {
-  console.log(`🔄 getAdvancementString appelé avec:`, {
-    advancement,
-    'type': typeof advancement,
-    '=== 0': advancement === 0,
-    '=== null': advancement === null
-  });
+  // console.log(`🔄 getAdvancementString appelé avec:`, {
+  //   advancement,
+  //   'type': typeof advancement,
+  //   '=== 0': advancement === 0,
+  //   '=== null': advancement === null
+  // });
   
   if (advancement === null || advancement === undefined) {
-    console.log('   → "none" (null/undefined)');
+    // console.log('   → "none" (null/undefined)');
     return "none";
   }
   if (advancement === 0) {
-    console.log('   → "blue" (0)');
+    // console.log('   → "blue" (0)');
     return "blue";
   }
   if (advancement === 1) {
-    console.log('   → "purple" (1)');
+    // console.log('   → "purple" (1)');
     return "purple";
   }
   if (advancement === 2) {
-    console.log('   → "red" (2)');
+    // console.log('   → "red" (2)');
     return "red";
   }
   console.warn('❌ Valeur advancement inconnue:', advancement);
@@ -67,19 +68,19 @@ const getAdvancementString = () => {
 
   // 🔥 Fonction pour obtenir la classe de bordure pour l'UW
 const getBorderClass = () => {
-  console.log(`🎨 getBorderClass pour slot ${subSlotIndex}:`, {
-    advancement,
-    'advancement type': typeof advancement,
-    'advancement === 0': advancement === 0,
-    'advancement === "none"': advancement === "none"
-  });
+  // console.log(`🎨 getBorderClass pour slot ${subSlotIndex}:`, {
+  //   advancement,
+  //   'advancement type': typeof advancement,
+  //   'advancement === 0': advancement === 0,
+  //   'advancement === "none"': advancement === "none"
+  // });
   
   if (subSlotIndex === 0) { // UW slot seulement
     const advString = getAdvancementString();
-    console.log(`   Slot UW (${subSlotIndex}), advString: ${advString}`);
+    // console.log(`   Slot UW (${subSlotIndex}), advString: ${advString}`);
     
     if (advString !== "none") {
-      console.log(`   ✅ Application classe: uw-advancement-${advString}`);
+      // console.log(`   ✅ Application classe: uw-advancement-${advString}`);
       return `uw-advancement-${advString}`;
     }
   }
@@ -126,7 +127,7 @@ const getBorderClass = () => {
           return item.uwPath || `/kingsraid-data/assets/heroes/${heroSlug || heroName?.toLowerCase()}/uw.png`;
         
         case 1: // UT
-          return item.utPath || `/kingsraid-data/assets/heroes/${heroSlug || heroName?.toLowerCase()}/ut/${item.choice || 1}.png`;
+            return item.utPath || `/kingsraid-data/assets/heroes/${heroName}/ut/${item.choice || 1}.png`;
         
         case 2: // Artifact
           // Si on a artifactInfo.thumbnail, construire l'URL

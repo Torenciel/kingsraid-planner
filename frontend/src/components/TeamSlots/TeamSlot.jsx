@@ -17,17 +17,17 @@ const TeamSlot = ({
   onSubSlotClick,
   onPerkClick,
 }) => {
-  console.log("🚀 TeamSlot - ENTREE =====================");
-  console.log(`🔍 TeamSlot ${teamSlotIndex} (${hero?.name || 'empty'}) reçoit:`, {
-    advancement,
-    'typeof advancement': typeof advancement,
-    '=== 0': advancement === 0,
-    '=== "0"': advancement === "0",
-    '=== "none"': advancement === "none",
-    '=== null': advancement === null,
-    '=== undefined': advancement === undefined,
-    'valeur brute': advancement
-  });
+  // console.log("🚀 TeamSlot - ENTREE =====================");
+  // console.log(`🔍 TeamSlot ${teamSlotIndex} (${hero?.name || 'empty'}) reçoit:`, {
+  //   advancement,
+  //   'typeof advancement': typeof advancement,
+  //   '=== 0': advancement === 0,
+  //   '=== "0"': advancement === "0",
+  //   '=== "none"': advancement === "none",
+  //   '=== null': advancement === null,
+  //   '=== undefined': advancement === undefined,
+  //   'valeur brute': advancement
+  // });
   
   // État pour gérer quel sub-slot est survolé
   const [hoveredSubSlot, setHoveredSubSlot] = useState(null);
@@ -111,53 +111,53 @@ const TeamSlot = ({
   // Obtenir le slug du héros
   const getHeroSlug = () => {
     if (!hero) {
-      console.log(`❌ TeamSlot ${teamSlotIndex} - Pas de héros`);
+      // console.log(`❌ TeamSlot ${teamSlotIndex} - Pas de héros`);
       return null;
     }
     
     // Priorité au slug, sinon créer à partir du nom
     if (hero.slug) {
-      console.log(`✅ TeamSlot ${teamSlotIndex} - Slug trouvé: ${hero.slug}`);
+      // console.log(`✅ TeamSlot ${teamSlotIndex} - Slug trouvé: ${hero.slug}`);
       return hero.slug;
     }
     if (hero.id && hero.id.includes('_')) {
       // Si l'ID est un slug formaté
-      console.log(`✅ TeamSlot ${teamSlotIndex} - Slug depuis id: ${hero.id}`);
+      // console.log(`✅ TeamSlot ${teamSlotIndex} - Slug depuis id: ${hero.id}`);
       return hero.id;
     }
     if (hero.name) {
       const slug = hero.name.toLowerCase().replace(/\s+/g, '-');
-      console.log(`✅ TeamSlot ${teamSlotIndex} - Slug créé depuis nom: ${slug}`);
+      // console.log(`✅ TeamSlot ${teamSlotIndex} - Slug créé depuis nom: ${slug}`);
       return slug;
     }
     
-    console.log(`❌ TeamSlot ${teamSlotIndex} - Pas de slug disponible`);
+    // console.log(`❌ TeamSlot ${teamSlotIndex} - Pas de slug disponible`);
     return null;
   };
 
   // 🔥 Fonction pour obtenir la valeur d'advancement correcte
   const getAdvancementForSubSlot = (subIndex) => {
-    console.log(`🔄 TeamSlot ${teamSlotIndex} - getAdvancementForSubSlot(${subIndex}):`, {
-      'subIndex': subIndex,
-      'advancement reçu': advancement,
-      'type advancement': typeof advancement,
-      'est UW?': subIndex === 0
-    });
+    // console.log(`🔄 TeamSlot ${teamSlotIndex} - getAdvancementForSubSlot(${subIndex}):`, {
+    //   'subIndex': subIndex,
+    //   'advancement reçu': advancement,
+    //   'type advancement': typeof advancement,
+    //   'est UW?': subIndex === 0
+    // });
     
     // UW (slot 0) utilise la vraie valeur d'advancement
     if (subIndex === 0) {
-      console.log(`✅ TeamSlot ${teamSlotIndex} - Slot UW (${subIndex}), advancement:`, advancement);
+      // console.log(`✅ TeamSlot ${teamSlotIndex} - Slot UW (${subIndex}), advancement:`, advancement);
       return advancement; // null/0/1/2
     }
     // Les autres slots n'ont pas d'advancement
-    console.log(`✅ TeamSlot ${teamSlotIndex} - Slot non-UW (${subIndex}), advancement: null`);
+    // console.log(`✅ TeamSlot ${teamSlotIndex} - Slot non-UW (${subIndex}), advancement: null`);
     return null;
   };
 
-  console.log("🎨 TeamSlot - RENDU =====================");
-  console.log(`📦 TeamSlot ${teamSlotIndex} - subSlots:`, subSlots);
-  console.log(`⭐ TeamSlot ${teamSlotIndex} - subStars:`, subStars);
-  console.log(`📊 TeamSlot ${teamSlotIndex} - perks:`, perks);
+  // console.log("🎨 TeamSlot - RENDU =====================");
+  // console.log(`📦 TeamSlot ${teamSlotIndex} - subSlots:`, subSlots);
+  // console.log(`⭐ TeamSlot ${teamSlotIndex} - subStars:`, subStars);
+  // console.log(`📊 TeamSlot ${teamSlotIndex} - perks:`, perks);
 
   return (
     <div className="team-slot">
@@ -172,14 +172,14 @@ const TeamSlot = ({
         {[0, 1, 2, 3].map((subIndex) => {
           const advancementForSlot = getAdvancementForSubSlot(subIndex);
           
-          console.log(`🔧 TeamSlot ${teamSlotIndex} - Rendu SubSlot ${subIndex}:`, {
-            'item présent': !!subSlots?.[subIndex],
-            'stars': subStars?.[subIndex],
-            'advancement passé': advancementForSlot,
-            'type advancement passé': typeof advancementForSlot,
-            '=== 0': advancementForSlot === 0,
-            '=== "none"': advancementForSlot === "none"
-          });
+          // console.log(`🔧 TeamSlot ${teamSlotIndex} - Rendu SubSlot ${subIndex}:`, {
+          //   'item présent': !!subSlots?.[subIndex],
+          //   'stars': subStars?.[subIndex],
+          //   'advancement passé': advancementForSlot,
+          //   'type advancement passé': typeof advancementForSlot,
+          //   '=== 0': advancementForSlot === 0,
+          //   '=== "none"': advancementForSlot === "none"
+          // });
           
           return (
             <div 

@@ -19,8 +19,8 @@ const PerkPreview = ({
   // 🔥 CORRECTION : Toujours travailler avec des indices
   const perkIndices = perksToIndices(selectedPerks, heroClass, heroName);
   
-  console.log("🔍 PerkPreview - selectedPerks reçues:", selectedPerks);
-  console.log("🔍 PerkPreview - indices calculés:", perkIndices);
+  // console.log("🔍 PerkPreview - selectedPerks reçues:", selectedPerks);
+  // console.log("🔍 PerkPreview - indices calculés:", perkIndices);
   
   // Fonction pour obtenir le nom du skill
   const getSkillName = (skillNumber) => {
@@ -265,11 +265,11 @@ const PerkPreview = ({
 
   // 🔥 CORRECTION : Vérifier si on a des perks à afficher
   if (!heroName || !selectedPerks || perkIndices.length === 0) {
-    console.log("🔍 PerkPreview - Rien à afficher:", { 
-      heroName, 
-      selectedPerks, 
-      perkIndicesLength: perkIndices.length 
-    });
+    // console.log("🔍 PerkPreview - Rien à afficher:", { 
+    //   heroName, 
+    //   selectedPerks, 
+    //   perkIndicesLength: perkIndices.length 
+    // });
     return <div className={`perk-preview ${size}`}></div>;
   }
 

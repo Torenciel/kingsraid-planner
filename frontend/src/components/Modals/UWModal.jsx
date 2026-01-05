@@ -19,16 +19,16 @@ const UWModal = ({ data, onClose }) => {
   const { updateSubSlot, updateAdvancement } = useTeam();
   const { showOverlay, hideOverlay } = useOverlay();
 
-  console.log("🚀 UWModal - Données initiales:", {
-    teamSlotIndex,
-    subSlotIndex,
-    heroName,
-    heroSlug,
-    currentItem,
-    currentStars,
-    currentAdvancement,
-    typeCurrentAdvancement: typeof currentAdvancement
-  });
+  // console.log("🚀 UWModal - Données initiales:", {
+  //   teamSlotIndex,
+  //   subSlotIndex,
+  //   heroName,
+  //   heroSlug,
+  //   currentItem,
+  //   currentStars,
+  //   currentAdvancement,
+  //   typeCurrentAdvancement: typeof currentAdvancement
+  // });
 
   const [selectedOption, setSelectedOption] = useState(
     currentItem ? "uw" : "empty"
@@ -37,21 +37,21 @@ const UWModal = ({ data, onClose }) => {
   
   // 🔥 Stocker en STRING pour éviter les problèmes de comparaison
   const [selectedAdvancement, setSelectedAdvancement] = useState(() => {
-    console.log("📋 UWModal - Initialisation advancement:", {
-      original: currentAdvancement,
-      type: typeof currentAdvancement,
-      "=== null": currentAdvancement === null,
-      "=== 0": currentAdvancement === 0,
-      "=== '0'": currentAdvancement === "0",
-      "=== 1": currentAdvancement === 1,
-      "=== '1'": currentAdvancement === "1",
-      "=== 2": currentAdvancement === 2,
-      "=== '2'": currentAdvancement === "2",
-      "=== 'none'": currentAdvancement === "none",
-      "=== 'blue'": currentAdvancement === "blue",
-      "=== 'purple'": currentAdvancement === "purple",
-      "=== 'red'": currentAdvancement === "red"
-    });
+    // console.log("📋 UWModal - Initialisation advancement:", {
+    //   original: currentAdvancement,
+    //   type: typeof currentAdvancement,
+    //   "=== null": currentAdvancement === null,
+    //   "=== 0": currentAdvancement === 0,
+    //   "=== '0'": currentAdvancement === "0",
+    //   "=== 1": currentAdvancement === 1,
+    //   "=== '1'": currentAdvancement === "1",
+    //   "=== 2": currentAdvancement === 2,
+    //   "=== '2'": currentAdvancement === "2",
+    //   "=== 'none'": currentAdvancement === "none",
+    //   "=== 'blue'": currentAdvancement === "blue",
+    //   "=== 'purple'": currentAdvancement === "purple",
+    //   "=== 'red'": currentAdvancement === "red"
+    // });
     
     // Convertir TOUT en string
     const value = currentAdvancement;
@@ -78,14 +78,14 @@ const UWModal = ({ data, onClose }) => {
 
   // 🔥 Debogage
   useEffect(() => {
-    console.log("🔍 UWModal - State advancement:", {
-      selected: selectedAdvancement,
-      type: typeof selectedAdvancement,
-      isStringZero: selectedAdvancement === "0",
-      isNumberZero: selectedAdvancement === 0,
-      isNull: selectedAdvancement === null,
-      isUndefined: selectedAdvancement === undefined
-    });
+    // console.log("🔍 UWModal - State advancement:", {
+    //   selected: selectedAdvancement,
+    //   type: typeof selectedAdvancement,
+    //   isStringZero: selectedAdvancement === "0",
+    //   isNumberZero: selectedAdvancement === 0,
+    //   isNull: selectedAdvancement === null,
+    //   isUndefined: selectedAdvancement === undefined
+    // });
   }, [selectedAdvancement]);
 
   // Charger les données du héros
@@ -148,13 +148,13 @@ const UWModal = ({ data, onClose }) => {
     const nameToUse = heroFullName || heroName || heroSlug || 'unknown';
     const encodedName = encodeURIComponent(nameToUse);
     const path = `/kingsraid-data/assets/heroes/${encodedName}/uw.png`;
-    console.log("🖼 UWModal - UW Image Path:", path);
+    // console.log("🖼 UWModal - UW Image Path:", path);
     return path;
   };
 
   const getAdvancementImagePath = (fileName) => {
     const path = `/kingsraid-data/assets/advancements/${fileName}`;
-    console.log("🖼 UWModal - Advancement Image Path:", path);
+    // console.log("🖼 UWModal - Advancement Image Path:", path);
     return path;
   };
 
@@ -162,20 +162,20 @@ const UWModal = ({ data, onClose }) => {
     e.preventDefault();
     e.stopPropagation();
 
-    console.log("🎯 UWModal - handleConfirm DÉBUT ====================");
-    console.log("- Selected option:", selectedOption);
-    console.log("- Selected stars:", selectedStars);
-    console.log("- Selected advancement (string):", selectedAdvancement);
-    console.log("- Type selectedAdvancement:", typeof selectedAdvancement);
-    console.log("- teamSlotIndex:", teamSlotIndex);
-    console.log("- subSlotIndex:", subSlotIndex);
+    // console.log("🎯 UWModal - handleConfirm DÉBUT ====================");
+    // console.log("- Selected option:", selectedOption);
+    // console.log("- Selected stars:", selectedStars);
+    // console.log("- Selected advancement (string):", selectedAdvancement);
+    // console.log("- Type selectedAdvancement:", typeof selectedAdvancement);
+    // console.log("- teamSlotIndex:", teamSlotIndex);
+    // console.log("- subSlotIndex:", subSlotIndex);
 
     if (selectedOption === "empty") {
-      console.log("🗑 UWModal - Option 'empty' sélectionnée");
+      // console.log("🗑 UWModal - Option 'empty' sélectionnée");
       updateSubSlot(teamSlotIndex, subSlotIndex, null, 0);
       updateAdvancement(teamSlotIndex, null);
     } else {
-      console.log("🗡 UWModal - Option 'uw' sélectionnée");
+      // console.log("🗡 UWModal - Option 'uw' sélectionnée");
       const uwObject = {
         uwPath: getUWImagePath(),
         heroSlug: heroSlug || heroName?.toLowerCase().replace(/\s+/g, '-'),
@@ -183,74 +183,74 @@ const UWModal = ({ data, onClose }) => {
         stars: selectedStars
       };
       
-      console.log("📤 UWModal - uwObject créé:", uwObject);
+      // console.log("📤 UWModal - uwObject créé:", uwObject);
       updateSubSlot(teamSlotIndex, subSlotIndex, uwObject, selectedStars);
       
       // 🔥 CONVERTIR STRING -> null/0/1/2 pour updateAdvancement
       let advancementValue = null;
       
-      console.log("🔄 UWModal - Conversion advancement:");
-      console.log("   selectedAdvancement =", selectedAdvancement);
-      console.log("   selectedAdvancement === '0' ?", selectedAdvancement === "0");
-      console.log("   selectedAdvancement === '1' ?", selectedAdvancement === "1");
-      console.log("   selectedAdvancement === '2' ?", selectedAdvancement === "2");
+      // console.log("🔄 UWModal - Conversion advancement:");
+      // console.log("   selectedAdvancement =", selectedAdvancement);
+      // console.log("   selectedAdvancement === '0' ?", selectedAdvancement === "0");
+      // console.log("   selectedAdvancement === '1' ?", selectedAdvancement === "1");
+      // console.log("   selectedAdvancement === '2' ?", selectedAdvancement === "2");
       
       if (selectedAdvancement === "0") {
         advancementValue = 0;
-        console.log("   → Conversion '0' -> 0");
+        // console.log("   → Conversion '0' -> 0");
       } else if (selectedAdvancement === "1") {
         advancementValue = 1;
-        console.log("   → Conversion '1' -> 1");
+        // console.log("   → Conversion '1' -> 1");
       } else if (selectedAdvancement === "2") {
         advancementValue = 2;
-        console.log("   → Conversion '2' -> 2");
+        // console.log("   → Conversion '2' -> 2");
       } else {
-        console.log("   → Garde null (selectedAdvancement =", selectedAdvancement, ")");
+        // console.log("   → Garde null (selectedAdvancement =", selectedAdvancement, ")");
       }
       
-      console.log("🎯 UWModal - APRÈS conversion:");
-      console.log("   - advancementValue:", advancementValue);
-      console.log("   - Type advancementValue:", typeof advancementValue);
-      console.log("   - Est-ce 0 exact? (===)", advancementValue === 0);
-      console.log("   - Est-ce '0'? (===)", advancementValue === "0");
-      console.log("   - Est-ce null? (===)", advancementValue === null);
-      console.log("   - Valeurs acceptées? [null, 0, 1, 2].includes:", [null, 0, 1, 2].includes(advancementValue));
+      // console.log("🎯 UWModal - APRÈS conversion:");
+      // console.log("   - advancementValue:", advancementValue);
+      // console.log("   - Type advancementValue:", typeof advancementValue);
+      // console.log("   - Est-ce 0 exact? (===)", advancementValue === 0);
+      // console.log("   - Est-ce '0'? (===)", advancementValue === "0");
+      // console.log("   - Est-ce null? (===)", advancementValue === null);
+      // console.log("   - Valeurs acceptées? [null, 0, 1, 2].includes:", [null, 0, 1, 2].includes(advancementValue));
       
-      console.log("📤 UWModal - Appel updateAdvancement avec:", {
-        slotIndex: teamSlotIndex,
-        advancementValue,
-        type: typeof advancementValue
-      });
+      // console.log("📤 UWModal - Appel updateAdvancement avec:", {
+      //   slotIndex: teamSlotIndex,
+      //   advancementValue,
+      //   type: typeof advancementValue
+      // });
       
       updateAdvancement(teamSlotIndex, advancementValue);
     }
     
-    console.log("✅ UWModal - handleConfirm FIN ====================");
+    // console.log("✅ UWModal - handleConfirm FIN ====================");
     onClose();
   };
 
   const getUWData = () => {
     if (!heroData) {
-      console.log("❌ UWModal - Pas de heroData");
+      // console.log("❌ UWModal - Pas de heroData");
       return null;
     }
     
     if (heroData.uw) {
-      console.log("✅ UWModal - UW trouvé dans heroData.uw");
+      // console.log("✅ UWModal - UW trouvé dans heroData.uw");
       return heroData.uw;
     }
     
     if (heroData.rawData?.uw) {
-      console.log("✅ UWModal - UW trouvé dans heroData.rawData.uw");
+      // console.log("✅ UWModal - UW trouvé dans heroData.rawData.uw");
       return heroData.rawData.uw;
     }
     
-    console.log("❌ UWModal - Pas de données UW trouvées");
+    // console.log("❌ UWModal - Pas de données UW trouvées");
     return null;
   };
 
   const handleUWHover = (e) => {
-    console.log("🖱 UWModal - handleUWHover");
+    // console.log("🖱 UWModal - handleUWHover");
     const uwData = getUWData();
     if (!uwData) return;
 
@@ -285,7 +285,7 @@ const UWModal = ({ data, onClose }) => {
   };
 
   const renderAdvancementOptions = () => {
-    console.log("🎨 UWModal - renderAdvancementOptions");
+    // console.log("🎨 UWModal - renderAdvancementOptions");
     
     const advancements = [
       {
@@ -319,12 +319,12 @@ const UWModal = ({ data, onClose }) => {
         {advancements.map((adv) => {
           const isSelected = selectedAdvancement === adv.value;
           
-          console.log(`🔘 ${adv.label}:`, {
-            value: adv.value,
-            selected: selectedAdvancement,
-            isSelected,
-            comparison: `'${adv.value}' === '${selectedAdvancement}'? ${adv.value === selectedAdvancement}`
-          });
+          // console.log(`🔘 ${adv.label}:`, {
+          //   value: adv.value,
+          //   selected: selectedAdvancement,
+          //   isSelected,
+          //   comparison: `'${adv.value}' === '${selectedAdvancement}'? ${adv.value === selectedAdvancement}`
+          // });
           
           return (
             <div
@@ -333,19 +333,19 @@ const UWModal = ({ data, onClose }) => {
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                console.log(`🎯 UWModal - Advancement ${adv.label} cliqué:`, {
-                  value: adv.value,
-                  type: typeof adv.value,
-                  previous: selectedAdvancement
-                });
+                // console.log(`🎯 UWModal - Advancement ${adv.label} cliqué:`, {
+                //   value: adv.value,
+                //   type: typeof adv.value,
+                //   previous: selectedAdvancement
+                // });
                 setSelectedAdvancement(adv.value);
               }}
               onMouseEnter={() => {
-                console.log(`🖱 UWModal - Hover sur ${adv.label}`);
+                // console.log(`🖱 UWModal - Hover sur ${adv.label}`);
                 setHoveredAdvancement(adv.value);
               }}
               onMouseLeave={() => {
-                console.log(`🖱 UWModal - Leave sur ${adv.label}`);
+                // console.log(`🖱 UWModal - Leave sur ${adv.label}`);
                 setHoveredAdvancement(null);
               }}
               title={adv.label}
@@ -421,7 +421,7 @@ const UWModal = ({ data, onClose }) => {
             selectedOption === "empty" ? "selected" : ""
           }`}
           onClick={() => {
-            console.log("🎯 UWModal - Option 'empty' cliquée");
+            // console.log("🎯 UWModal - Option 'empty' cliquée");
             setSelectedOption("empty");
           }}
         >
@@ -432,12 +432,12 @@ const UWModal = ({ data, onClose }) => {
           ref={uwItemRef}
           className={`uw-option ${selectedOption === "uw" ? "selected" : ""}`}
           onClick={() => {
-            console.log("🎯 UWModal - Option 'uw' cliquée");
+            // console.log("🎯 UWModal - Option 'uw' cliquée");
             setSelectedOption("uw");
           }}
           onMouseEnter={handleUWHover}
           onMouseLeave={() => {
-            console.log("🖱 UWModal - UW mouse leave");
+            // console.log("🖱 UWModal - UW mouse leave");
             hideOverlay();
           }}
         >
@@ -461,7 +461,7 @@ const UWModal = ({ data, onClose }) => {
           <StarRating
             value={selectedStars}
             onChange={(stars) => {
-              console.log("⭐ UWModal - Stars changées:", stars);
+              // console.log("⭐ UWModal - Stars changées:", stars);
               setSelectedStars(stars);
             }}
             maxStars={5}
@@ -490,7 +490,7 @@ const UWModal = ({ data, onClose }) => {
         </button>
         <button 
           onClick={() => {
-            console.log("❌ UWModal - Cancel cliqué");
+            // console.log("❌ UWModal - Cancel cliqué");
             onClose();
           }} 
           className="btn-modal-cancel"
