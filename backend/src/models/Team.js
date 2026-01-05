@@ -8,11 +8,6 @@ const ArtifactConfigSchema = new mongoose.Schema({
     type: String,
     default: null
   },
-  artifactInfo: {
-    name: { type: String, default: null },
-    thumbnail: { type: String, default: null },
-    description: { type: String, default: null }
-  },
   stars: {
     type: Number,
     min: 0,
@@ -26,12 +21,6 @@ const GearSetConfigSchema = new mongoose.Schema({
     type: String,
     default: null
   },
-  gearSetInfo: {
-    name: { type: String, default: null },
-    thumbnail: { type: String, default: null },
-    bonus2P: { type: String, default: null },
-    bonus4P: { type: String, default: null }
-  },
   pieces: {
     type: Number,
     enum: [0, 2, 4],
@@ -41,18 +30,35 @@ const GearSetConfigSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
-  sets: [String],
-  set1Info: Object,
-  set2Info: Object
+  sets: [{
+    slug: String,
+    pieces: { type: Number, enum: [2], default: 2 }
+  }]
 }, { _id: false });
 
 const PerksConfigSchema = new mongoose.Schema({
+  // T1 - Sauvegarder les slugs sélectionnés
+  t1: {
+    selected: [{ 
+      type: String,
+      enum: ['atk-up', 'hp-up', 'def-up', 'crit-resist-up', 'monster-hunting']
+    }]
+  },
+  
+  // T2 - Sauvegarder les slugs selon la classe
+  t2: {
+    selected: [{ type: String }] // Slugs spécifiques à la classe
+  },
+  
+  // T3 - Choix light/dark pour chaque skill
   t3: {
     s1: { type: String, enum: ['light', 'dark', null], default: null },
     s2: { type: String, enum: ['light', 'dark', null], default: null },
     s3: { type: String, enum: ['light', 'dark', null], default: null },
     s4: { type: String, enum: ['light', 'dark', null], default: null }
   },
+  
+  // T5 - Choix light/dark
   t5: {
     type: String,
     enum: ['light', 'dark', null],
@@ -74,10 +80,10 @@ const UTConfigSchema = new mongoose.Schema({
   }
 }, { _id: false });
 
-// 🔥 SCHÉMA SW CORRIGÉ : Mixed pour accepter null/number
+//  SCHÉMA SW CORRIGÉ : Mixed pour accepter null/number
 const SWConfigSchema = new mongoose.Schema({
   advancement: {
-    type: mongoose.Schema.Types.Mixed, // 🔥 Changé de Number à Mixed
+    type: mongoose.Schema.Types.Mixed, //  Changé de Number à Mixed
     default: null,
     validate: {
       validator: function(value) {
@@ -92,7 +98,7 @@ const SWConfigSchema = new mongoose.Schema({
   }
 }, { _id: false });
 
-// 🔥 MIDDLEWARE POUR NETTOYER LE SW
+//  MIDDLEWARE POUR NETTOYER LE SW
 SWConfigSchema.pre('validate', function(next) {
   console.log('🔄 SW pre-validate - Entrée:', {
     advancement: this.advancement,
@@ -149,20 +155,6 @@ const HeroConfigSchema = new mongoose.Schema({
     required: [true, 'heroSlug est requis']
   },
   
-  heroId: { 
-    type: mongoose.Schema.Types.ObjectId, 
-    ref: 'Hero',
-    default: null
-  },
-  
-  heroInfo: {
-    name: { type: String, default: 'Unknown Hero' },
-    class: { type: String, default: 'Unknown' },
-    position: { type: String, default: 'Middle-200' },
-    thumbnail: { type: String, default: '/assets/heroes/default.png' },
-    slug: { type: String, default: 'unknown' }
-  },
-  
   slotPosition: {
     type: Number,
     required: true,
@@ -203,19 +195,6 @@ const HeroConfigSchema = new mongoose.Schema({
   perks: {
     type: PerksConfigSchema,
     default: () => ({})
-  },
-  
-  transcendence: {
-    type: Number,
-    min: 0,
-    max: 5,
-    default: 0
-  },
-  
-  notes: {
-    type: String,
-    default: '',
-    maxlength: 500
   },
   
   updatedAt: {
@@ -349,13 +328,6 @@ TeamSchema.pre('save', async function(next) {
           
           if (hero) {
             heroConfig.heroId = hero._id;
-            heroConfig.heroInfo = {
-              name: hero.infos.name || 'Unknown',
-              class: hero.infos.class || 'Unknown',
-              position: hero.infos.position || 'Middle-200',
-              thumbnail: hero.infos.thumbnail || '/assets/heroes/default.png',
-              slug: hero.slug || heroConfig.heroSlug
-            };
           }
         }
         
@@ -388,7 +360,7 @@ TeamSchema.pre('save', async function(next) {
           }
         }
         
-        // 🔥 LOGS POUR LE SW
+        //  LOGS POUR LE SW
         if (heroConfig.sw) {
           console.log(`SW pour ${heroConfig.heroSlug}:`, {
             advancement: heroConfig.sw.advancement,
@@ -453,8 +425,6 @@ TeamSchema.methods.toAPIFormat = function() {
     heroes: teamObj.heroes.map(hero => ({
       id: hero._id.toString(),
       heroSlug: hero.heroSlug,
-      heroId: hero.heroId,
-      heroInfo: hero.heroInfo,
       slotPosition: hero.slotPosition,
       uw: hero.uw,
       ut: hero.ut,
@@ -462,8 +432,6 @@ TeamSchema.methods.toAPIFormat = function() {
       artifact: hero.artifact,
       gearSet: hero.gearSet,
       perks: hero.perks,
-      transcendence: hero.transcendence,
-      notes: hero.notes,
       updatedAt: hero.updatedAt
     })),
     isPublic: teamObj.isPublic,

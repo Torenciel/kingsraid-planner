@@ -1,6 +1,8 @@
+// frontend/src/components/TeamSlots/PerkPreview.jsx
 import { useState, useEffect } from "react";
 import { useOverlay } from "../../contexts/OverlayContext";
 import { api } from "../../services/api";
+import { perksToIndices } from "../../utils/perkConverter";
 import "./PerkPreview.css";
 
 const PerkPreview = ({
@@ -13,7 +15,13 @@ const PerkPreview = ({
   const [perkData, setPerkData] = useState([]);
   const [heroSkills, setHeroSkills] = useState({});
   const [loading, setLoading] = useState(false);
-
+  
+  // 🔥 CORRECTION : Toujours travailler avec des indices
+  const perkIndices = perksToIndices(selectedPerks, heroClass, heroName);
+  
+  console.log("🔍 PerkPreview - selectedPerks reçues:", selectedPerks);
+  console.log("🔍 PerkPreview - indices calculés:", perkIndices);
+  
   // Fonction pour obtenir le nom du skill
   const getSkillName = (skillNumber) => {
     if (!heroSkills || !heroSkills[skillNumber]) {
@@ -126,167 +134,91 @@ const PerkPreview = ({
   };
 
   // Trouver une perk dans la base de données
-const findPerk = (perkImageInfo) => {
-  if (!perkImageInfo || !perkData || !Array.isArray(perkData) || perkData.length === 0) {
-    return null;
-  }
-  
-  const { name, file, tier, skill, type } = perkImageInfo;
-  const heroSlug = heroName?.toLowerCase();
-  
-  // Chercher par thumbnail exact
-  let foundPerk = perkData.find(perk => perk && perk.thumbnail === file);
-  if (foundPerk) return foundPerk;
-  
-  // Chercher par chemin complet pour T3/T5
-  const fullPath = `heroes/${heroName}/perks/${file}`;
-  foundPerk = perkData.find(perk => perk && perk.thumbnail === fullPath);
-  if (foundPerk) return foundPerk;
-  
-  // Pour T3/T5: chercher par héro, tier, skill et type
-  if ((tier === 't3' || tier === 't5') && heroSlug) {
+  const findPerk = (perkImageInfo) => {
+    if (!perkImageInfo || !perkData || !Array.isArray(perkData) || perkData.length === 0) {
+      return null;
+    }
+    
+    const { name, file, tier, skill, type } = perkImageInfo;
+    const heroSlug = heroName?.toLowerCase();
+    
+    // Chercher par thumbnail exact
+    let foundPerk = perkData.find(perk => perk && perk.thumbnail === file);
+    if (foundPerk) return foundPerk;
+    
+    // Chercher par chemin complet pour T3/T5
+    const fullPath = `heroes/${heroName}/perks/${file}`;
+    foundPerk = perkData.find(perk => perk && perk.thumbnail === fullPath);
+    if (foundPerk) return foundPerk;
+    
+    // Pour T3/T5: chercher par héro, tier, skill et type
+    if ((tier === 't3' || tier === 't5') && heroSlug) {
+      foundPerk = perkData.find(perk => 
+        perk && 
+        perk.heroSlug === heroSlug &&
+        perk.tier === tier &&
+        perk.skillIndex === skill &&
+        perk.type === type
+      );
+      if (foundPerk) return foundPerk;
+    }
+    
+    // Chercher par nom (approximatif)
+    const searchName = name.toLowerCase();
     foundPerk = perkData.find(perk => 
       perk && 
-      perk.heroSlug === heroSlug &&
-      perk.tier === tier &&
-      perk.skillIndex === skill &&
-      perk.type === type
+      perk.name && 
+      perk.name.toLowerCase().includes(searchName)
     );
-    if (foundPerk) return foundPerk;
-  }
-  
-  // Chercher par nom (approximatif)
-  const searchName = name.toLowerCase();
-  foundPerk = perkData.find(perk => 
-    perk && 
-    perk.name && 
-    perk.name.toLowerCase().includes(searchName)
-  );
-  
-  return foundPerk || null;
-};
-
-// Et modifie aussi le useEffect qui charge les données :
-useEffect(() => {
-  const loadData = async () => {
-    if (!heroName) return;
     
-    try {
-      setLoading(true);
+    return foundPerk || null;
+  };
+
+  useEffect(() => {
+    const loadData = async () => {
+      if (!heroName) return;
       
-      // Charger les perks
-      const perksData = await api.request('/v2/perks');
-      
-      // Vérifier que perksData est un tableau
-      if (perksData && Array.isArray(perksData)) {
-        setPerkData(perksData);
-      } else if (perksData && perksData.perks && Array.isArray(perksData.perks)) {
-        // Si l'API retourne { perks: [...] }
-        setPerkData(perksData.perks);
-      } else {
-        console.warn('Perks data format unexpected:', perksData);
-        setPerkData([]);
-      }
-      
-      // Charger les skills du héros
       try {
-        const heroSlug = heroName.toLowerCase().replace(/\s+/g, '-');
-        const heroData = await api.request(`/v2/heroes/${heroSlug}`);
-        if (heroData?.skills) {
-          setHeroSkills(heroData.skills);
+        setLoading(true);
+        
+        // Charger les perks
+        const perksData = await api.request('/v2/perks');
+        
+        // Vérifier que perksData est un tableau
+        if (perksData && Array.isArray(perksData)) {
+          setPerkData(perksData);
+        } else if (perksData && perksData.perks && Array.isArray(perksData.perks)) {
+          // Si l'API retourne { perks: [...] }
+          setPerkData(perksData.perks);
+        } else {
+          console.warn('Perks data format unexpected:', perksData);
+          setPerkData([]);
         }
-      } catch (heroError) {
-        console.warn(`⚠️ Could not load skills for ${heroName}:`, heroError.message);
+        
+        // Charger les skills du héros
+        try {
+          const heroSlug = heroName.toLowerCase().replace(/\s+/g, '-');
+          const heroData = await api.request(`/v2/heroes/${heroSlug}`);
+          if (heroData?.skills) {
+            setHeroSkills(heroData.skills);
+          }
+        } catch (heroError) {
+          console.warn(`⚠️ Could not load skills for ${heroName}:`, heroError.message);
+        }
+        
+      } catch (error) {
+        console.error("❌ Error loading perk preview data:", error);
+        setPerkData([]); // Assure que perkData est toujours un tableau
+      } finally {
+        setLoading(false);
       }
-      
-    } catch (error) {
-      console.error("❌ Error loading perk preview data:", error);
-      setPerkData([]); // Assure que perkData est toujours un tableau
-    } finally {
-      setLoading(false);
-    }
-  };
-  
-  loadData();
-}, [heroName]);
-  
-  
-  // ============ OPTION 1 ============
-  // Afficher un overlay différent pour les perks non sélectionnées
-  const handlePerkHoverOption1 = (perkImageInfo, isSelected, e) => {
-    if (!perkImageInfo || loading) return;
-
-    const perkInfo = findPerk(perkImageInfo);
-    const rect = e.currentTarget.getBoundingClientRect();
-    const position = {
-      left: rect.left + rect.width / 2,
-      top: rect.top,
-      transform: "translateX(-50%) translateY(-100%)",
     };
-
-    // Déterminer le coût basé sur la ligne
-    const getRowCost = (rowIndex) => {
-      const costs = [10, 15, 15, 15, 15];
-      return costs[rowIndex] || 15;
-    };
-
-    const rowIndex = Math.floor(perkImageInfo.index / 10);
-    const cost = getRowCost(rowIndex);
-
-    // DÉTERMINER LE TITRE
-    let displayName = "Unknown Perk";
     
-    if (perkImageInfo.tier === 't3' && perkImageInfo.skill) {
-      const skillName = getSkillName(perkImageInfo.skill);
-      const typeName = perkImageInfo.type === 'light' ? 'Light' : 'Dark';
-      displayName = `${skillName} - ${typeName}`;
-    } else if (perkImageInfo.tier === 't5') {
-      const typeName = perkImageInfo.type === 'light' ? 'Light' : 'Dark';
-      displayName = `${typeName} Transcendence`;
-    } else {
-      displayName = perkInfo?.name || perkImageInfo.name || "Unknown Perk";
-    }
-
-    // DESCRIPTION
-    let description = "No description available";
-    if (perkInfo?.description) {
-      description = perkInfo.description;
-    } else if (perkImageInfo?.effect) {
-      description = perkImageInfo.effect;
-    } else if (perkImageInfo) {
-      description = `Data loading for "${perkImageInfo.name}"...`;
-    }
-
-    const overlayContent = (
-      <div className={`perk-overlay ${isSelected ? 'selected' : 'unselected'}`}>
-        <h4 className="perk-title">{displayName}</h4>
-        <p className="perk-description">{description}</p>
-        
-        {/* <div className="perk-overlay-meta">
-          {perkImageInfo?.tier && (
-            <span className="perk-tier">Tier: {perkImageInfo.tier.toUpperCase()}</span>
-          )}
-          {perkInfo?.class && perkInfo.class !== "General" && (
-            <span className="perk-class">Class: {perkInfo.class}</span>
-          )}
-          {perkImageInfo?.skill && (
-            <span className="perk-skill">Skill {perkImageInfo.skill}</span>
-          )}
-        </div>
-        
-        <div className="perk-cost-overlay">
-          Cost: {cost} points
-        </div> */}
-      </div>
-    );
-
-    showOverlay(overlayContent, position);
-  };
-
-  // ============ OPTION 2 ============
-  // Ne pas afficher d'overlay pour les perks non sélectionnées
-  const handlePerkHoverOption2 = (perkImageInfo, isSelected, e) => {
-    // Seulement afficher l'overlay si la perk est sélectionnée
+    loadData();
+  }, [heroName]);
+  
+  // Gérer le hover sur une perk
+  const handlePerkHover = (perkImageInfo, isSelected, e) => {
     if (!perkImageInfo || loading || !isSelected) return;
 
     const perkInfo = findPerk(perkImageInfo);
@@ -296,15 +228,6 @@ useEffect(() => {
       top: rect.top,
       transform: "translateX(-50%) translateY(-100%)",
     };
-
-    // Déterminer le coût basé sur la ligne
-    const getRowCost = (rowIndex) => {
-      const costs = [10, 15, 15, 15, 15];
-      return costs[rowIndex] || 15;
-    };
-
-    const rowIndex = Math.floor(perkImageInfo.index / 10);
-    const cost = getRowCost(rowIndex);
 
     // DÉTERMINER LE TITRE
     let displayName = "Unknown Perk";
@@ -334,41 +257,19 @@ useEffect(() => {
       <div className="perk-overlay selected">
         <h4 className="perk-title">{displayName}</h4>
         <p className="perk-description">{description}</p>
-        
-        {/* <div className="perk-overlay-meta">
-          {perkImageInfo?.tier && (
-            <span className="perk-tier">Tier: {perkImageInfo.tier.toUpperCase()}</span>
-          )}
-          {perkInfo?.class && perkInfo.class !== "General" && (
-            <span className="perk-class">Class: {perkInfo.class}</span>
-          )}
-          {perkImageInfo?.skill && (
-            <span className="perk-skill">Skill {perkImageInfo.skill}</span>
-          )}
-        </div>
-        
-        <div className="perk-cost-overlay">
-          Cost: {cost} points
-        </div>
-        
-        <div className="perk-selection-status selected">
-          ✓ Selected
-        </div> */}
       </div>
     );
 
     showOverlay(overlayContent, position);
   };
 
-  // ============ CHOIX DE L'OPTION ============
-  // Pour utiliser l'Option 1, commentez la ligne Option 2 et décommentez Option 1
-  // Pour utiliser l'Option 2, commentez la ligne Option 1 et décommentez Option 2
-  
-  // const handlePerkHover = handlePerkHoverOption1; // OPTION 1 - Overlay différent
-  const handlePerkHover = handlePerkHoverOption2; // OPTION 2 - Pas d'overlay si non sélectionné
-
-  // Même logique d'affichage que précédemment
-  if (!heroName || !selectedPerks || selectedPerks.length === 0) {
+  // 🔥 CORRECTION : Vérifier si on a des perks à afficher
+  if (!heroName || !selectedPerks || perkIndices.length === 0) {
+    console.log("🔍 PerkPreview - Rien à afficher:", { 
+      heroName, 
+      selectedPerks, 
+      perkIndicesLength: perkIndices.length 
+    });
     return <div className={`perk-preview ${size}`}></div>;
   }
 
@@ -380,7 +281,7 @@ useEffect(() => {
         <div key={rowIndex} className="perk-preview-row">
           {Array.from({ length: perkCount }, (_, i) => {
             const globalIndex = rowIndex * 10 + i;
-            const isSelected = selectedPerks.includes(globalIndex);
+            const isSelected = perkIndices.includes(globalIndex); // 🔥 Utiliser perkIndices
             const perkImageInfo = getPerkImageInfo(rowIndex, i, globalIndex);
             
             // Construire l'URL de l'image

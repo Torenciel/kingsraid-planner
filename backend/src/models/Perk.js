@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 const perkSchema = new mongoose.Schema({
-  // 🔥 SLUG : Identifiant URL-friendly
+  //  SLUG : Identifiant URL-friendly
   slug: {
     type: String,
     required: true,
@@ -81,7 +81,7 @@ const perkSchema = new mongoose.Schema({
     default: Date.now
   }
   
-  // ❌ SUPPRIMÉ: tags
+  //  SUPPRIMÉ: tags
 });
 
 // Index composé pour T1/T2
@@ -110,9 +110,9 @@ perkSchema.index({ tier: 1, type: 1 });
 // Méthode pour formater pour l'API
 perkSchema.methods.toAPIFormat = function() {
   return {
-    _id: this._id,           // 🔥 ObjectId MongoDB
-    slug: this.slug,         // 🔥 Slug URL-friendly
-    name: this.name,         // 🔥 Nom d'affichage
+    _id: this._id,           //  ObjectId MongoDB
+    slug: this.slug,         //  Slug URL-friendly
+    name: this.name,         //  Nom d'affichage
     description: this.description,
     thumbnail: this.thumbnail,
     tier: this.tier,

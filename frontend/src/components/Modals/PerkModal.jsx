@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { useOverlay } from "../../contexts/OverlayContext";
 import { useTeam } from "../../contexts/TeamContext";
+import { perksToIndices, indicesToPerks } from "../../utils/perkConverter";
 import "./PerkModal.css";
 
 const PerkModal = ({ data, onClose }) => {
@@ -9,13 +10,28 @@ const PerkModal = ({ data, onClose }) => {
   const { updatePerks, perks } = useTeam();
   const { showOverlay, hideOverlay } = useOverlay();
 
-  const [selectedPerks, setSelectedPerks] = useState(
-    perks[teamSlotIndex] || []
-  );
+  // 🔥 CORRECTION : Toujours travailler avec des indices dans le modal
+  const [selectedIndices, setSelectedIndices] = useState([]);
   const [usedPoints, setUsedPoints] = useState(0);
   const [perkData, setPerkData] = useState([]);
   const [loading, setLoading] = useState(true);
   const maxPoints = 95;
+
+  // Initialiser les indices depuis les perks du context
+  useEffect(() => {
+    const heroPerks = perks[teamSlotIndex];
+    
+    console.log("🔍 PerkModal - perks reçues:", heroPerks);
+    
+    if (heroPerks) {
+      // Convertir en indices (quel que soit le format)
+      const indices = perksToIndices(heroPerks, heroClass, heroName);
+      console.log("🔍 PerkModal - indices calculés:", indices);
+      setSelectedIndices(indices);
+    } else {
+      setSelectedIndices([]);
+    }
+  }, [teamSlotIndex, perks, heroClass, heroName]);
 
   // Fonction pour encoder les noms de héros pour les URLs
   const encodeHeroName = (name) => {
@@ -95,27 +111,33 @@ const PerkModal = ({ data, onClose }) => {
     ];
 
     let totalPoints = 0;
-    selectedPerks.forEach((perkIndex) => {
-      const rowIndex = Math.floor(perkIndex / 10);
-      const cost = perkLayout[rowIndex]?.cost || 0;
-      totalPoints += cost;
-    });
+    
+    if (Array.isArray(selectedIndices)) {
+      selectedIndices.forEach((perkIndex) => {
+        const rowIndex = Math.floor(perkIndex / 10);
+        const cost = perkLayout[rowIndex]?.cost || 0;
+        totalPoints += cost;
+      });
+    }
+    
     setUsedPoints(totalPoints);
-  }, [selectedPerks]);
+  }, [selectedIndices]);
 
   const togglePerkSelection = (perkIndex, cost) => {
-    const newPoints = selectedPerks.includes(perkIndex)
+    if (!Array.isArray(selectedIndices)) return;
+    
+    const newPoints = selectedIndices.includes(perkIndex)
       ? usedPoints - cost
       : usedPoints + cost;
 
-    if (newPoints > maxPoints && !selectedPerks.includes(perkIndex)) {
+    if (newPoints > maxPoints && !selectedIndices.includes(perkIndex)) {
       alert(
         `Cannot select this perk! You would exceed the ${maxPoints} point limit.`
       );
       return;
     }
 
-    setSelectedPerks((prev) => {
+    setSelectedIndices((prev) => {
       if (prev.includes(perkIndex)) {
         return prev.filter((p) => p !== perkIndex);
       } else {
@@ -125,7 +147,13 @@ const PerkModal = ({ data, onClose }) => {
   };
 
   const handleConfirm = () => {
-    updatePerks(teamSlotIndex, selectedPerks);
+    console.log("💾 PerkModal - Indices sélectionnés:", selectedIndices);
+    
+    // Convertir les indices en structure organisée
+    const perksData = indicesToPerks(selectedIndices, heroClass, heroName);
+    console.log("💾 PerkModal - Structure à sauvegarder:", perksData);
+    
+    updatePerks(teamSlotIndex, perksData);
     onClose();
   };
 
@@ -196,7 +224,7 @@ const PerkModal = ({ data, onClose }) => {
           <div key={rowIndex} className="perk-modal-row">
             {Array.from({ length: row.count }, (_, i) => {
               const perkIndex = rowIndex * 10 + i;
-              const isSelected = selectedPerks.includes(perkIndex);
+              const isSelected = selectedIndices.includes(perkIndex);
               const perkImageInfo = getPerkImageInfo(rowIndex, i, perkIndex);
               const perkInfo = perkImageInfo ? findPerk(perkImageInfo, rowIndex) : null;
 
@@ -339,7 +367,6 @@ const PerkModal = ({ data, onClose }) => {
     } else if (rowIndex === 1 && heroClass) {
       imagePath = `/kingsraid-data/assets/perks/t2/${heroClass.toLowerCase()}/${perkImageInfo.file}`;
     } else if (rowIndex >= 2 && heroName) {
-      // CORRECTION : Utiliser le nom complet encodé pour les perks spécifiques au héros
       const encodedHeroName = encodeHeroName(heroName);
       imagePath = `/kingsraid-data/assets/heroes/${encodedHeroName}/perks/${perkImageInfo.file}`;
     }
@@ -375,6 +402,14 @@ const PerkModal = ({ data, onClose }) => {
       </div>
     );
   }
+
+  console.log("🔍 DEBUG PerkModal - État final:", {
+    selectedIndices,
+    length: selectedIndices.length,
+    usedPoints,
+    heroClass,
+    heroName
+  });
 
   return (
     <div>

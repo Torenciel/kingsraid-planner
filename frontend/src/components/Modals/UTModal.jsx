@@ -100,24 +100,33 @@ const UTModal = ({ data, onClose }) => {
     return `/kingsraid-data/assets/heroes/${heroName}/ut/${utNumber}.png`;
   };
 
-  const handleConfirm = () => {
-    if (selectedUT === 0) {
-      // UT vide
-      updateSubSlot(teamSlotIndex, subSlotIndex, null, 0);
-    } else {
+const handleConfirm = () => {
+  console.log("💾 UTModal - Sauvegarde UT:", {
+    selectedUT,
+    selectedStars,
+    teamSlotIndex,
+    subSlotIndex,
+    currentItem
+  });
+
+  if (selectedUT === 0) {
+    // UT vide - format minimal
+    const utObject = {
+      choice: 0,
+      stars: 0
+    };
+    updateSubSlot(teamSlotIndex, subSlotIndex, utObject, 0);
+  } else {
       // Créer l'objet UT pour la sauvegarde (compatible nouveau format)
       const utObject = {
-        choice: selectedUT,
-        utPath: getUTImagePath(selectedUT),
-        heroSlug: heroSlug || heroName?.toLowerCase().replace(/\s+/g, '-'),
-        heroName: heroName,
-        stars: selectedStars
+        choice: selectedUT,  // Seulement le choix (1-4)
+        stars: selectedStars // Seulement les stars (0-5)
       };
       
-      updateSubSlot(teamSlotIndex, subSlotIndex, utObject, selectedStars);
-    }
-    onClose();
-  };
+    updateSubSlot(teamSlotIndex, subSlotIndex, utObject, selectedStars);
+  }
+  onClose();
+};
 
   const getUTData = (utNumber) => {
     if (!heroData || !utNumber) return null;
