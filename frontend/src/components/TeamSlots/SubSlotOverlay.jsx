@@ -26,27 +26,17 @@ const SubSlotOverlay = ({
 
   // 🔥 Fonction pour convertir null/0/1/2 en string
   const getAdvancementString = useCallback((advValue) => {
-    // console.log(`🔄 SubSlotOverlay - getAdvancementString appelé avec:`, {
-    //   advValue,
-    //   type: typeof advValue,
-    //   '=== 0': advValue === 0,
-    //   '=== null': advValue === null
-    // });
     
     if (advValue === null || advValue === undefined) {
-      // console.log('   → "none"');
       return "none";
     }
     if (advValue === 0) {
-      // console.log('   → "blue"');
       return "blue";
     }
     if (advValue === 1) {
-      // console.log('   → "purple"');
       return "purple";
     }
     if (advValue === 2) {
-      // console.log('   → "red"');
       return "red";
     }
     console.warn('❌ Valeur advancement inconnue:', advValue);
@@ -58,7 +48,6 @@ const SubSlotOverlay = ({
     const advString = getAdvancementString(advValue);
     if (advString !== "none") {
       const path = `/kingsraid-data/assets/advancements/${advString}.png`;
-      // console.log(`🖼 SubSlotOverlay - Advancement Icon Path: ${path}`);
       return path;
     }
     return "";
@@ -66,27 +55,18 @@ const SubSlotOverlay = ({
 
   // 🔥 Fonction pour obtenir la classe de bordure
   const getBorderClassForOverlay = useCallback(() => {
-    // console.log(`🎨 SubSlotOverlay - getBorderClassForOverlay pour slot ${subSlotIndex}:`, {
-    //   advancement,
-    //   type: typeof advancement,
-    //   'subSlotIndex': subSlotIndex
-    // });
     
     if (subSlotIndex !== 0) {
-      // console.log('   ❌ Pas UW slot');
       return ""; // UW seulement
     }
     
     const advString = getAdvancementString(advancement);
-    // console.log(`   advString: "${advString}"`);
     
     if (advString !== "none") {
       const borderClass = `border-${advString}`;
-      // console.log(`   ✅ Classe bordure: ${borderClass}`);
       return borderClass;
     }
     
-    // console.log('   ❌ Pas d\'advancement');
     return "";
   }, [subSlotIndex, advancement, getAdvancementString]);
 
@@ -113,58 +93,49 @@ const SubSlotOverlay = ({
   const getGearSetInfo = useCallback((item) => {
     if (!item) return null;
     
+    const stats = [];
+    let title = "";
+    let isMultiSet = false;
+    
     // CAS MULTIPLE : 2 gear sets (2P/2P)
     if (item.isMultiSet && item.sets && Array.isArray(item.sets)) {
-      const stats = [];
-      
-      // Header unique pour multi-set
-      stats.push({
-        type: "header",
-        content: "Multiple Gear Sets",
-        isMultiSet: true,
-        pieces: "2P/2P",
-      });
+      isMultiSet = true;
       
       // Si on a les infos détaillées
       if (item.set1Info && item.set2Info) {
-        // Premier set
+        const setName1 = item.set1Info.name || item.sets[0];
+        const setName2 = item.set2Info.name || item.sets[1];
+        
+        // Premier gear set avec description
         stats.push({
-          type: "set_name",
-          content: item.set1Info.name || item.sets[0],
+          type: "gear_set",
+          name: setName1,
+          description: item.set1Info.bonus2P || "2-piece bonus",
+          pieces: "2P",
+          isFirst: true,
+          isMultiSet: true
         });
         
+        // Deuxième gear set avec description
         stats.push({
-          type: "bonus",
-          content: item.set1Info.bonus2P,
-          level: "2P",
-          setName: item.set1Info.name || item.sets[0],
-        });
-        
-        // Deuxième set
-        stats.push({
-          type: "set_name",
-          content: item.set2Info.name || item.sets[1],
-        });
-        
-        stats.push({
-          type: "bonus",
-          content: item.set2Info.bonus2P,
-          level: "2P",
-          setName: item.set2Info.name || item.sets[1],
+          type: "gear_set",
+          name: setName2,
+          description: item.set2Info.bonus2P || "2-piece bonus",
+          pieces: "2P",
+          isFirst: false,
+          isMultiSet: true
         });
       } else {
         // Sinon, juste afficher les slugs
         item.sets.forEach((setSlug, index) => {
+          const displayName = setSlug.replace(/-/g, ' ');
           stats.push({
-            type: "set_name",
-            content: setSlug,
-          });
-          
-          stats.push({
-            type: "bonus",
-            content: "2-piece bonus active",
-            level: "2P",
-            setName: setSlug,
+            type: "gear_set",
+            name: displayName,
+            description: "2-piece bonus active",
+            pieces: "2P",
+            isFirst: index === 0,
+            isMultiSet: true
           });
         });
       }
@@ -172,47 +143,49 @@ const SubSlotOverlay = ({
       return {
         stats: stats,
         isMultiSet: true,
+        title: "", // 🔥 Titre vide pour multi-sets
+        pieces: null,
+        isMultiSetDisplay: true
       };
     }
     
-    // CAS SIMPLE : 1 gear set
+    // CAS SIMPLE : 1 gear set (TOUJOURS 4P)
     const gearSetSlug = item.gearSetSlug;
-    const pieces = item.pieces || 0;
+    const pieces = item.pieces || 4;
     
-    const stats = [];
+    const gearSetName = item.gearSetInfo?.name || 
+                       gearSetSlug?.replace(/-/g, ' ') || 
+                       "Unknown Gear Set";
     
-    // Header pour single set
-    stats.push({
-      type: "header",
-      content: item.gearSetInfo?.name || gearSetSlug,
-      isSingle: true,
+    title = gearSetName;
+    
+    // Single gear set avec description
+    const gearSetStat = {
+      type: "gear_set",
+      name: gearSetName,
       pieces: `${pieces}P`,
-    });
+      isMultiSet: false,
+      showNameInStats: false // 🔥 NE PAS afficher le nom dans les stats
+    };
 
     // Bonus 2P
-    if (item.gearSetInfo?.bonus2P && pieces >= 2) {
-      stats.push({
-        type: "bonus",
-        content: item.gearSetInfo.bonus2P,
-        level: "2P",
-        isActive: true,
-      });
+    if (item.gearSetInfo?.bonus2P) {
+      gearSetStat.description2P = item.gearSetInfo.bonus2P;
     }
 
     // Bonus 4P
     if (item.gearSetInfo?.bonus4P) {
-      stats.push({
-        type: "bonus",
-        content: item.gearSetInfo.bonus4P,
-        level: "4P",
-        isActive: pieces >= 4,
-        note: pieces < 4 ? "(requires 4 pieces)" : null,
-      });
+      gearSetStat.description4P = item.gearSetInfo.bonus4P;
     }
+
+    stats.push(gearSetStat);
 
     return {
       stats: stats,
       isMultiSet: false,
+      title: title,
+      pieces: `${pieces}P`,
+      isMultiSetDisplay: false
     };
   }, []);
 
@@ -261,12 +234,6 @@ const SubSlotOverlay = ({
 
   // Getters d'information d'overlay
   const getOverlayInfo = useCallback(() => {
-    // console.log(`🔍 SubSlotOverlay - getOverlayInfo pour slot ${subSlotIndex}:`, {
-    //   itemExists: !!item,
-    //   advancement,
-    //   'typeof advancement': typeof advancement,
-    //   'subSlotIndex': subSlotIndex
-    // });
 
     if (!item) return null;
 
@@ -285,11 +252,12 @@ const SubSlotOverlay = ({
       }
       
       return {
-        title: gearSetData.isMultiSet ? "Multiple Gear Sets" : "Gear Set",
+        title: gearSetData.title,
         stats: gearSetData.stats,
         isGearSet: true,
         isMultiSet: gearSetData.isMultiSet,
-        pieces: gearSetData.stats[0].pieces,
+        isMultiSetDisplay: gearSetData.isMultiSetDisplay,
+        pieces: gearSetData.pieces,
       };
     }
 
@@ -492,7 +460,6 @@ const SubSlotOverlay = ({
     if (loading) return;
     
     const info = getOverlayInfo();
-    // console.log("📊 SubSlotOverlay - Overlay info mise à jour:", info);
     setOverlayInfo(info);
   }, [getOverlayInfo, loading]);
 
@@ -573,18 +540,19 @@ const SubSlotOverlay = ({
       <div className="subslot-overlay-content">
         {/* Header commun pour tous les types */}
         <div className="subslot-overlay-header">
-          <div className="subslot-overlay-title">{overlayInfo.title}</div>
-          
-          {/* Étoiles pour UW/UT/Artifact, Pieces pour GearSet */}
-          {overlayInfo.isGearSet ? (
-            <div className="subslot-overlay-pieces">{overlayInfo.pieces}</div>
-          ) : (
+          {/* NE PAS afficher les pieces/stars pour les GearSets */}
+          {!overlayInfo.isGearSet && (
             <div className="subslot-overlay-stars">
               {typeof overlayInfo.stats[0] === 'object' 
                 ? overlayInfo.stats[0].content 
                 : overlayInfo.stats[0]}
             </div>
           )}
+          {/* 🔥 Afficher le titre seulement s'il n'est pas vide */}
+          {overlayInfo.title && (
+            <div className="subslot-overlay-title">{overlayInfo.title}</div>
+          )}
+          
           
           {/* 🔥 Icône d'avancement pour UW */}
           {overlayInfo.isUW && overlayInfo.advancement !== null && 
@@ -624,24 +592,44 @@ const SubSlotOverlay = ({
     if (!stat || typeof stat !== 'object') return null;
     
     switch (stat.type) {
-      case "header":
-        return null;
-      
-      case "set_name":
+      case "gear_set":
+        // 🔥 Afficher le nom SEULEMENT pour les multi-sets
+        const showNameInContent = stat.isMultiSet;
+        
         return (
-          <div key={`setname-${stat.content}`} className="subslot-set-name">
-            {stat.content}
-          </div>
-        );
-      
-      case "bonus":
-        return (
-          <div key={`${stat.level}-${stat.content}`} className={`subslot-bonus ${stat.isActive === false ? 'inactive' : ''}`}>
-            <span className="subslot-bonus-level">{stat.level}:</span>
-            <span className="subslot-bonus-content">
-              {stat.content}
-              {stat.note && <span className="bonus-note"> {stat.note}</span>}
-            </span>
+          <div key={`gear-${stat.name}`} className="subslot-text">
+            {/* 🔥 Afficher le nom SEULEMENT pour les multi-sets */}
+            {showNameInContent && (
+              <div className="subslot-overlay-title">
+                {stat.name}
+              </div>
+            )}
+            
+            {/* Description du bonus 2P - seulement si disponible */}
+            {stat.description2P && (
+              <div className="subslot-gear-description">
+                <span className="subslot-bonus-level">2P :</span> {stat.description2P}
+              </div>
+            )}
+            
+            {/* Description du bonus 4P - seulement pour single set */}
+            {stat.description4P && !stat.isMultiSet && (
+              <div className="subslot-gear-description bonus-4p">
+                <span className="subslot-bonus-level">4P :</span> {stat.description4P}
+              </div>
+            )}
+            
+            {/* Pour les multi-sets, afficher les pièces ici */}
+            {stat.isMultiSet && stat.description && (
+              <div className="subslot-gear-description">
+                <span className="subslot-bonus-level">{stat.pieces} :</span> {stat.description}
+              </div>
+            )}
+            
+            {/* Ligne séparatrice pour multi-set (sauf pour le dernier) */}
+            {stat.isFirst === false && (
+              <div className="subslot-gear-separator"></div>
+            )}
           </div>
         );
       
@@ -723,7 +711,6 @@ const SubSlotOverlay = ({
   }
 
   const borderClass = getBorderClassForOverlay();
-  // console.log(`🎨 SubSlotOverlay - Rendu avec borderClass: "${borderClass}"`);
 
   return (
     <div

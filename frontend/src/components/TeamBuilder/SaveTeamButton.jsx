@@ -98,95 +98,6 @@ const SaveTeamButton = () => {
     }
   };
 
-  const testBackendDirectly = async () => {
-    console.log('=== 🧪 TEST BACKEND DIRECT ===');
-    
-    const testPayload = {
-      teamData: {
-        teamTitle: "Test Direct",
-        teamSize: 4,
-        team: [
-          {
-            id: "kasel",
-            slug: "kasel",
-            name: "Kasel",
-            class: "Warrior",
-            thumbnail: "/kingsraid-data/assets/heroes/Kasel/ico.png"
-          },
-          null, null, null
-        ],
-        subSlots: [
-          [
-            null,
-            null,
-            {
-              artifactSlug: "madames_bronze_mirrors",
-              artifactInfo: {
-                name: "Madame's Bronze Mirrors",
-                thumbnail: "/kingsraid-data/assets/artifacts/Madame's Bronze Mirrors.png",
-                description: "Increase ATK by 10%"
-              }
-            },
-            {
-              gearSetSlug: "beast_of_chaos",
-              gearSetInfo: {
-                name: "Beast of Chaos",
-                thumbnail: "/kingsraid-data/assets/gearsets/beast_of_chaos.png",
-                bonus2P: "ATK +500",
-                bonus4P: "Skill damage +15%"
-              },
-              pieces: 4,
-              sets: ["beast_of_chaos"]
-            }
-          ],
-          [null, null, null, null],
-          [null, null, null, null],
-          [null, null, null, null]
-        ],
-        subStars: [
-          [0, 0, 3, 0],
-          [0, 0, 0, 0],
-          [0, 0, 0, 0],
-          [0, 0, 0, 0]
-        ],
-        perks: [
-          { t3: { s1: "light", s2: null, s3: null, s4: null }, t5: null },
-          null,
-          null,
-          null
-        ],
-        advancements: [null, null, null, null]
-      },
-      createdBy: "debug-test"
-    };
-
-    console.log('📤 Envoi test:', JSON.stringify(testPayload, null, 2));
-
-    try {
-      const response = await fetch('http://localhost:3002/api/v2/teams', {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
-        body: JSON.stringify(testPayload)
-      });
-      
-      const data = await response.json();
-      console.log('📥 Réponse backend:', data);
-      
-      if (data.success) {
-        alert(`✅ Test réussi! ID: ${data.teamId}`);
-      } else {
-        alert(`❌ Échec: ${data.error || 'Erreur inconnue'}`);
-        console.error('Détails erreur:', data.details);
-      }
-    } catch (error) {
-      console.error('💥 Erreur réseau:', error);
-      alert(`❌ Erreur réseau: ${error.message}`);
-    }
-  };
-
   useEffect(() => {
     if (saveMessage) {
       const timer = setTimeout(() => {
@@ -227,13 +138,6 @@ const SaveTeamButton = () => {
                 Sauvegarder l'équipe
               </>
             )}
-          </button>
-
-          <button
-            onClick={testBackendDirectly}
-            className="test-backend-button"
-          >
-            🔧 Test Backend
           </button>
         </div>
         
@@ -324,47 +228,18 @@ const SaveTeamButton = () => {
                     </span>
                   </div>
                 </div>
-                
-                {team.filter(h => h).length > 0 && (
-                  <div className="heroes-list">
-                    <div className="heroes-title">Héros dans l'équipe:</div>
-                    <div className="heroes-container">
-                      {team.map((hero, idx) => (
-                        hero && (
-                          <div key={idx} className="hero-card">
-                            <div className="hero-name">
-                              {hero.name} <span className="hero-class">({hero.class})</span>
-                            </div>
-                            <div className="hero-equipment">
-                              {subSlots[idx]?.[2] && (
-                                <span className="equipment-badge artifact">
-                                  🎯 {subSlots[idx][2].artifactInfo?.name}
-                                </span>
-                              )}
-                              {subSlots[idx]?.[3] && (
-                                <span className="equipment-badge gearset">
-                                  ⚙️ {subSlots[idx][3].gearSetInfo?.name}
-                                </span>
-                              )}
-                            </div>
-                          </div>
-                        )
-                      ))}
-                    </div>
-                  </div>
-                )}
               </div>
             </div>
 
-            <div className="modal-actions">
+            <div className="btn-modal">
               <button
                 onClick={() => {
                   setShowModal(false);
                   setSaveMessage('');
                 }}
-                className="modal-button cancel"
+                className="btn-modal-cancel"
               >
-                Annuler
+                Cancel
               </button>
               <button
                 onClick={handleSaveTeam}
@@ -374,12 +249,12 @@ const SaveTeamButton = () => {
                 {isSaving ? (
                   <>
                     <span className="button-icon">⏳</span>
-                    Sauvegarde...
+                    Saving...
                   </>
                 ) : (
                   <>
                     <span className="button-icon">💾</span>
-                    Sauvegarder
+                    Save
                   </>
                 )}
               </button>

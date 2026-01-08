@@ -172,7 +172,27 @@
 
 /* ========== Overlay ========== */
 
+.gearset-hover-overlay {
+  /* width: 200px; */
+}
+.hover-title {
+  color: white;
+  font-weight: bold;
+  font-size: 14px;
+  text-align: center;
+  margin-bottom: 8px;
+}
+.hover-bonus-row {
+  color: white;
+  font-size: 12px;
+  text-align: center;
+  word-break: break-word;
+  padding: 0 4px;
+}
 
+.hover-bonus-label {
+  font-weight: 500;
+}
 /* ===================================== */
 .gearset-modal-container {
   padding: 16px;

@@ -157,24 +157,16 @@ const GearSetModal = ({ data, onClose }) => {
 
     const overlayContent = (
       <div className="gearset-hover-overlay">
-        <h4 className="hover-title">{gearSet.name}</h4>
-        
-        <div className="hover-preview">
-          <span className="preview-pieces">
-            {pieces}P {isSelected ? "(selected)" : "if selected"}
-          </span>
-        </div>
-        
+        <h4 className="hover-title">{gearSet.name}</h4>       
         <div className="hover-bonus-row">
-          <span className="hover-bonus-label">2P:</span>
+          <span className="hover-bonus-label">2P : </span>
           <span className="hover-bonus-text">{gearSet.bonus2P}</span>
         </div>
         
         <div className="hover-bonus-row">
-          <span className="hover-bonus-label">4P:</span>
+          <span className="hover-bonus-label">4P : </span>
           <span className={`hover-bonus-text ${pieces >= 4 ? "active" : "inactive"}`}>
             {gearSet.bonus4P}
-            {pieces < 4 && <span className="bonus-note"> (requires 4 pieces)</span>}
           </span>
         </div>
       </div>
@@ -339,6 +331,9 @@ const GearSetModal = ({ data, onClose }) => {
 
       {/* Boutons avec logs de débug */}
       <div className="btn-modal">
+        <button onClick={onClose} className="btn-modal-cancel">
+          Cancel
+        </button>
         <button 
           onClick={() => {
             console.log("🔍 Debug - Current selectedSets:", selectedSets);
@@ -348,9 +343,6 @@ const GearSetModal = ({ data, onClose }) => {
           className="btn-modal-confirm"
         >
           Confirm
-        </button>
-        <button onClick={onClose} className="btn-modal-cancel">
-          Cancel
         </button>
       </div>
     </div>

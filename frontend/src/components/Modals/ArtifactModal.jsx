@@ -299,9 +299,6 @@ const getArtifactImageUrl = (artifact) => {
                       ? displayName.substring(0, 8) + "..."
                       : displayName}
                   </div>
-                  {isSelected && (
-                    <div className="artifact-selected-indicator">✓</div>
-                  )}
                 </div>
               );
             })}
@@ -333,16 +330,16 @@ const getArtifactImageUrl = (artifact) => {
 
       <div className="btn-modal">
         <button 
-          onClick={handleConfirm} 
-          className="btn-modal-confirm"
-        >
-          Confirm
-        </button>
-        <button 
           onClick={onClose} 
           className="btn-modal-cancel"
         >
           Cancel
+        </button>
+        <button 
+          onClick={handleConfirm} 
+          className="btn-modal-confirm"
+        >
+          Confirm
         </button>
       </div>
     </div>

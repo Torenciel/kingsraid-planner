@@ -138,6 +138,9 @@
 
 /* ========== Perk Overlay ========== */
 
+.perk-overlay {
+  max-width: 200px;
+}
 /* Styles additionnels pour l'overlay */
 
 .perk-hero {
@@ -177,3 +180,4 @@
   word-break: break-word;
   padding: 0 4px;
 }
+

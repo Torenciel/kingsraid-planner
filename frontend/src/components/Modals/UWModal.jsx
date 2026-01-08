@@ -475,19 +475,10 @@ const UWModal = ({ data, onClose }) => {
         <div className="uw-advancement-section">
           <h4 className="uw-modal-subtitle">Soul Weapon</h4>
           {renderAdvancementOptions()}
-          <div className="advancement-debug">
-            <small>Debug: Selected = "{selectedAdvancement}" (type: {typeof selectedAdvancement})</small>
-          </div>
         </div>
       )}
 
       <div className="btn-modal">
-        <button 
-          onClick={handleConfirm} 
-          className="btn-modal-confirm"
-        >
-          Confirm
-        </button>
         <button 
           onClick={() => {
             // console.log("❌ UWModal - Cancel cliqué");
@@ -496,6 +487,12 @@ const UWModal = ({ data, onClose }) => {
           className="btn-modal-cancel"
         >
           Cancel
+        </button>
+        <button 
+          onClick={handleConfirm} 
+          className="btn-modal-confirm"
+        >
+          Confirm
         </button>
       </div>
     </div>

@@ -89,6 +89,14 @@ body {
   max-height: 90vh;
 }
 
+.modal-title {
+  margin-top: 0;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
 /* ========== Stars ========== */
 .stars-container {
   display: flex;

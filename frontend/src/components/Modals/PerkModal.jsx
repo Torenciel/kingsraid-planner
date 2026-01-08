@@ -428,11 +428,11 @@ const PerkModal = ({ data, onClose }) => {
       {renderPerkGrid()}
 
       <div className="btn-modal">
-        <button onClick={handleConfirm} className="btn-modal-confirm">
-          Confirm
-        </button>
         <button onClick={onClose} className="btn-modal-cancel">
           Cancel
+        </button>
+        <button onClick={handleConfirm} className="btn-modal-confirm">
+          Confirm
         </button>
       </div>
     </div>
