@@ -307,7 +307,7 @@
   font-size: 14px;
   text-align: center;
 }
-
+  
 .subslot-advancement-icon {
   width: 24px;
   height: 24px;
@@ -355,7 +355,7 @@
   padding: 0 4px;
 }
 
-.subslot-text {
+.subslot-text, .subslot-sw-description {
   color: white;
   font-size: 12px;
   text-align: center;
