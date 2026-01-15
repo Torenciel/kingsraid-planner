@@ -152,7 +152,7 @@ SWConfigSchema.pre('validate', function(next) {
 const HeroConfigSchema = new mongoose.Schema({
   heroSlug: {
     type: String,
-    required: [true, 'heroSlug est requis']
+    required: [true, 'heroSlug is required']
   },
   
   slotPosition: {

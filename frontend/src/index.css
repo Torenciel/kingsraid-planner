@@ -2,23 +2,44 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Couleurs Dark*/
 :root {
-  /* Couleurs */
-  --color-primary: #262626;
-  --color-primary-light: #363636;
-  --color-primary-lighter: #474747;
-  --color-primary-dark: #191919;
-  --color-primary-darker: #0a0a0a;
-  --color-secondary: #3b82f6;
-  --color-accent: #e6863a;
-  --color-greyed-text: #9ca3af;
-  --color-item-hover: #64e210;
+  --color-primary-default: #262626;
+  --color-primary-accent: #363636;
+  --color-primary-hover: #474747;
+  --color-primary-highlight: #6b6b6b;
+
+  --color-secondary-default: #344231;
+  --color-secondary-accent: #65BA52;
+  --color-secondary-hover: #51db32;
+  --color-secondary-highlight: #2fff00;
+
+  --color-background: #191919;
+  --color-background-muted: #191919;
+
+  --color-border: #3C3C3C;
+
+  --color-text: #ffffff;
+  --color-text-muted: #9ca3af;
+
+  --color-item-hover: #65BA52;
   --color-item-selected: #fbbf24;
+
   --color-item-selected-shadow: rgba(251, 190, 36, 0.5);
+  --color-error:red;
+
+  --color-scrollbar-thumb-default: #6b6b6b;
+  --color-scrollbar-thumb-hover: #868686;
 }
+
+/* Couleurs light*/
+[data-theme="dark"] {
+
+}
+
 /* Vos styles personnalisés existants */
 body {
-  background-color: var(--color-primary-dark);
+  background-color: var(--color-background);
   color: white;
 }
 
@@ -62,7 +83,7 @@ body {
 /* Garde tes styles existants */
 .bg-kr-dark {
   background-color: var(
-    --color-primary-dark
+    --color-background
   ); /* Fallback si image non disponible*/
 }
 
@@ -81,7 +102,7 @@ body {
 }
 
 .modal-content {
-  background: var(--color-primary-dark);
+  background: var(--color-background);
   padding: 20px;
   border-radius: 8px;
   max-width: 550px;
@@ -128,7 +149,7 @@ body {
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.8);
   background: #262626;
   border-radius: 8px;
-  border: 2px solid var(--color-primary-darker);
+  border: 2px solid var(--color-border);
   padding: 12px;
   pointer-events: auto;
   /* Style pour la flèche */
@@ -144,7 +165,7 @@ body {
   height: 0;
   border-left: 10px solid transparent;
   border-right: 10px solid transparent;
-  border-top: 10px solid var(--color-primary-darker);
+  border-top: 10px solid var(--color-border);
   bottom: -10px;
   left: 50%;
   transform: translateX(-50%);
@@ -167,7 +188,7 @@ body {
 /* Si l'overlay est en dessous, inverser la flèche */
 .global-overlay.bottom-overlay::after {
   border-top: none;
-  border-bottom: 10px solid var(--color-primary-darker);
+  border-bottom: 10px solid var(--color-border);
   top: -10px;
   bottom: auto;
 }

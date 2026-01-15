@@ -41,7 +41,7 @@
 
 /* Contenu principal de l'overlay */
 .subslot-overlay-content {
-  background: var(--color-primary);
+  background: var(--color-primary-default);
   border-radius: 8px;
   padding: 12px;
   pointer-events: auto;
@@ -50,7 +50,7 @@
 
 /* Bordure par défaut - SANS advancement */
 .subslot-overlay:not(.border-blue):not(.border-purple):not(.border-red) {
-  border: 2px solid var(--color-primary-darker);
+  border: 2px solid var(--color-border);
 }
 
 /* Bordures d'advancement pour l'overlay UW */
@@ -80,7 +80,7 @@
   pointer-events: none;
 }
 
-/* Flèche intérieure (fond var(--color-primary)) - SUR LE CONTENU */
+/* Flèche intérieure (fond var(--color-primary-default)) - SUR LE CONTENU */
 .subslot-overlay .subslot-overlay-content::before {
   content: "";
   position: absolute;
@@ -94,7 +94,7 @@
 .subslot-overlay.left .subslot-overlay-content::after {
   border-top: 10px solid transparent;
   border-bottom: 10px solid transparent;
-  border-left: 10px solid var(--color-primary-darker); /* Flèche pointe vers la DROITE */
+  border-left: 10px solid var(--color-border); /* Flèche pointe vers la DROITE */
   right: -10px; /* Positionnée à DROITE du contenu */
   top: 50%;
   transform: translateY(-50%);
@@ -103,7 +103,7 @@
 .subslot-overlay.left .subslot-overlay-content::before {
   border-top: 8px solid transparent;
   border-bottom: 8px solid transparent;
-  border-left: 8px solid var(--color-primary); /* Fond de la flèche */
+  border-left: 8px solid var(--color-primary-default); /* Fond de la flèche */
   right: -7px; /* Positionnée à DROITE du contenu */
   top: 50%;
   transform: translateY(-50%);
@@ -113,7 +113,7 @@
 .subslot-overlay.right .subslot-overlay-content::after {
   border-top: 10px solid transparent;
   border-bottom: 10px solid transparent;
-  border-right: 10px solid var(--color-primary-darker); /* Flèche pointe vers la GAUCHE */
+  border-right: 10px solid var(--color-border); /* Flèche pointe vers la GAUCHE */
   left: -10px; /* Positionnée à GAUCHE du contenu */
   top: 50%;
   transform: translateY(-50%);
@@ -122,7 +122,7 @@
 .subslot-overlay.right .subslot-overlay-content::before {
   border-top: 8px solid transparent;
   border-bottom: 8px solid transparent;
-  border-right: 8px solid var(--color-primary); /* Fond de la flèche */
+  border-right: 8px solid var(--color-primary-default); /* Fond de la flèche */
   left: -7px; /* Positionnée à GAUCHE du contenu */
   top: 50%;
   transform: translateY(-50%);
@@ -132,7 +132,7 @@
 .subslot-overlay.top .subslot-overlay-content::after {
   border-left: 10px solid transparent;
   border-right: 10px solid transparent;
-  border-top: 10px solid var(--color-primary-darker); /* Flèche pointe vers le BAS */
+  border-top: 10px solid var(--color-border); /* Flèche pointe vers le BAS */
   bottom: -10px; /* Positionnée en BAS du contenu */
   left: 50%;
   transform: translateX(-50%);
@@ -141,7 +141,7 @@
 .subslot-overlay.top .subslot-overlay-content::before {
   border-left: 8px solid transparent;
   border-right: 8px solid transparent;
-  border-top: 8px solid var(--color-primary); /* Fond de la flèche */
+  border-top: 8px solid var(--color-primary-default); /* Fond de la flèche */
   bottom: -7px; /* Positionnée en BAS du contenu */
   left: 50%;
   transform: translateX(-50%);
@@ -151,7 +151,7 @@
 .subslot-overlay.bottom .subslot-overlay-content::after {
   border-left: 10px solid transparent;
   border-right: 10px solid transparent;
-  border-bottom: 10px solid var(--color-primary-darker); /* Flèche pointe vers le HAUT */
+  border-bottom: 10px solid var(--color-border); /* Flèche pointe vers le HAUT */
   top: -10px; /* Positionnée en HAUT du contenu */
   left: 50%;
   transform: translateX(-50%);
@@ -160,7 +160,7 @@
 .subslot-overlay.bottom .subslot-overlay-content::before {
   border-left: 8px solid transparent;
   border-right: 8px solid transparent;
-  border-bottom: 8px solid var(--color-primary); /* Fond de la flèche */
+  border-bottom: 8px solid var(--color-primary-default); /* Fond de la flèche */
   top: -7px; /* Positionnée en HAUT du contenu */
   left: 50%;
   transform: translateX(-50%);

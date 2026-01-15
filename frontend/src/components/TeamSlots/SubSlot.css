@@ -11,8 +11,8 @@
 .sub-slot {
   width: 48px;
   height: 48px;
-  background: var(--color-primary);
-  border: 2px solid var(--color-primary-darker); 
+  background: var(--color-primary-default);
+  border: 2px solid var(--color-border); 
   border-radius: 0.4rem;
   position: relative;
   cursor: pointer;
@@ -27,7 +27,7 @@
 }
 
 .sub-slot.empty:hover {
-  background: var(--color-primary-light);
+  background: var(--color-primary-accent);
 }
 
 .sub-slot-plus {
@@ -137,7 +137,7 @@
   justify-content: center;
   color: #9ca3af;
   font-size: 0.75rem;
-  background: var(--color-primary);
+  background: var(--color-primary-default);
   border-radius: 0.25rem;
   padding: 0.125rem;
   text-align: center;

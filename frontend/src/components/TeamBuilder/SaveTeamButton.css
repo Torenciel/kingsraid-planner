@@ -89,7 +89,7 @@
 }
 
 .modal-input {
-  background-color: var(--color-primary-light);
+  background-color: var(--color-primary-accent);
   width: 100%;
   padding: 10px;
   border: 2px solid #ddd;

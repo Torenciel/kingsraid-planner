@@ -1,6 +1,5 @@
-// Teams.jsx
 import { useEffect, useState } from "react";
-import { FaSearch, FaTrash } from "react-icons/fa";
+import { FaStarOfLife, FaSearch, FaTrash } from "react-icons/fa";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import "./Teams.css";
 
@@ -15,7 +14,6 @@ const Teams = () => {
   const [activeTab, setActiveTab] = useState(tab);
   const [selectedContent, setSelectedContent] = useState(initialContent);
   const [selectedSubFilters, setSelectedSubFilters] = useState({});
-  const [isContentExpanded, setIsContentExpanded] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
 
   // Main content types with their sub-filters
@@ -161,12 +159,12 @@ const Teams = () => {
       subFilters: [
         {
           id: "devourer_shakmeh",
-          name: "Devourer Shakmeh",
+          name: "Devourer",
           image: "/kingsraid-data/assets/bosses/Devourer Shakmeh.png",
         },
         {
           id: "otherworldly_shakmeh",
-          name: "Otherworldly Shakmeh",
+          name: "Otherworldly",
           image:
             "/kingsraid-data/assets/bosses/Otherworldly Darkness Shakmeh.png",
         },
@@ -288,16 +286,6 @@ const Teams = () => {
     setSelectedContent(contentOptions.map((option) => option.id));
   };
 
-  // Toggle content filter section
-  const toggleContentExpanded = () => {
-    setIsContentExpanded(!isContentExpanded);
-  };
-
-  const tabs = [
-    { id: "private", label: "My Teams" },
-    { id: "public", label: "Public Teams" },
-  ];
-
   // Helper to get all selected sub-filters as a flat array
   const getAllSelectedSubFilters = () => {
     return Object.values(selectedSubFilters).flat();
@@ -314,282 +302,301 @@ const Teams = () => {
 
   return (
     <div className="teams-container">
-      {/* Binder-style Tabs */}
+      {/* ===== BINDER TABS ===== */}
       <div className="binder-tabs-container">
         <div className="binder-tabs">
-          {tabs.map((tabItem) => (
-            <button
-              key={tabItem.id}
-              className={`binder-tab ${
-                activeTab === tabItem.id ? "active" : ""
-              }`}
-              onClick={() => {
-                navigate(`/teams/${tabItem.id}`);
-              }}
-            >
-              <span className="tab-label">{tabItem.label}</span>
-              {activeTab === tabItem.id && (
-                <div className="tab-indicator"></div>
-              )}
-            </button>
-          ))}
+          <button
+            className={`binder-tab ${activeTab === "private" ? "active" : ""}`}
+            onClick={() => navigate("/teams/private")}
+          >
+            Private
+          </button>
+          <button
+            className={`binder-tab ${activeTab === "public" ? "active" : ""}`}
+            onClick={() => navigate("/teams/public")}
+          >
+            Public
+          </button>
         </div>
       </div>
 
-      {/* Tab Content */}
-      <div className="binder-content">
-        {/* Filters Section */}
-        <div className="filters-section">
-          {/* Top row */}
-          <div className="top-filters-row">
-            <div className="content-type-header">
-              <div className="teams-count-header">
-                <h3 className="teams-count-header-text">
-                  {Math.floor(Math.random() * 50) + 10}{" "}
-                  <span className="teams-count-header-span">teams</span>
-                </h3>
-              </div>
-            </div>
-
-            <div className="middle-filters">
-              <div className="search-container">
-                <FaSearch className="search-icon" />
+      {/* ===== FILTERS GRID ===== */}
+      <div className="filters-section">
+        
+        {/* ===== LEFT COLUMN ===== */}
+        <div className="filters-left">
+          <div className="content-checkboxes">
+            {contentOptions.map((content) => (
+              <label key={content.id} className="checkbox-label">
                 <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder={`Search ${
-                    activeTab === "private" ? "private" : "public"
-                  } team names...`}
-                  className="search-input"
+                  type="checkbox"
+                  checked={selectedContent.includes(content.id)}
+                  onChange={() => handleContentChange(content.id)}
+                  className="checkbox-input"
                 />
-                {searchQuery && (
-                  <button
-                    className="clear-search-btn"
-                    onClick={() => setSearchQuery("")}
-                    title="Clear search"
-                  >
-                    ×
-                  </button>
-                )}
-              </div>
+                <span className="checkbox-custom"></span>
+                <span className="checkbox-text">{content.name}</span>
+              </label>
+            ))}
+          </div>
+        </div>
+
+        {/* ===== CENTER COLUMN ===== */}
+        <div className="filters-center">
+          
+          {/* TOP BAR */}
+          <div className="filters-top">
+
+            <button 
+              className="square-btn clear-filters-btn"
+              onClick={handleClearFilters}
+              disabled={
+                selectedContent.length === 0 &&
+                Object.keys(selectedSubFilters).length === 0 &&
+                searchQuery === ""
+              }
+              title="Clear all filters"
+            >
+              <FaStarOfLife />
+            </button>
+            <button 
+              className="square-btn clear-filters-btn"
+              onClick={handleClearFilters}
+              disabled={
+                selectedContent.length === 0 &&
+                Object.keys(selectedSubFilters).length === 0 &&
+                searchQuery === ""
+              }
+              title="Clear all filters"
+            >
+              <FaTrash />
+            </button>
+            <button 
+              className="square-btn clear-filters-btn"
+              onClick={handleClearFilters}
+              disabled={
+                selectedContent.length === 0 &&
+                Object.keys(selectedSubFilters).length === 0 &&
+                searchQuery === ""
+              }
+              title="Clear all filters"
+            >
+              <FaTrash />
+            </button>
+
+            <div className="search-container">
+              <FaSearch className="search-icon" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder={`Search team names...`}
+                className="search-input"
+              />
+              {searchQuery && (
+                <button
+                  className="clear-search-btn"
+                  onClick={() => setSearchQuery("")}
+                  title="Clear search"
+                >
+                  ×
+                </button>
+              )}
             </div>
 
-            <div className="header-actions">
-              <button className="select-all-btn" onClick={handleSelectAll}>
-                Select All
-              </button>
-              <button
-                className="clear-filters-icon-btn"
-                onClick={handleClearFilters}
-                disabled={
-                  selectedContent.length === 0 &&
-                  Object.keys(selectedSubFilters).length === 0 &&
-                  searchQuery === ""
-                }
-                title="Clear all filters"
-              >
-                <FaTrash />
-              </button>
-              <button
-                className="expand-toggle-btn"
-                onClick={toggleContentExpanded}
-                title={isContentExpanded ? "Collapse" : "Expand"}
-              >
-                {isContentExpanded ? "−" : "+"}
-              </button>
-            </div>
+            <button className="select-all-btn" onClick={handleSelectAll}>
+              Select all
+            </button>
+
+            <button 
+              className="square-btn clear-filters-btn"
+              onClick={handleClearFilters}
+              disabled={
+                selectedContent.length === 0 &&
+                Object.keys(selectedSubFilters).length === 0 &&
+                searchQuery === ""
+              }
+              title="Clear all filters"
+            >
+              <FaTrash />
+            </button>
           </div>
 
-          {/* Content checkboxes and sub-filters (collapsible) */}
-          {isContentExpanded && (
-            <>
-              <div className="content-checkboxes">
-                {contentOptions.map((content) => (
-                  <label key={content.id} className="checkbox-label">
-                    <input
-                      type="checkbox"
-                      checked={selectedContent.includes(content.id)}
-                      onChange={() => handleContentChange(content.id)}
-                      className="checkbox-input"
-                    />
-                    <span className="checkbox-custom"></span>
-                    <span className="checkbox-icon">{content.icon}</span>
-                    <span className="checkbox-text">{content.name}</span>
-                  </label>
-                ))}
-              </div>
+          {/* SUB FILTERS – SCROLL VERTICAL */}
+          <div className="sub-filters-container">
 
-              {/* Sub-filters for selected content types - Only show when expanded */}
-              {selectedContent
-                .filter((contentId) => {
-                  const content = contentOptions.find(
-                    (c) => c.id === contentId
-                  );
-                  return (
-                    content &&
-                    content.subFilters &&
-                    content.subFilters.length > 0
-                  );
-                })
-                .map((contentId) => {
-                  const content = contentOptions.find(
-                    (c) => c.id === contentId
-                  );
-                  const selectedSubs = selectedSubFilters[contentId] || [];
+            {selectedContent
+              .filter((contentId) => {
+                const content = contentOptions.find((c) => c.id === contentId);
+                return (
+                  content &&
+                  content.subFilters &&
+                  content.subFilters.length > 0
+                );
+              })
+              .map((contentId) => {
+                const content = contentOptions.find(
+                  (c) => c.id === contentId
+                );
+                const selectedSubs = selectedSubFilters[contentId] || [];
 
-                  return (
-                    <div key={contentId} className="sub-filter-section">
-                      <div className="sub-filter-header">
-                        <span className="sub-filter-title">{content.name}</span>
-                      </div>
+                return (
+                  <div key={contentId} className="sub-filter-section">
+                    <div className="sub-filter-title">{content.name}</div>
 
-                      <div className="sub-filter-divider"></div>
-
-                      <div className="sub-filter-items">
-                        {content.subFilters.map((subFilter) => {
-                          const isSelected = selectedSubs.includes(
-                            subFilter.id
-                          );
-                          return (
-                            <button
-                              key={subFilter.id}
-                              className={`sub-filter-item ${
-                                isSelected ? "selected" : ""
-                              }`}
-                              onClick={() =>
-                                handleSubFilterChange(contentId, subFilter.id)
-                              }
-                            >
-                              {subFilter.image && (
-                                <img
-                                  src={subFilter.image}
-                                  alt={subFilter.name}
-                                  className="sub-filter-image"
-                                  onError={handleImageError}
-                                />
-                              )}
-                              {subFilter.image && (
-                                <div
-                                  className="sub-filter-fallback"
-                                  style={{ display: "none" }}
-                                >
-                                  {subFilter.name.charAt(0)}
-                                </div>
-                              )}
-                              <div className="sub-filter-name">
-                                {subFilter.name}
+                    <div className="sub-filter-items">
+                      {content.subFilters.map((subFilter) => {
+                        const isSelected = selectedSubs.includes(
+                          subFilter.id
+                        );
+                        return (
+                          <button
+                            key={subFilter.id}
+                            className={`sub-filter-item ${
+                              isSelected ? "selected" : ""
+                            }`}
+                            onClick={() =>
+                              handleSubFilterChange(contentId, subFilter.id)
+                            }
+                          >
+                            {subFilter.image && (
+                              <img
+                                src={subFilter.image}
+                                alt={subFilter.name}
+                                className="sub-filter-image"
+                                onError={handleImageError}
+                              />
+                            )}
+                            {subFilter.image && (
+                              <div
+                                className="sub-filter-fallback"
+                                style={{ display: "none" }}
+                              >
+                                {subFilter.name.charAt(0)}
                               </div>
-                            </button>
-                          );
-                        })}
-                      </div>
+                            )}
+                            <div className="sub-filter-name">
+                              {subFilter.name}
+                            </div>
+                          </button>
+                        );
+                      })}
                     </div>
-                  );
-                })}
-            </>
-          )}
+                  </div>
+                );
+              })}
+           
+          </div>
+        </div>
 
-          {/* Active filters display - ALWAYS SHOW even when collapsed */}
-          {(selectedContent.length > 0 ||
-            Object.keys(selectedSubFilters).length > 0) && (
-            <div className="active-filters">
-              <span className="active-filters-label">Active filters:</span>
-              <div className="filter-tags">
-                {/* Main content filters */}
-                {selectedContent.map((contentId) => {
+        {/* ===== RIGHT COLUMN ===== */}
+        <div className="filters-right">
+          <div className="active-filters">
+            <span className="active-filters-label">Active filters</span>
+            <div className="filter-tags">
+              {/* Main content filters */}
+              {selectedContent.map((contentId) => {
+                const content = contentOptions.find(
+                  (c) => c.id === contentId
+                );
+                return (
+                  <button
+                    key={contentId}
+                    className="filter-tag"
+                    onClick={() => handleFilterTagClick(contentId)}
+                  >
+                    <span className="filter-tag-content">
+                      {content?.name}
+                    </span>
+                  </button>
+                );
+              })}
+
+              {/* Sub-filters */}
+              {Object.entries(selectedSubFilters).map(
+                ([contentId, subFilterIds]) => {
                   const content = contentOptions.find(
                     (c) => c.id === contentId
                   );
-                  return (
-                    <button
-                      key={contentId}
-                      className="filter-tag"
-                      onClick={() => handleFilterTagClick(contentId)}
-                    >
-                      <span className="filter-tag-content">
-                        {content?.name}
-                      </span>
-                    </button>
-                  );
-                })}
-
-                {/* Sub-filters */}
-                {Object.entries(selectedSubFilters).map(
-                  ([contentId, subFilterIds]) => {
-                    const content = contentOptions.find(
-                      (c) => c.id === contentId
+                  return subFilterIds.map((subFilterId) => {
+                    const subFilter = content?.subFilters?.find(
+                      (s) => s.id === subFilterId
                     );
-                    return subFilterIds.map((subFilterId) => {
-                      const subFilter = content?.subFilters?.find(
-                        (s) => s.id === subFilterId
-                      );
-                      return subFilter ? (
-                        <button
-                          key={`${contentId}-${subFilterId}`}
-                          className="filter-tag sub-filter-tag"
-                          onClick={() =>
-                            handleSubFilterTagClick(contentId, subFilterId)
-                          }
-                        >
-                          <span className="filter-tag-content">
-                            {content.name}: {subFilter.name}
-                          </span>
-                        </button>
-                      ) : null;
-                    });
-                  }
-                )}
-              </div>
+                    return subFilter ? (
+                      <button
+                        key={`${contentId}-${subFilterId}`}
+                        className="filter-tag sub-filter-tag"
+                        onClick={() =>
+                          handleSubFilterTagClick(contentId, subFilterId)
+                        }
+                      >
+                        <span className="filter-tag-content">
+                          {content.name}: {subFilter.name}
+                        </span>
+                      </button>
+                    ) : null;
+                  });
+                }
+              )}
             </div>
-          )}
+          </div>
+          
+          <div className="content-type-header">
+            <div className="teams-count-header">
+              <h3 className="teams-count-header-text">
+                {Math.floor(Math.random() * 50) + 10}{" "}
+                <span className="teams-count-header-span">teams</span>
+              </h3>
+            </div>
+          </div>
         </div>
+      </div>
 
-        <div className="tab-content">
-          {activeTab === "private" ? (
-            <>
-              <h2>Private Teams</h2>
-              <p>
-                {selectedContent.length === 0
-                  ? "All my private teams"
-                  : `My private teams for: ${selectedContent
-                      .map(
-                        (id) => contentOptions.find((c) => c.id === id)?.name
-                      )
-                      .join(", ")}`}
-                {getAllSelectedSubFilters().length > 0 &&
-                  ` (${getAllSelectedSubFilters().length} specific boss${
-                    getAllSelectedSubFilters().length > 1 ? "es" : ""
-                  })`}
-                {searchQuery && ` matching "${searchQuery}"`}
-              </p>
-              <div className="teams-count">
-                Showing {Math.floor(Math.random() * 50) + 10} teams
-              </div>
-            </>
-          ) : (
-            <>
-              <h2>Public Teams</h2>
-              <p>
-                {selectedContent.length === 0
-                  ? "Showing all public teams"
-                  : `Showing teams for: ${selectedContent
-                      .map(
-                        (id) => contentOptions.find((c) => c.id === id)?.name
-                      )
-                      .join(", ")}`}
-                {getAllSelectedSubFilters().length > 0 &&
-                  ` (${getAllSelectedSubFilters().length} specific boss${
-                    getAllSelectedSubFilters().length > 1 ? "es" : ""
-                  })`}
-                {searchQuery && ` matching "${searchQuery}"`}
-              </p>
-              <div className="teams-count">
-                Showing {Math.floor(Math.random() * 50) + 10} teams
-              </div>
-            </>
-          )}
-        </div>
+      {/* ===== TEAMS CONTENT ===== */}
+      <div className="tab-content">
+        {activeTab === "private" ? (
+          <>
+            <h2>Private Teams</h2>
+            <p>
+              {selectedContent.length === 0
+                ? "All my private teams"
+                : `My private teams for: ${selectedContent
+                    .map(
+                      (id) => contentOptions.find((c) => c.id === id)?.name
+                    )
+                    .join(", ")}`}
+              {getAllSelectedSubFilters().length > 0 &&
+                ` (${getAllSelectedSubFilters().length} specific boss${
+                  getAllSelectedSubFilters().length > 1 ? "es" : ""
+                })`}
+              {searchQuery && ` matching "${searchQuery}"`}
+            </p>
+            <div className="teams-count">
+              Showing {Math.floor(Math.random() * 50) + 10} teams
+            </div>
+          </>
+        ) : (
+          <>
+            <h2>Public Teams</h2>
+            <p>
+              {selectedContent.length === 0
+                ? "Showing all public teams"
+                : `Showing teams for: ${selectedContent
+                    .map(
+                      (id) => contentOptions.find((c) => c.id === id)?.name
+                    )
+                    .join(", ")}`}
+              {getAllSelectedSubFilters().length > 0 &&
+                ` (${getAllSelectedSubFilters().length} specific boss${
+                  getAllSelectedSubFilters().length > 1 ? "es" : ""
+                })`}
+              {searchQuery && ` matching "${searchQuery}"`}
+            </p>
+            <div className="teams-count">
+              Showing {Math.floor(Math.random() * 50) + 10} teams
+            </div>
+          </>
+        )}
       </div>
     </div>
   );

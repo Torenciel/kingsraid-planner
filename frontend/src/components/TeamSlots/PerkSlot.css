@@ -13,8 +13,8 @@
 }
 /* ========== Slot principal de perk ========== */
 .perk-main-slot {
-  background: var(--color-primary);
-  border: 2px solid var(--color-primary-darker);
+  background: var(--color-primary-default);
+  border: 2px solid var(--color-border);
   /* border: 1px solid #3c3c3c; */
   border-radius: 0.4rem;
   width: 100%;
@@ -26,7 +26,7 @@
 }
 
 .perk-main-slot.empty:hover {
-  background: var(--color-primary-light);
+  background: var(--color-primary-accent);
 }
 
 .perk-main-slot.perk-slot-active {

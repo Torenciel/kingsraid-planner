@@ -127,7 +127,7 @@ const Navbar = () => {
     community: [
       { to: "/feedback", label: "Feedback" },
       { to: "/discord", label: "Discord" },
-      { to: "/youtube", label: "YouTube" },
+      { to: "/github", label: "Github" },
     ],
   };
 

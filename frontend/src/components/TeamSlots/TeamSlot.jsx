@@ -1,9 +1,11 @@
-// components/TeamSlots/TeamSlot.jsx
+// components/TeamSlots/TeamSlot.jsx (Show subslot overlay)
 import React, { useState, useRef, useEffect } from "react";
 import CharacterSlot from "./CharacterSlot";
 import PerkPreview from "./PerkPreview";
 import PerkSlot from "./PerkSlot";
 import SubSlot from "./SubSlot";
+import SubSlotOverlay from "./SubSlotOverlay";
+
 import "./TeamSlot.css";
 
 const TeamSlot = ({
@@ -11,7 +13,7 @@ const TeamSlot = ({
   teamSlotIndex,
   subSlots,
   subStars,
-  advancement, // 🔥 Cette prop vient du TeamContext (null/0/1/2)
+  advancement, 
   perks,
   onRemoveHero,
   onSubSlotClick,
@@ -54,25 +56,37 @@ const TeamSlot = ({
   }, []);
   
   // Fonctions pour gérer l'affichage de l'overlay
-  const handleSubSlotMouseEnter = (subIndex) => {
-    // Annuler tout hide en cours
-    if (hideTimeoutRef.current) {
-      clearTimeout(hideTimeoutRef.current);
+const handleSubSlotMouseEnter = (subIndex) => {
+  console.group(`🟦 Hover SubSlot ${subIndex}`);
+
+  console.log("👉 subIndex:", subIndex);
+  console.log("👉 subSlots[subIndex]:", subSlots?.[subIndex]);
+  console.log("👉 typeof:", typeof subSlots?.[subIndex]);
+  console.log("👉 is null:", subSlots?.[subIndex] === null);
+  console.log("👉 is undefined:", subSlots?.[subIndex] === undefined);
+  console.log("👉 Boolean():", Boolean(subSlots?.[subIndex]));
+
+  if (hideTimeoutRef.current) clearTimeout(hideTimeoutRef.current);
+  if (showTimeoutRef.current) clearTimeout(showTimeoutRef.current);
+
+  showTimeoutRef.current = setTimeout(() => {
+    console.log("⏱️ showTimeout fired for subIndex", subIndex);
+
+    if (subSlots?.[subIndex] === null || subSlots?.[subIndex] === undefined) {
+      console.warn("⛔ Slot vide → overlay annulé");
+      console.groupEnd();
+      return;
     }
-    
-    // Annuler tout show en cours
-    if (showTimeoutRef.current) {
-      clearTimeout(showTimeoutRef.current);
-    }
-    
-    // Afficher l'overlay après un court délai
-    showTimeoutRef.current = setTimeout(() => {
-      if (!subSlots?.[subIndex]) return; // Pas d'overlay si le slot est vide
-      
-      setHoveredSubSlot(subIndex);
-      setIsOverlayVisible(true);
-    }, 150); // Délai légèrement plus long pour éviter les apparitions/disparitions rapides
-  };
+
+    console.log("✅ Overlay autorisé");
+    setHoveredSubSlot(subIndex);
+    setIsOverlayVisible(true);
+
+    console.groupEnd();
+  }, 150);
+};
+
+
   
   const handleSubSlotMouseLeave = () => {
     // Annuler tout show en cours
@@ -167,19 +181,20 @@ const TeamSlot = ({
         onRemove={() => hero && onRemoveHero(hero.id)}
       />
 
-      {/* Sous-slots (UW, UT, Artifact, GearSet) */}
+      {/* Sub slots (UW, UT, Artifact, GearSet) */}
       <div className="sub-slots-grid">
         {[0, 1, 2, 3].map((subIndex) => {
           const advancementForSlot = getAdvancementForSubSlot(subIndex);
           
-          // console.log(`🔧 TeamSlot ${teamSlotIndex} - Rendu SubSlot ${subIndex}:`, {
-          //   'item présent': !!subSlots?.[subIndex],
-          //   'stars': subStars?.[subIndex],
-          //   'advancement passé': advancementForSlot,
-          //   'type advancement passé': typeof advancementForSlot,
-          //   '=== 0': advancementForSlot === 0,
-          //   '=== "none"': advancementForSlot === "none"
-          // });
+          console.group("🟨 Overlay render check");
+          console.log("isOverlayVisible:", isOverlayVisible);
+          console.log("hoveredSubSlot:", hoveredSubSlot);
+          console.log("item:", subSlots?.[hoveredSubSlot]);
+          console.log("stars:", subStars?.[hoveredSubSlot]);
+          console.log("advancement:", hoveredSubSlot === 0 ? advancement : null);
+          console.log("heroSlug:", getHeroSlug());
+          console.log("slotRef:", subSlotRefs.current[hoveredSubSlot]);
+          console.groupEnd();
           
           return (
             <div 
@@ -193,7 +208,6 @@ const TeamSlot = ({
               subSlotIndex={subIndex}
               item={subSlots?.[subIndex]}
               stars={subStars?.[subIndex]}
-              // 🔥 CORRECTION : UW (slot 0) reçoit l'advancement, autres reçoivent null
               advancement={subIndex === 0 ? advancement : null}
               hasHero={!!hero}
               onClick={onSubSlotClick}
@@ -220,21 +234,20 @@ const TeamSlot = ({
         heroName={hero?.name}
       />
       
-      {/* 🔥 DEBUG TEMPORAIRE */}
-      <div style={{
-        position: 'absolute',
-        top: '5px',
-        right: '5px',
-        background: 'rgba(0,0,0,0.7)',
-        color: 'white',
-        fontSize: '10px',
-        padding: '2px 4px',
-        borderRadius: '3px',
-        zIndex: 1000
-      }}>
-        Adv: {typeof advancement === 'number' ? advancement : 'null'}
-      </div>
-      
+      {/* ===== SubSlot Overlay (GLOBAL) ===== */}
+      {isOverlayVisible && hoveredSubSlot !== null && (
+        <SubSlotOverlay
+          subSlotIndex={hoveredSubSlot}
+          item={subSlots?.[hoveredSubSlot]}
+          stars={subStars?.[hoveredSubSlot]}
+          advancement={hoveredSubSlot === 0 ? advancement : null}
+          heroSlug={getHeroSlug()}
+          heroName={hero?.name}
+          slotRef={subSlotRefs.current[hoveredSubSlot]}
+          onMouseEnter={handleOverlayMouseEnter}
+          onMouseLeave={handleOverlayMouseLeave}
+        />
+      )}
     </div>
   );
 };

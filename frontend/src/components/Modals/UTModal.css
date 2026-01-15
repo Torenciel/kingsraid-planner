@@ -6,8 +6,8 @@
   height: 64px;
   cursor: pointer;
   border-radius: 4px;
-  background: var(--color-primary);
-  border: 2px solid var(--color-primary-darker);
+  background: var(--color-primary-default);
+  border: 2px solid var(--color-border);
   transition: all 0.2s;
   position: relative;
   overflow: hidden;
@@ -16,7 +16,7 @@
 
 /* Style par défaut */
 .ut-option {
-  border-color: var(--color-primary-darker);
+  border-color: var(--color-border);
 }
 
 /* Style au survol */
@@ -51,7 +51,7 @@
   text-align: center;
   color: #9ca3af;
   font-size: 0.875rem;
-  background: var(--color-primary);
+  background: var(--color-primary-default);
   border-radius: 3px;
   font-weight: 500;
 }

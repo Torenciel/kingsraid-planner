@@ -6,8 +6,8 @@
   width: 100%; /* Ajoute */
   height: 100%; /* Ajoute */
   /* overflow: hidden; */
-  background: var(--color-primary);
-  border: 2px solid var(--color-primary-darker);
+  background: var(--color-primary-default);
+  border: 2px solid var(--color-border);
   border-radius: 0.4rem;
   position: relative;
   cursor: pointer;

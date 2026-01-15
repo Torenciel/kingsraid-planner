@@ -1,3 +1,4 @@
+// components/TeamSlots/SubSlot.jsx (Show image in subslot, handle onclick and give position to Teamslot.jsx)
 import { useRef, useState } from "react";
 import "./SubSlot.css";
 import SubSlotOverlay from "./SubSlotOverlay";
@@ -7,15 +8,15 @@ const SubSlot = ({
   subSlotIndex,
   item,
   stars,
-  advancement, // 🔥 Maintenant null/0/1/2
+  advancement, 
   onClick,
   hasHero,
   heroSlug,
   heroName,
+  slotRef,
 }) => {
 
-  const [showOverlay, setShowOverlay] = useState(false);
-  const slotRef = useRef(null);
+
   const subSlotNames = ["UW", "UT", "Artifact", "GearSet"];
 
   if (!hasHero) {
@@ -346,8 +347,6 @@ const getBorderClass = () => {
     <div
       ref={slotRef}
       className="relative"
-      onMouseEnter={() => setShowOverlay(true)}
-      onMouseLeave={() => setShowOverlay(false)}
     >
       <div
         className={`sub-slot ${getBorderClass()}`}
@@ -355,18 +354,6 @@ const getBorderClass = () => {
       >
         {renderContent()}
       </div>
-
-      {showOverlay && (
-        <SubSlotOverlay
-          subSlotIndex={subSlotIndex}
-          item={item}
-          stars={stars}
-          advancement={advancement} // 🔥 Passe null/0/1/2
-          heroSlug={heroSlug}
-          heroName={heroName}
-          slotRef={slotRef}
-        />
-      )}
     </div>
   );
 };

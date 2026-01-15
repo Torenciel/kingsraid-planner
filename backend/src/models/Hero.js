@@ -80,7 +80,7 @@ const SWSchema = new mongoose.Schema({
   story: { type: String, default: '' }
 }, { _id: false });
 
-// === SCHÉMA PRINCIPAL HERO (CORRIGÉ) ===
+// === SCHÉMA PRINCIPAL HERO  ===
 const HeroSchema = new mongoose.Schema({
   infos: {
     name: { type: String, required: true, index: true },

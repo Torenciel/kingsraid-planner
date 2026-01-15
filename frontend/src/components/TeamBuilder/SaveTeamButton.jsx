@@ -26,14 +26,14 @@ const SaveTeamButton = () => {
 
   const handleSaveTeam = async () => {
     if (!teamName || !teamName.trim()) {
-      setSaveMessage('❌ Le nom de l\'équipe est requis');
+      setSaveMessage('Team name is required');
       return;
     }
     
     setIsSaving(true);
-    setSaveMessage('⏳ Sauvegarde en cours...');
+    setSaveMessage('Saving...');
     
-    console.log('=== 🚀 DÉBUT SAUVEGARDE ===');
+    console.log('Starting save process');
     
     const teamData = {
       teamTitle: teamName.trim(),
@@ -45,30 +45,30 @@ const SaveTeamButton = () => {
       advancements: advancements
     };
     
-    // Log détaillé
-    console.log('📤 Données à envoyer:');
-    console.log('- Nom équipe:', teamData.teamTitle);
-    console.log('- Taille:', teamData.teamSize);
-    console.log('- Nombre héros:', team.filter(h => h).length);
+    // Detailed logging
+    console.log('Data to be sent:');
+    console.log('- Team name:', teamData.teamTitle);
+    console.log('- Team size:', teamData.teamSize);
+    console.log('- Number of heroes:', team.filter(h => h).length);
     
     team.forEach((hero, idx) => {
       if (hero) {
         const artifact = subSlots[idx]?.[2];
         const gearSet = subSlots[idx]?.[3];
         
-        console.log(`\n👤 Héros ${idx} (${hero.name}):`);
+        console.log(`Hero ${idx} (${hero.name}):`);
         console.log('  - ID:', hero.id);
         console.log('  - Slug:', hero.slug);
         
         if (artifact) {
-          console.log('  🎯 Artifact trouvé:');
+          console.log('  Artifact found:');
           console.log('    - artifactSlug:', artifact.artifactSlug);
           console.log('    - has artifactInfo:', !!artifact.artifactInfo);
           console.log('    - Stars:', subStars[idx]?.[2] || 0);
         }
         
         if (gearSet) {
-          console.log('  ⚙️ Gear Set trouvé:');
+          console.log('  Gear Set found:');
           console.log('    - gearSetSlug:', gearSet.gearSetSlug);
           console.log('    - has gearSetInfo:', !!gearSet.gearSetInfo);
           console.log('    - Pieces:', gearSet.pieces);
@@ -79,20 +79,20 @@ const SaveTeamButton = () => {
     try {
       const result = await saveTeam(teamName.trim());
       
-      console.log('📥 Réponse backend:', result);
+      console.log('Backend response:', result);
       
       if (result.success) {
-        setSaveMessage(`✅ Équipe "${teamName}" sauvegardée avec succès!`);
+        setSaveMessage(`Team "${teamName}" saved successfully!`);
         setTimeout(() => {
           setShowModal(false);
           setSaveMessage('');
         }, 2000);
       } else {
-        setSaveMessage(`❌ Erreur: ${result.error || 'Échec de sauvegarde'}`);
+        setSaveMessage(`Error: ${result.error || 'Save failed'}`);
       }
     } catch (error) {
-      console.error('💥 Erreur lors de la sauvegarde:', error);
-      setSaveMessage(`❌ Erreur: ${error.message}`);
+      console.error('Error during save:', error);
+      setSaveMessage(`Error: ${error.message}`);
     } finally {
       setIsSaving(false);
     }
@@ -129,20 +129,20 @@ const SaveTeamButton = () => {
           >
             {isSaving ? (
               <>
-                <span className="button-icon">⏳</span>
-                Sauvegarde...
+                <span className="button-icon"></span>
+                Saving...
               </>
             ) : (
               <>
-                <span className="button-icon">💾</span>
-                Sauvegarder l'équipe
+                <span className="button-icon"></span>
+                Save Team
               </>
             )}
           </button>
         </div>
         
         {saveMessage && (
-          <div className={`save-message ${saveMessage.includes('✅') ? 'success' : saveMessage.includes('⏳') ? 'warning' : 'error'}`}>
+          <div className={`save-message ${saveMessage.includes('successfully') ? 'success' : saveMessage.includes('Saving') ? 'warning' : 'error'}`}>
             {saveMessage}
           </div>
         )}
@@ -151,21 +151,21 @@ const SaveTeamButton = () => {
           <div className="stats-row">
             <div className="stat-item">
               <div className={`stat-indicator ${team.filter(h => h).length > 0 ? 'active' : 'inactive'}`}></div>
-              <span className="stat-label">Héros:</span>
+              <span className="stat-label">Heroes: </span>
               <span className="stat-value">{team.filter(h => h).length}/{teamSize}</span>
             </div>
             
             <div className="stat-item">
               <div className={`stat-indicator ${subSlots.flat().filter(item => item).length > 0 ? 'active' : 'inactive'}`}></div>
-              <span className="stat-label">Équipements:</span>
+              <span className="stat-label">Sub-slots: </span>
               <span className="stat-value">{subSlots.flat().filter(item => item).length}</span>
             </div>
           </div>
           
           <div className="equipment-details">
-            <span className="equipment-item">Artifacts: {getArtifactCount()}</span>
-            <span className="equipment-item">Gear Sets: {getGearSetCount()}</span>
-            <span className="equipment-item">UW: {getUWCount()}</span>
+            <span className="equipment-item">Artifacts: {getArtifactCount()} / </span>
+            <span className="equipment-item">Gear Sets: {getGearSetCount()} / </span>
+            <span className="equipment-item">UW: {getUWCount()} / </span>
             <span className="equipment-item">UT: {getUTCount()}</span>
           </div>
         </div>
@@ -175,54 +175,51 @@ const SaveTeamButton = () => {
         <div className="modal-overlay">
           <div className="modal-content">
             <h3 className="modal-title">
-              <span className="modal-icon">💾</span>
-              Sauvegarder l'équipe
+              Save Team
             </h3>
             
             <div className="modal-body">
               <label className="modal-label">
-                Nom de l'équipe *
+                Team Name *
               </label>
               <input
                 type="text"
                 value={teamName}
                 onChange={(e) => setTeamName(e.target.value)}
-                placeholder="Ex: Mon équipe PVP"
+                placeholder="Ex: Solo content team"
                 className={`modal-input ${teamName && teamName.trim() ? 'valid' : 'invalid'}`}
                 autoFocus
               />
               
               {(!teamName || !teamName.trim()) && (
                 <div className="validation-error">
-                  <span className="error-icon">⚠️</span>
-                  Le nom de l'équipe est requis
+                  <span className="error-icon"></span>
+                  Team name required
                 </div>
               )}
               
-              <div className="team-preview">
-                <div className="preview-title">📊 Aperçu de l'équipe:</div>
-                
+              <div className="team-preview">                
                 <div className="preview-grid">
                   <div className="preview-item">
-                    <span className="preview-label">Héros:</span>
+                    <span className="preview-label">Heroes: </span>
                     <span className="preview-value">
                       {team.filter(h => h).length}/{teamSize}
                     </span>
                   </div>
                   <div className="preview-item">
-                    <span className="preview-label">Équipements:</span>
+                    <span className="preview-label">Sub-slots: </span>
                     <span className="preview-value">
                       {subSlots.flat().filter(item => item).length}
                     </span>
                   </div>
                   <div className="preview-item">
-                    <span className="preview-label">Artifacts:</span>
+                    <span className="preview-label">Artifacts: </span>
                     <span className="preview-value">
                       {getArtifactCount()}
                     </span>
                   </div>
                   <div className="preview-item">
-                    <span className="preview-label">Gear Sets:</span>
+                    <span className="preview-label">Gear Sets: </span>
                     <span className="preview-value">
                       {getGearSetCount()}
                     </span>
@@ -248,12 +245,12 @@ const SaveTeamButton = () => {
               >
                 {isSaving ? (
                   <>
-                    <span className="button-icon">⏳</span>
+                    <span className="button-icon"></span>
                     Saving...
                   </>
                 ) : (
                   <>
-                    <span className="button-icon">💾</span>
+                    <span className="button-icon"></span>
                     Save
                   </>
                 )}

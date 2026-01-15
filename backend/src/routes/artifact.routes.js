@@ -16,7 +16,7 @@ router.get('/', async (req, res) => {
       name: artifact.name,            // Nom d'affichage
       description: artifact.description,
       thumbnail: artifact.thumbnail,
-      values: artifact.value,
+      value: artifact.value,
       releaseOrder: artifact.releaseOrder || 999
     }));
     

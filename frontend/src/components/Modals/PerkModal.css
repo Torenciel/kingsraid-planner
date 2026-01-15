@@ -7,8 +7,8 @@
   gap: 4px;
   padding: 8px;
   border-radius: 6px;
-  background: var(--color-primary);
-  border: 1px solid var(--color-primary-darker);
+  background: var(--color-primary-default);
+  border: 1px solid var(--color-border);
 }
 
 .perk-modal-row {
@@ -23,8 +23,8 @@
   height: 50px;
   cursor: pointer;
   border-radius: 4px;
-  background: var(--color-primary);
-  border: 2px solid var(--color-primary-darker);
+  background: var(--color-primary-default);
+  border: 2px solid var(--color-border);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -39,7 +39,7 @@
 
 /* Style par défaut */
 .perk-modal-option {
-  border-color: var(--color-primary-darker);
+  border-color: var(--color-border);
 }
 
 /* Style au survol */
@@ -82,7 +82,7 @@
   text-align: center;
   color: #9ca3af;
   font-size: 8px;
-  background: var(--color-primary);
+  background: var(--color-primary-default);
   border-radius: 3px;
   padding: 2px;
   overflow: hidden;
@@ -103,12 +103,12 @@
 
 /* ========== Points de perks ========== */
 .perk-modal-points {
-  background: var(--color-primary);
+  background: var(--color-primary-default);
   border-radius: 6px;
   padding: 10px;
   margin-bottom: 12px;
   text-align: center;
-  border: 1px solid var(--color-primary-darker);
+  border: 1px solid var(--color-border);
   font-size: 0.875rem;
   font-weight: 600;
 }
