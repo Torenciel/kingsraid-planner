@@ -14,7 +14,7 @@
 /* ========== Slot principal de perk ========== */
 .perk-main-slot {
   background: var(--color-primary-default);
-  border: 2px solid var(--color-border);
+  border: 2px solid var(--color-border-default);
   /* border: 1px solid #3c3c3c; */
   border-radius: 0.4rem;
   width: 100%;

@@ -348,7 +348,6 @@ const UWModal = ({ data, onClose }) => {
                 // console.log(`🖱 UWModal - Leave sur ${adv.label}`);
                 setHoveredAdvancement(null);
               }}
-              title={adv.label}
             >
               <div className="advancement-image-container">
                 <img

@@ -11,7 +11,7 @@
 
 /* ========== BINDER TABS ========== */
 .binder-tabs-container {
-  margin-bottom: 20px;
+  margin-bottom: 10px;
 }
 
 .binder-tabs {
@@ -23,7 +23,7 @@
 /* Individual tab button */
 .binder-tab {
   background: var(--color-primary-default);
-  border: 2px solid var(--color-border);
+  border: 2px solid var(--color-border-default);
   border-radius: 10px;
   color: var(--color-text-muted);
   font-size: 16px;
@@ -50,11 +50,11 @@
 /* ========== FILTERS SECTION ========== */
 .filters-section {
   display: grid;
-  grid-template-columns: 240px 1fr 240px;
+  grid-template-columns: 220px 1fr 220px;
   gap: 10px;
-  /* border: 1px solid var(--color-border); */
+  /* border: 1px solid var(--color-border-default); */
   border-radius: 12px;
-  padding: 20px;
+  /* padding: 20px; */
   margin-bottom: 10px;
   /* background: var(--color-primary-default); */
 }
@@ -69,10 +69,11 @@
   display: flex;
   flex-direction: column;
   gap: 4px;
-  max-height: 500px;
- padding: 8px;
+  height: 350px;
+  max-height: 350px;
+  padding: 8px;
   background: var(--color-primary-default);
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--color-border-default);
   border-radius: 6px;
 }
 
@@ -81,9 +82,7 @@
   align-items: center;
   cursor: pointer;
   padding: 6px;
-
   transition: all 0.2s ease;
-
 }
 
 .checkbox-label:hover {
@@ -109,7 +108,7 @@
 
 .checkbox-input:checked + .checkbox-custom {
   border-color: var(--color-secondary-accent);
-  background: var(--color-secondary-accent);
+  background: var(--color-secondary-default);
 }
 
 .checkbox-input:checked + .checkbox-custom::after {
@@ -118,13 +117,13 @@
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  color: white;
+  color: var(--color-secondary-accent);
   font-size: 14px;
   font-weight: bold;
 }
 
 .checkbox-text {
-  color: white;
+  color: var(--color-text-default);
   font-size: 14px;
   font-weight: 500;
   white-space: nowrap;
@@ -144,7 +143,7 @@
   gap: 10px;
   margin-bottom: 10px;
   /* padding-bottom: 15px; */
-  /* border-bottom: 1px solid var(--color-border); */
+  /* border-bottom: 1px solid var(--color-border-default); */
 }
 
 /* Search Container */
@@ -165,7 +164,7 @@
 .search-input {
   background: var(--color-primary-default);
   color: white;
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--color-border-default);
   border-radius: 6px;
   padding: 10px 40px 10px 40px;
   width: 100%;
@@ -231,7 +230,7 @@
   height: 40px;
   border-radius: 6px;
   background: var(--color-primary-accent);
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--color-border-default);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -258,31 +257,39 @@
   flex-direction: column;
   gap: 6px;
   overflow-y: auto;
-  max-height: 348px;
-  background: var(--color-primary-default);
+  height: 295px;
+  max-height: 295px;
+  /* background: var(--color-primary-default); */
   border-radius: 8px;
-  border: 1px solid var(--color-border);
-  padding: 8px;
+  /* border: 1px solid var(--color-border-default); */
+  padding-right: 10px;
   
 }
 
-
+.sub-filters-wrapper {
+  /* background: var(--color-primary-default); */
+  /* border: 1px solid var(--color-border-default); */
+  border-radius: 8px;
+  padding-right: 0px;
+}
 
 .sub-filter-section {
   width: 100%;
-  padding: 10px;
-  background: var(--color-primary-accent);
+  padding: 6px 10px 10px 10px;
+  background: var(--color-primary-default);
   border-radius: 8px;
-  border: 1px solid var(--color-border);
+  /* border-bottom: 1px solid var(--color-border-accent); */
+  border: 1px solid var(--color-border-default);
 }
 
 .sub-filter-title {
-  font-size: 16px;
-  font-weight: 600;
-  color: white;
-  margin-bottom: 6px;
+  color: var(--color-text-default);
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 4px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  padding-left: 2px;
 }
 
 .sub-filter-items {
@@ -293,17 +300,18 @@
 }
 
 .sub-filter-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  /* padding: 10px; */
-  /* min-width: 90px; */
-  /* background: var(--color-primary-accent); */
-  border: 1px solid transparent;
-  border-radius: 6px;
+  max-width: 60px;
+  min-height: 60px;
+  position: relative;
+  aspect-ratio: 1;
+  width: 100%;
+  background: var(--color-primary-default);
+  border: 2px solid var(--color-border-accent);
+  border-radius: 0.4rem;
+  padding: 0;
+  overflow: hidden;
   cursor: pointer;
-  transition: all 0.2s ease;
-  flex-shrink: 0;
+  transition: transform 0.1s, border-color 0.1s;
 }
 
 .sub-filter-item:hover {
@@ -319,47 +327,52 @@
 }
 
 .sub-filter-image {
-  width: 64px;
-  height: 64px;
+  width: 100%;
+  height: 100%;
   object-fit: cover;
-  margin-bottom: 4px;
-  border-radius: 6px;
-  background: var(--color-primary-default);
-  border: 1px solid var(--color-border);
+}
+.sub-filter-name-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(
+    to top,
+    rgba(0, 0, 0, 0.7),
+    rgba(0, 0, 0, 0.4),
+    transparent
+  );
+  color: var(--color-text-default);
+  padding: 4px 2px 2px 2px;
+  font-size: 12px;
+  font-weight: 600;
+  text-align: center;
+  height: 40px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  border-radius: 0.25rem;
 }
 
-.sub-filter-fallback {
-  width: 56px;
-  height: 56px;
+.sub-filter-image-placeholder {
+  width: 100%;
+  height: 100%;
+  background: #333;
+  color: white;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 8px;
-  border-radius: 6px;
-  background: var(--color-primary-default);
-  border: 1px solid var(--color-border);
-  color: var(--color-text-muted);
-  font-size: 18px;
-  font-weight: bold;
+  font-size: 24px;
+  font-weight: 600;
 }
 
-.sub-filter-name {
-  font-size: 12px;
-  color: white;
-  text-align: center;
-  max-width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  font-weight: 500;
-}
 
 .sub-filter-item.selected .sub-filter-name {
   color: var(--color-item-selected);
   font-weight: 600;
 }
 
-/* Sub filter scrollbar */
+/* Scrollbar */
 .sub-filters-container::-webkit-scrollbar {
   width: 8px;
 }
@@ -392,27 +405,45 @@
   border-radius: 4px;
 }
 
+.filter-tags::-webkit-scrollbar {
+  width: 8px;
+}
+
+.filter-tags::-webkit-scrollbar-track {
+  background: transparent;
+  margin: 8px 0;
+}
+
+.filter-tags::-webkit-scrollbar-thumb {
+  background: var(--color-scrollbar-thumb-default);
+  border-radius: 4px;
+}
+
+.filter-tags::-webkit-scrollbar-thumb:hover {
+  background: var(--color-scrollbar-thumb-hover);
+}
 /* ===== RIGHT COLUMN ===== */
 .filters-right {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 10px;
 }
 
 .active-filters {
   display: flex;
   flex-direction: column;
   gap: 12px;
-  padding: 15px;
+  padding: 15px 6px 15px 15px;
   background: var(--color-primary-default);
   border-radius: 8px;
-  border: 1px solid var(--color-border);
-    overflow-y: auto;
-  max-height: 400px;
+  border: 1px solid var(--color-border-default);
+  /* overflow-y: auto; */
+  height: 272px;
+  max-height: 272px;
 }
 
 .active-filters-label {
-  color: var(--color-text-muted);
+  color: var(--color-text-default);
   font-size: 14px;
   font-weight: 500;
   white-space: nowrap;
@@ -422,7 +453,9 @@
 .filter-tags {
   display: flex;
   flex-direction: column;
+  overflow-y: auto;
   gap: 8px;
+  padding-right: 6px;
 }
 
 .filter-tag {
@@ -465,12 +498,12 @@
   padding: 15px;
   background: var(--color-primary-default);
   border-radius: 8px;
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--color-border-default);
 }
 
 .teams-count-header-text {
   font-size: 24px;
-  color: var(--color-item-hover);
+  color: var(--color-secondary-accent);
   margin: 0;
   font-weight: 700;
 }
@@ -485,10 +518,10 @@
 .tab-content {
   color: white;
   background: var(--color-primary-default);
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--color-border-default);
   border-radius: 12px;
   padding: 25px;
-  margin-top: 20px;
+  margin-top: 10px;
 }
 
 .tab-content h2 {

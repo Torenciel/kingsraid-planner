@@ -10,14 +10,14 @@
   cursor: pointer;
   border-radius: 4px;
   background: var(--color-primary-default);
-  border: 2px solid var(--color-border);
+  border: 2px solid var(--color-border-default);
   transition: all 0.2s;
   box-sizing: border-box;
 }
 
 /* Style par défaut */
 .gearset-option {
-  border-color: var(--color-border);
+  border-color: var(--color-border-default);
 }
 
 /* Style au survol */

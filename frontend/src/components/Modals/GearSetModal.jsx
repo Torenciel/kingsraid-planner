@@ -275,7 +275,6 @@ const GearSetModal = ({ data, onClose }) => {
                 onClick={() => !isDisabled && handleSetClick(set.slug || "empty")}
                 onMouseEnter={(e) => !set.isEmpty && handleGearSetHover(set, e)}
                 onMouseLeave={hideOverlay}
-                title={set.name}
               >
                 {set.isEmpty ? (
                   <div className="empty-slot-content">

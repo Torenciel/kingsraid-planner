@@ -5,6 +5,7 @@ import TeamSlots from "../TeamSlots/TeamSlots";
 import "./TeamBuilder.css"; // Import du CSS
 import TeamSizeSelector from "./TeamSizeSelector";
 import SaveTeamButton from './SaveTeamButton';
+import { FaRegEdit } from "react-icons/fa";
 
 const TeamBuilder = () => {
   const { teamTitle } = useTeam();
@@ -22,11 +23,11 @@ const TeamBuilder = () => {
     <div className="team-builder-container">
       {/* Header */}
       <header className="team-builder-header">
-        <h1 className="team-builder-title">Team Builder</h1>
-
         {/* Team Title */}
         <div className="team-title-container">
-          <h2 className="team-title">{teamTitle}</h2>
+          <h2 className="team-title">Placeholder title {teamTitle}</h2>
+          <button className="edit-team-button"><FaRegEdit /></button>
+          
         </div>
       </header>
 

@@ -3,7 +3,7 @@
 /* ========== Barre de recherche ========== */
 .artifact-search-input {
   background: var(--color-primary-default);
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--color-border-default);
   border-radius: 6px;
   padding: 0.5rem 0.75rem;
   color: white;
@@ -60,7 +60,7 @@
   cursor: pointer;
   border-radius: 4px;
   background: var(--color-primary-default);
-  border: 2px solid var(--color-border);
+  border: 2px solid var(--color-border-default);
   position: relative;
   transition: all 0.2s ease;
   box-sizing: border-box;
@@ -68,7 +68,7 @@
 
 /* Style par défaut (non sélectionné) */
 .artifact-option:not(.selected) {
-  border-color: var(--color-border) !important;
+  border-color: var(--color-border-default) !important;
 }
 
 /* Style au survol (uniquement si non sélectionné) */

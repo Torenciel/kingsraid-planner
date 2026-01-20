@@ -13,7 +13,7 @@
 .star-rating-star {
   font-size: 26px;
   cursor: pointer;
-  color: #737373;
+  color: var(--color-stars-empty);
   transition: all 0.1s;
   user-select: none;
 }
@@ -24,18 +24,18 @@
 
 /* Étoile remplie */
 .star-rating-star.filled {
-  color: var(--color-item-selected);
+  color: var(--color-stars-default);
 }
 
 /* Prévisualisation au hover */
 .star-rating-star.hover-preview {
-  color: var(--color-item-selected);
+  color: var(--color-stars-default);
   opacity: 0.6;
 }
 
 /* Étoile qui sera désélectionnée */
 .star-rating-star.will-deselect {
-  color: var(--color-item-selected);
+  color: var(--color-stars-default);
   opacity: 0.3;
 }
 
@@ -43,7 +43,7 @@
 .star-rating-zero {
   font-size: 26px;
   cursor: pointer;
-  color: #ef4444;
+  color: var(--color-error-default);
   transition: all 0.1s;
   user-select: none;
   margin-right: 4px;
@@ -51,7 +51,7 @@
 
 .star-rating-zero:hover {
   transform: scale(1.1);
-  color: #dc2626;
+  color: var(--color-error-default);
 }
 
 /* ========== Variantes ========== */

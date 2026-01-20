@@ -1,7 +1,6 @@
 const mongoose = require('mongoose');
 
 const GearSetSchema = new mongoose.Schema({
-  // 🔥 SEULEMENT ces champs :
   slug: { 
     type: String, 
     required: true,
@@ -46,7 +45,6 @@ const GearSetSchema = new mongoose.Schema({
     default: Date.now 
   }
   
-  // ❌ RIEN D'AUTRE ! PAS DE 'id', PAS DE 'type', etc.
 });
 
 // Middleware

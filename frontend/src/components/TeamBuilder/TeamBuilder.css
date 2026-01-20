@@ -42,13 +42,16 @@
 /* ========== Titre d'équipe ========== */
 .team-title-container {
   margin-top: 0.5rem;
+  display: flex;
+  justify-content: center;
+  gap: 8px;
 }
 
 .team-title {
-  font-size: 1.125rem;
+  font-size: 1.5rem;
   line-height: 1.75rem;
   font-weight: 600;
-  color: #d1d5db; /* gray-300 */
+  color: var(--color-text-default)
 }
 
 /* ========== Responsive ========== */

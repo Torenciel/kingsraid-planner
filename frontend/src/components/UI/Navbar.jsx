@@ -38,66 +38,6 @@ const Navbar = () => {
     };
   }, []);
 
-  // Images des bosses pour les liens rapides (4 colonnes de 2)
-  const bossLinks = [
-    [
-      {
-        id: "wb",
-        name: "WB",
-        image: `${BASE_PATH}/kingsraid-data/assets/bosses/Xanadus.png`,
-        to: "/teams/public/wb",
-      },
-      {
-        id: "raid",
-        name: "Raid",
-        image: `${BASE_PATH}/kingsraid-data/assets/bosses/Black_Dragon.png`,
-        to: "/teams/public/raid",
-      },
-    ],
-    [
-      {
-        id: "gc",
-        name: "GC",
-        image: `${BASE_PATH}/kingsraid-data/assets/bosses/Velkazar.png`,
-        to: "/teams/public/gc",
-      },
-      {
-        id: "gr",
-        name: "GR",
-        image: `${BASE_PATH}/kingsraid-data/assets/bosses/Manticore.png`,
-        to: "/teams/public/gr",
-      },
-    ],
-    [
-      {
-        id: "trial",
-        name: "Trial",
-        image: `${BASE_PATH}/kingsraid-data/assets/bosses/Sekmaha.png`,
-        to: "/teams/public/trial",
-      },
-      {
-        id: "shakmeh",
-        name: "Shakmeh",
-        image: `${BASE_PATH}/kingsraid-data/assets/bosses/Otherworldly Darkness Shakmeh.png`,
-        to: "/teams/public/shakmeh",
-      },
-    ],
-    [
-      {
-        id: "story",
-        name: "Story",
-        image: `${BASE_PATH}/kingsraid-data/assets/bosses/story.png`,
-        to: "/teams/public/story",
-      },
-      {
-        id: "pvp",
-        name: "PvP",
-        image: `${BASE_PATH}/kingsraid-data/assets/bosses/pvp.png`,
-        to: "/teams/public/pvp",
-      },
-    ],
-  ];
-
   // Teams récemment éditées (3 slots fixes)
   const recentTeams = [
     {
@@ -157,7 +97,7 @@ const Navbar = () => {
         >
           {/* Changed from button to Link */}
           <Link
-            to="/teams"
+            to="/teams/public"
             className="navbar-dropdown-toggle"
             onClick={handleItemClick}
           >
@@ -174,7 +114,7 @@ const Navbar = () => {
                 <div className="teams-dropdown-left">
                   <div className="section-header">
                     <FaUserGroup className="section-icon" />
-                    <h4 className="section-title">Public Teams</h4>
+                    <h4 className="section-title">Teams</h4>
                   </div>
                   {/* Boutons principaux */}
                   <div className="teams-main-buttons">
@@ -225,46 +165,6 @@ const Navbar = () => {
                         </div>
                       ))}
                     </div>
-                  </div>
-                </div>
-
-                {/* Colonne droite - Liens rapides en 4 colonnes */}
-                <div className="teams-dropdown-right">
-                  <div className="section-header">
-                    <FaUserGroup className="section-icon" />
-                    <h4 className="section-title">Public Teams</h4>
-                  </div>
-                  <div className="boss-links-columns">
-                    {/* 4 colonnes de 2 liens */}
-                    {bossLinks.map((column, colIndex) => (
-                      <div key={colIndex} className="boss-links-column">
-                        {column.map((boss) => (
-                          <Link
-                            key={boss.id}
-                            to={boss.to}
-                            className="boss-link-item"
-                            onClick={handleItemClick}
-                          >
-                            <div className="boss-link-image-container">
-                              <img
-                                src={boss.image}
-                                alt={boss.name}
-                                className="boss-link-image"
-                                onError={(e) => {
-                                  e.target.style.display = "none";
-                                  e.target.nextElementSibling.style.display =
-                                    "flex";
-                                }}
-                              />
-                              <div className="boss-link-fallback">
-                                {boss.name}
-                              </div>
-                            </div>
-                            <div className="boss-link-name">{boss.name}</div>
-                          </Link>
-                        ))}
-                      </div>
-                    ))}
                   </div>
                 </div>
               </div>

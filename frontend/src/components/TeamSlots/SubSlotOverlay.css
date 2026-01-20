@@ -50,7 +50,7 @@
 
 /* Bordure par défaut - SANS advancement */
 .subslot-overlay:not(.border-blue):not(.border-purple):not(.border-red) {
-  border: 2px solid var(--color-border);
+  border: 2px solid var(--color-border-default);
 }
 
 /* Bordures d'advancement pour l'overlay UW */
@@ -94,7 +94,7 @@
 .subslot-overlay.left .subslot-overlay-content::after {
   border-top: 10px solid transparent;
   border-bottom: 10px solid transparent;
-  border-left: 10px solid var(--color-border); /* Flèche pointe vers la DROITE */
+  border-left: 10px solid var(--color-border-default); /* Flèche pointe vers la DROITE */
   right: -10px; /* Positionnée à DROITE du contenu */
   top: 50%;
   transform: translateY(-50%);
@@ -113,7 +113,7 @@
 .subslot-overlay.right .subslot-overlay-content::after {
   border-top: 10px solid transparent;
   border-bottom: 10px solid transparent;
-  border-right: 10px solid var(--color-border); /* Flèche pointe vers la GAUCHE */
+  border-right: 10px solid var(--color-border-default); /* Flèche pointe vers la GAUCHE */
   left: -10px; /* Positionnée à GAUCHE du contenu */
   top: 50%;
   transform: translateY(-50%);
@@ -132,7 +132,7 @@
 .subslot-overlay.top .subslot-overlay-content::after {
   border-left: 10px solid transparent;
   border-right: 10px solid transparent;
-  border-top: 10px solid var(--color-border); /* Flèche pointe vers le BAS */
+  border-top: 10px solid var(--color-border-default); /* Flèche pointe vers le BAS */
   bottom: -10px; /* Positionnée en BAS du contenu */
   left: 50%;
   transform: translateX(-50%);
@@ -151,7 +151,7 @@
 .subslot-overlay.bottom .subslot-overlay-content::after {
   border-left: 10px solid transparent;
   border-right: 10px solid transparent;
-  border-bottom: 10px solid var(--color-border); /* Flèche pointe vers le HAUT */
+  border-bottom: 10px solid var(--color-border-default); /* Flèche pointe vers le HAUT */
   top: -10px; /* Positionnée en HAUT du contenu */
   left: 50%;
   transform: translateX(-50%);
@@ -295,7 +295,7 @@
 }
 
 .subslot-overlay-stars {
-  color: var(--color-item-selected);
+  color: var(--color-stars-default);
   font-weight: bold;
   font-size: 14px;
   white-space: nowrap;
@@ -335,14 +335,6 @@
   padding: 0 4px;
 }
 
-.subslot-sw-advancement.selected {
-  font-weight: 500;
-}
-
-.subslot-sw-advancement.unselected {
-  color: #6b7280;
-}
-
 .subslot-sw-level {
   font-weight: bold;
 }
@@ -372,7 +364,7 @@
 }
 
 .subslot-value {
-  color: var(--color-item-selected);
+  color: var(--color-stars-default);
   font-weight: bold;
 }
 

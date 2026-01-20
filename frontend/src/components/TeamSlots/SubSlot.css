@@ -12,7 +12,7 @@
   width: 48px;
   height: 48px;
   background: var(--color-primary-default);
-  border: 2px solid var(--color-border); 
+  border: 2px solid var(--color-border-default); 
   border-radius: 0.4rem;
   position: relative;
   cursor: pointer;
@@ -31,7 +31,7 @@
 }
 
 .sub-slot-plus {
-  color: #9ca3af;
+  color: var(--color-text-muted);
   font-size: 0.75rem;
 }
 
@@ -52,7 +52,7 @@
   bottom: 0;
   left: 0;
   right: 0; /* Full width */
-  color: var(--color-item-selected);
+  color: var(--color-stars-default);
   font-size: 12px;
   font-weight: bold;
   padding: 2px 4px;

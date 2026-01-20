@@ -17,23 +17,32 @@
   --color-background: #191919;
   --color-background-muted: #191919;
 
-  --color-border: #3C3C3C;
+  --color-border-default: #3C3C3C;
+  --color-border-accent: #555555;
 
-  --color-text: #ffffff;
+  --color-text-default: #ffffff;
   --color-text-muted: #626468;
 
-  --color-item-hover: #65BA52;
-  --color-item-selected: #fbbf24;
-
+  --color-item-selected: #65BA52;
+  --color-item-hover: #3d7031;
   --color-item-selected-shadow: rgba(251, 190, 36, 0.5);
-  --color-error:red;
+
+  --color-stars-default: #fbbf24;
+  --color-stars-empty: #6b6b6b;
+
+  --color-validation-default: #28a745;
+  --color-validation-hover: #21893a;
+  --color-error-default:red;
+  --color-error-hover:red;
+  --color-cancel-default:#474747;
+  --color-cancel-hover:#363636;
 
   --color-scrollbar-thumb-default: #6b6b6b;
   --color-scrollbar-thumb-hover: #868686;
 }
 
 /* Couleurs light*/
-[data-theme="dark"] {
+[data-theme="light"] {
 
 }
 
@@ -119,22 +128,11 @@ body {
 }
 
 /* ========== Stars ========== */
-.stars-container {
-  display: flex;
-  justify-content: center;
-  gap: 8px;
-  margin: 15px 0;
-}
 
-.star {
-  font-size: 26px;
-  cursor: pointer;
-  color: #737373;
-}
 
-.star.filled {
-  color: var(--color-item-selected);
-}
+
+
+
 /* ========== Perks ========== */
 
 #perk-modal .modal-content {
@@ -149,7 +147,7 @@ body {
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.8);
   background: #262626;
   border-radius: 8px;
-  border: 2px solid var(--color-border);
+  border: 2px solid var(--color-border-default);
   padding: 12px;
   pointer-events: auto;
   /* Style pour la flèche */
@@ -165,7 +163,7 @@ body {
   height: 0;
   border-left: 10px solid transparent;
   border-right: 10px solid transparent;
-  border-top: 10px solid var(--color-border);
+  border-top: 10px solid var(--color-border-default);
   bottom: -10px;
   left: 50%;
   transform: translateX(-50%);
@@ -188,7 +186,7 @@ body {
 /* Si l'overlay est en dessous, inverser la flèche */
 .global-overlay.bottom-overlay::after {
   border-top: none;
-  border-bottom: 10px solid var(--color-border);
+  border-bottom: 10px solid var(--color-border-default);
   top: -10px;
   bottom: auto;
 }

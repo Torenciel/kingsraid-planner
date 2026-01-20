@@ -226,7 +226,6 @@ const handleConfirm = () => {
                   onClick={() => utData && setSelectedUT(utNumber)}
                   onMouseEnter={(e) => utData && handleUTHover(utNumber, e)}
                   onMouseLeave={hideOverlay}
-                  title={utName}
                 >
                   <img
                     src={getUTImagePath(utNumber)}

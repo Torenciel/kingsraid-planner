@@ -146,29 +146,6 @@ const SaveTeamButton = () => {
             {saveMessage}
           </div>
         )}
-        
-        <div className="team-stats">
-          <div className="stats-row">
-            <div className="stat-item">
-              <div className={`stat-indicator ${team.filter(h => h).length > 0 ? 'active' : 'inactive'}`}></div>
-              <span className="stat-label">Heroes: </span>
-              <span className="stat-value">{team.filter(h => h).length}/{teamSize}</span>
-            </div>
-            
-            <div className="stat-item">
-              <div className={`stat-indicator ${subSlots.flat().filter(item => item).length > 0 ? 'active' : 'inactive'}`}></div>
-              <span className="stat-label">Sub-slots: </span>
-              <span className="stat-value">{subSlots.flat().filter(item => item).length}</span>
-            </div>
-          </div>
-          
-          <div className="equipment-details">
-            <span className="equipment-item">Artifacts: {getArtifactCount()} / </span>
-            <span className="equipment-item">Gear Sets: {getGearSetCount()} / </span>
-            <span className="equipment-item">UW: {getUWCount()} / </span>
-            <span className="equipment-item">UT: {getUTCount()}</span>
-          </div>
-        </div>
       </div>
 
       {showModal && (

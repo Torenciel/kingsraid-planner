@@ -405,7 +405,7 @@ export const OverlayProvider = ({ children }) => {
             minWidth: "250px",
             maxWidth: "400px",
             backgroundColor: "var(--color-primary-default)",
-            border: "2px solid var(--color-border)",
+            border: "2px solid var(--color-border-default)",
             borderRadius: "8px",
             padding: "12px",
             boxShadow: "0 4px 20px rgba(0, 0, 0, 0.5)",

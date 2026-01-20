@@ -309,13 +309,13 @@ const Teams = () => {
             className={`binder-tab ${activeTab === "private" ? "active" : ""}`}
             onClick={() => navigate("/teams/private")}
           >
-            Private
+            My Teams
           </button>
           <button
             className={`binder-tab ${activeTab === "public" ? "active" : ""}`}
             onClick={() => navigate("/teams/public")}
           >
-            Public
+            Public Teams
           </button>
         </div>
       </div>
@@ -350,36 +350,20 @@ const Teams = () => {
             <button 
               className="square-btn clear-filters-btn"
               onClick={handleClearFilters}
-              disabled={
-                selectedContent.length === 0 &&
-                Object.keys(selectedSubFilters).length === 0 &&
-                searchQuery === ""
-              }
-              title="Clear all filters"
             >
               <FaStarOfLife />
             </button>
             <button 
               className="square-btn clear-filters-btn"
               onClick={handleClearFilters}
-              disabled={
-                selectedContent.length === 0 &&
-                Object.keys(selectedSubFilters).length === 0 &&
-                searchQuery === ""
-              }
-              title="Clear all filters"
+              title="Physical"
             >
               <FaTrash />
             </button>
             <button 
               className="square-btn clear-filters-btn"
               onClick={handleClearFilters}
-              disabled={
-                selectedContent.length === 0 &&
-                Object.keys(selectedSubFilters).length === 0 &&
-                searchQuery === ""
-              }
-              title="Clear all filters"
+              title="Magical"
             >
               <FaTrash />
             </button>
@@ -423,6 +407,7 @@ const Teams = () => {
           </div>
 
           {/* SUB FILTERS – SCROLL VERTICAL */}
+          <div className="sub-filters-wrapper">
           <div className="sub-filters-container">
 
             {selectedContent
@@ -452,33 +437,29 @@ const Teams = () => {
                         return (
                           <button
                             key={subFilter.id}
-                            className={`sub-filter-item ${
-                              isSelected ? "selected" : ""
-                            }`}
+                            className={`sub-filter-item ${isSelected ? "selected" : ""}`}
                             onClick={() =>
                               handleSubFilterChange(contentId, subFilter.id)
                             }
                           >
-                            {subFilter.image && (
+                            {subFilter.image ? (
                               <img
                                 src={subFilter.image}
                                 alt={subFilter.name}
                                 className="sub-filter-image"
                                 onError={handleImageError}
                               />
-                            )}
-                            {subFilter.image && (
-                              <div
-                                className="sub-filter-fallback"
-                                style={{ display: "none" }}
-                              >
+                            ) : (
+                              <div className="sub-filter-image-placeholder">
                                 {subFilter.name.charAt(0)}
                               </div>
                             )}
-                            <div className="sub-filter-name">
+
+                            <div className="sub-filter-name-overlay">
                               {subFilter.name}
                             </div>
                           </button>
+
                         );
                       })}
                     </div>
@@ -487,6 +468,7 @@ const Teams = () => {
               })}
            
           </div>
+        </div>
         </div>
 
         {/* ===== RIGHT COLUMN ===== */}
@@ -540,7 +522,7 @@ const Teams = () => {
               )}
             </div>
           </div>
-          
+          {/* Team-count */}
           <div className="content-type-header">
             <div className="teams-count-header">
               <h3 className="teams-count-header-text">
@@ -556,10 +538,10 @@ const Teams = () => {
       <div className="tab-content">
         {activeTab === "private" ? (
           <>
-            <h2>Private Teams</h2>
+            <h2>My Teams</h2>
             <p>
               {selectedContent.length === 0
-                ? "All my private teams"
+                ? "Showing all my teams"
                 : `My private teams for: ${selectedContent
                     .map(
                       (id) => contentOptions.find((c) => c.id === id)?.name

@@ -7,7 +7,7 @@
   height: 100%; /* Ajoute */
   /* overflow: hidden; */
   background: var(--color-primary-default);
-  border: 2px solid var(--color-border);
+  border: 2px solid var(--color-border-accent);
   border-radius: 0.4rem;
   position: relative;
   cursor: pointer;
@@ -44,7 +44,7 @@
     rgba(0, 0, 0, 0.4),
     transparent
   );
-  color: white;
+  color: var(--color-text-default);
   padding: 4px 2px;
   font-size: 12px;
   font-weight: 600;
