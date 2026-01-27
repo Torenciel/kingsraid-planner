@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useArtifacts } from "../../contexts/ArtifactContext";
 import { useOverlay } from "../../contexts/OverlayContext";
 import { useTeam } from "../../contexts/TeamContext";
+import { FaSearch } from "react-icons/fa";
 import "./ArtifactModal.css";
 import ItemOverlay from "./ItemOverlay";
 import StarRating from "./StarRating";
@@ -248,15 +249,18 @@ const getArtifactImageUrl = (artifact) => {
 
   return (
     <div className="artifact-modal-container">
-      <h3 className="artifact-modal-title">Select Artifact</h3>
+      <h3 className="artifact-modal-title">Artifact</h3>
+      <div className="artifact-search-container">
 
+      <FaSearch className="artifact-search-icon" />
       <input
         type="text"
         placeholder="Search artifacts..."
         value={searchTerm}
         onChange={(e) => setSearchTerm(e.target.value)}
         className="artifact-search-input"
-      />
+        />
+        </div>
 
       {showLoading ? (
         <div className="artifact-loading">Loading artifacts...</div>
@@ -314,11 +318,11 @@ const getArtifactImageUrl = (artifact) => {
 
       {selectedArtifact && (
         <div className="artifact-stars-section">
-          <div className="artifact-stars-label">
+          {/* <div className="artifact-stars-label">
             <span className="artifact-stars-name">
               {selectedArtifact.name || selectedArtifact.slug}
             </span>
-          </div>
+          </div> */}
           <StarRating
             value={selectedStars}
             onChange={setSelectedStars}

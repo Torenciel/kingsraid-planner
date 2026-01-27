@@ -2,7 +2,7 @@ import { useHeroContext } from "../../contexts/HeroContext";
 import { useTeam } from "../../contexts/TeamContext";
 import HeroGrid from "../HeroGrid/HeroGrid";
 import TeamSlots from "../TeamSlots/TeamSlots";
-import "./TeamBuilder.css"; // Import du CSS
+import "./TeamBuilder.css";
 import TeamSizeSelector from "./TeamSizeSelector";
 import SaveTeamButton from './SaveTeamButton';
 import { FaRegEdit } from "react-icons/fa";

@@ -222,20 +222,17 @@ const GearSetModal = ({ data, onClose }) => {
                 <div key={setSlug} className="gearset-bonus-item">
                   <div className="gearset-set-header">
                     <div className="gearset-set-name">{set.name}</div>
-                    <div className="gearset-set-config">
-                      {selectedSets.length === 1 ? '4P' : `Set ${index + 1} (2P)`}
-                    </div>
                   </div>
 
                   <div className="gearset-bonus-content">
                     <div className="gearset-bonus-row">
-                      <span className="gearset-bonus-label">2P:</span>
+                      <span className="gearset-bonus-label">2P :</span>
                       <span className="gearset-bonus-text">{set.bonus2P}</span>
                     </div>
 
                     {selectedSets.length === 1 && (
                       <div className="gearset-bonus-row">
-                        <span className="gearset-bonus-label">4P:</span>
+                        <span className="gearset-bonus-label">4P :</span>
                         <span className="gearset-bonus-text active">{set.bonus4P}</span>
                       </div>
                     )}
@@ -248,14 +245,7 @@ const GearSetModal = ({ data, onClose }) => {
       </div>
 
       {/* SECTION BASSE : Grid des sets */}
-      <div className="gearset-grid-section">
-        <div className="gearset-grid-header">
-          <span>Available Sets</span>
-          <span className="selection-counter">
-            {selectedSets.length}/2 selected
-          </span>
-        </div>
-        
+      <div className="gearset-grid-section">        
         <div className="gearset-grid">
           {allOptions.map((set) => {
             const isSelected = set.isEmpty
@@ -312,19 +302,6 @@ const GearSetModal = ({ data, onClose }) => {
               </div>
             );
           })}
-        </div>
-      </div>
-
-      {/* Instructions */}
-      <div className="gearset-instructions">
-        <div className="instructions-content">
-          {selectedSets.length === 0 ? (
-            <span>Select <strong>1 set for 4P</strong> or <strong>2 sets for 2P/2P</strong></span>
-          ) : selectedSets.length === 1 ? (
-            <span>Click another set for <strong>2P/2P</strong> configuration</span>
-          ) : (
-            <span>Click a selected set to remove it</span>
-          )}
         </div>
       </div>
 

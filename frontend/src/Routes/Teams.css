@@ -107,6 +107,8 @@
 }
 
 .checkbox-input:checked + .checkbox-custom {
+  /* border-color: var(--color-secondary-accent);
+  background: var(--color-secondary-accent); */
   border-color: var(--color-secondary-accent);
   background: var(--color-secondary-default);
 }
@@ -116,8 +118,9 @@
   position: absolute;
   top: 50%;
   left: 50%;
-  transform: translate(-50%, -50%);
+  /* color: var(--color-text-default); */
   color: var(--color-secondary-accent);
+  transform: translate(-50%, -50%);
   font-size: 14px;
   font-weight: bold;
 }
@@ -146,6 +149,9 @@
   /* border-bottom: 1px solid var(--color-border-default); */
 }
 
+.btn-icon {
+  width: 50%;
+}
 /* Search Container */
 .search-container {
   position: relative;
@@ -175,7 +181,7 @@
 .search-input:focus {
   outline: none;
   border-color: var(--color-primary-accent);
-  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.447);
 }
 
 .search-input::placeholder {
@@ -296,6 +302,7 @@
   display: flex;
   gap: 6px;
   overflow-x: auto;
+  padding: 2px 0px;
   /* padding-bottom: 8px; */
 }
 
@@ -306,9 +313,9 @@
   aspect-ratio: 1;
   width: 100%;
   background: var(--color-primary-default);
-  border: 2px solid var(--color-border-accent);
-  border-radius: 0.4rem;
-  padding: 0;
+  border: 2px solid transparent;
+  border-radius: 6px;
+  padding: 0px;
   overflow: hidden;
   cursor: pointer;
   transition: transform 0.1s, border-color 0.1s;
@@ -316,8 +323,8 @@
 
 .sub-filter-item:hover {
   border-color: var(--color-item-hover);
-  /* transform: translateY(-2px); */
-  /* box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3); */
+
+  transform: scale(1.05);
 }
 
 .sub-filter-item.selected {
@@ -374,12 +381,12 @@
 
 /* Scrollbar */
 .sub-filters-container::-webkit-scrollbar {
-  width: 8px;
+  width: 6px;
 }
 
 .sub-filters-container::-webkit-scrollbar-track {
   background: transparent;
-  margin: 8px 0;
+  margin: 2px 0;
 }
 
 .sub-filters-container::-webkit-scrollbar-thumb {
@@ -392,11 +399,11 @@
 }
 
 .content-checkboxes::-webkit-scrollbar {
-  width: 8px;
+  width: 6px;
 }
 
 .content-checkboxes::-webkit-scrollbar-track {
-  background: var(--color-background);
+  background: var(--color-background-default);
   border-radius: 4px;
 }
 
@@ -406,12 +413,12 @@
 }
 
 .filter-tags::-webkit-scrollbar {
-  width: 8px;
+  width: 6px;
 }
 
 .filter-tags::-webkit-scrollbar-track {
   background: transparent;
-  margin: 8px 0;
+  margin: 2px 0;
 }
 
 .filter-tags::-webkit-scrollbar-thumb {

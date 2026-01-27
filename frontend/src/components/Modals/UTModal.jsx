@@ -203,7 +203,7 @@ const handleConfirm = () => {
   return (
     <div className="ut-modal-container">
       <h3 className="ut-modal-title">
-        Unique Treasure - {heroName || heroSlug}
+        Unique Treasure
       </h3>
 
       {loading ? (

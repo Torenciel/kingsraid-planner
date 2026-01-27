@@ -7,21 +7,16 @@ import {
   useLocation,
 } from "react-router-dom";
 import Navbar from "./components/UI/Navbar";
+
 import About from "./Routes/About";
 import Home from "./Routes/Home";
+import Login from "./Routes/Login";
+import NotFound from "./Routes/NotFound";
+import Register from "./Routes/Register";
 import TeamEdit from "./Routes/TeamEdit";
 import Teams from "./Routes/Teams";
 
-// Import all other Routes for boss links
-import NotFound from "./Routes/NotFound";
-import GCTeams from "./Routes/teams/GCTeams";
-import GRTeams from "./Routes/teams/GRTeams";
-import PvPTeams from "./Routes/teams/PvPTeams";
-import RaidTeams from "./Routes/teams/RaidTeams";
-import ShakmehTeams from "./Routes/teams/ShakmehTeams";
-import StoryTeams from "./Routes/teams/StoryTeams";
-import TrialTeams from "./Routes/teams/TrialTeams";
-import WBTeams from "./Routes/teams/WBTeams";
+
 
 // IMPORT TOUS LES CONTEXT PROVIDERS
 import { TeamProvider } from "./contexts/TeamContext";
@@ -40,32 +35,26 @@ function AppRoutes() {
     <Routes>
       {/* Main routes */}
       <Route path="/" element={<Home />} />
-      <Route path="/teams" element={<Navigate to="/teams/private" replace />} />
+      <Route path="/teams" element={<Navigate to="/teams/public" replace />} />
       <Route path="/teams/:tab" element={<Teams key={location.key} />} />
-      <Route
-        path="/teams/:tab/:content*"
-        element={<Teams key={location.key} />}
-      />
       <Route
         path="/my-teams"
         element={<Navigate to="/teams/private" replace />}
       />
       <Route path="/team/edit" element={<TeamEdit />} />
+      <Route path="/login" element={<Login />} />
+      <Route path="/register" element={<Register />} />
       <Route path="/about" element={<About />} />
 
-      {/* Boss team routes */}
-      <Route path="/teams/wb" element={<WBTeams />} />
-      <Route path="/teams/raid" element={<RaidTeams />} />
-      <Route path="/teams/gc" element={<GCTeams />} />
-      <Route path="/teams/gr" element={<GRTeams />} />
-      <Route path="/teams/trial" element={<TrialTeams />} />
-      <Route path="/teams/shakmeh" element={<ShakmehTeams />} />
-      <Route path="/teams/story" element={<StoryTeams />} />
-      <Route path="/teams/pvp" element={<PvPTeams />} />
+
 
       {/* 404 route */}
       <Route path="*" element={<NotFound />} />
     </Routes>
+
+    //   {/* 404 route */}
+    //   <Route path="*" element={<NotFound />} />
+    // </Routes>
   );
 }
 

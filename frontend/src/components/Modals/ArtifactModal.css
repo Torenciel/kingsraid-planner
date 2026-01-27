@@ -1,27 +1,45 @@
 /* ArtifactModal.css */
 
 /* ========== Barre de recherche ========== */
-.artifact-search-input {
-  background: var(--color-primary-default);
-  border: 1px solid var(--color-border-default);
-  border-radius: 6px;
-  padding: 0.5rem 0.75rem;
-  color: white;
-  width: 100%;
-  margin-bottom: 0.75rem;
-  font-size: 0.875rem;
-}
 
 .artifact-search-input:focus {
   outline: none;
-  border-color: #3b82f6;
+  border-color: var(--color-primary-accent);
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.447);
+}
+
+/* Search Container */
+.artifact-search-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex: 1;
+  padding-bottom: 8px;
+}
+
+.artifact-search-icon {
+  position: absolute;
+  left: 12px;
+  color: var(--color-text-muted);
+  font-size: 16px;
+}
+
+.artifact-search-input {
+  background: var(--color-primary-default);
+  color: white;
+  border: 1px solid var(--color-border-default);
+  border-radius: 6px;
+  padding: 10px 40px 10px 40px;
+  width: 100%;
+  font-size: 14px;
+  transition: all 0.2s ease;
 }
 
 /* ========== Grille d'artéfacts ========== */
 .artifact-grid {
   display: grid;
-  grid-template-columns: repeat(7, minmax(64px, 1fr));
-  gap: 2px;
+  grid-template-columns: repeat(7, minmax(60px, 1fr));
+  gap: 4px;
   max-height: 40vh;
   overflow-y: auto;
   padding: 2px;
@@ -34,23 +52,21 @@
 
 /* Scrollbar stylisée */
 .artifact-grid::-webkit-scrollbar {
-  width: 10px;
+  width: 6px;
 }
 
 .artifact-grid::-webkit-scrollbar-track {
-  background: var(--color-primary-default);
-  border-radius: 5px;
-  margin: 4px;
+  background: transparent;
+  margin: 2px 0;
 }
 
 .artifact-grid::-webkit-scrollbar-thumb {
-  background: linear-gradient(135deg, var(--color-item-selected), #d97706);
-  border-radius: 5px;
-  border: 2px solid var(--color-primary-default);
+  background: var(--color-scrollbar-thumb-default);
+  border-radius: 4px;
 }
 
 .artifact-grid::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(135deg, #fcd34d, #f59e0b);
+  background: var(--color-scrollbar-thumb-hover);
 }
 
 /* ========== Options d'artéfacts ========== */
@@ -59,16 +75,10 @@
   height: 64px;
   cursor: pointer;
   border-radius: 4px;
-  background: var(--color-primary-default);
-  border: 2px solid var(--color-border-default);
+  border: 2px solid transparent;
   position: relative;
   transition: all 0.2s ease;
   box-sizing: border-box;
-}
-
-/* Style par défaut (non sélectionné) */
-.artifact-option:not(.selected) {
-  border-color: var(--color-border-default) !important;
 }
 
 /* Style au survol (uniquement si non sélectionné) */

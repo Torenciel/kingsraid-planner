@@ -358,14 +358,22 @@ const Teams = () => {
               onClick={handleClearFilters}
               title="Physical"
             >
-              <FaTrash />
+              <img
+                src="\icons\physical.png"
+                alt="Clear physical filters"
+                className="btn-icon"
+              />
             </button>
             <button 
               className="square-btn clear-filters-btn"
               onClick={handleClearFilters}
               title="Magical"
             >
-              <FaTrash />
+              <img
+                src="\icons\magical.png"
+                alt="Clear physical filters"
+                className="btn-icon"
+              />
             </button>
 
             <div className="search-container">
@@ -374,7 +382,7 @@ const Teams = () => {
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder={`Search team names...`}
+                placeholder={`Search a team or a hero`}
                 className="search-input"
               />
               {searchQuery && (

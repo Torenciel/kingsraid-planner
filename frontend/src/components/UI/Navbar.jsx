@@ -1,4 +1,4 @@
-// components/UI/Navbar.jsx - Version avec 4 colonnes de 2 pour quick links
+// components/UI/Navbar.jsx
 import { useEffect, useRef, useState } from "react";
 import { BiTime } from "react-icons/bi";
 import { FaUserGroup } from "react-icons/fa6";
@@ -60,14 +60,15 @@ const Navbar = () => {
   // Données pour les autres dropdowns
   const dropdownItems = {
     tools: [
-      { to: "/tool-1", label: "Tool 1" },
+      { to: "/tier-list", label: "Tier list" },
       { to: "/tool-2", label: "Tool 2" },
       { to: "/tool-3", label: "Tool 3" },
     ],
-    community: [
+    more: [
       { to: "/feedback", label: "Feedback" },
       { to: "/discord", label: "Discord" },
       { to: "/github", label: "Github" },
+      { to: "/about", label: "About" },
     ],
   };
 
@@ -83,7 +84,7 @@ const Navbar = () => {
             width="60"
             height="60"
           /> */}
-          <span className="navbar-brand-text">King's Raid Planner</span>
+          <span className="navbar-brand-text">KRP</span>
         </span>
       </Link>
 
@@ -98,10 +99,12 @@ const Navbar = () => {
           {/* Changed from button to Link */}
           <Link
             to="/teams/public"
-            className="navbar-dropdown-toggle"
+            className="navbar-dropdown-toggle-link"
             onClick={handleItemClick}
           >
+          <button className="navbar-dropdown-toggle">
             <span className="dropdown-button-content">Teams</span>
+          </button>
           </Link>
 
           {activeDropdown === "teams" && (
@@ -110,7 +113,6 @@ const Navbar = () => {
               onMouseEnter={cancelClose}
             >
               <div className="teams-dropdown-content">
-                {/* Colonne gauche */}
                 <div className="teams-dropdown-left">
                   <div className="section-header">
                     <FaUserGroup className="section-icon" />
@@ -198,19 +200,19 @@ const Navbar = () => {
           )}
         </div>
 
-        {/* ========== DROPDOWN COMMUNITY ========== */}
+        {/* ========== DROPDOWN MORE ========== */}
         <div
           className="navbar-dropdown-container"
-          onMouseEnter={() => handleMouseEnter("community")}
+          onMouseEnter={() => handleMouseEnter("more")}
           onMouseLeave={handleMouseLeave}
         >
           <button className="navbar-dropdown-toggle">
-            <span className="dropdown-button-content">Community</span>
+            <span className="dropdown-button-content">More</span>
           </button>
 
-          {activeDropdown === "community" && (
+          {activeDropdown === "more" && (
             <div className="navbar-dropdown-menu" onMouseEnter={cancelClose}>
-              {dropdownItems.community.map((item) => (
+              {dropdownItems.more.map((item) => (
                 <Link
                   key={item.to}
                   to={item.to}
@@ -223,11 +225,12 @@ const Navbar = () => {
             </div>
           )}
         </div>
-
-        {/* Lien simple About */}
-        {/* <Link to="/about" className="navbar-link">
-          About
-        </Link> */}
+      </div>
+      {/* Login link */}
+      <div className="navbar-link">
+        <Link to="/login" className="navbar-link login-link">
+          Log in
+        </Link>
       </div>
     </nav>
   );

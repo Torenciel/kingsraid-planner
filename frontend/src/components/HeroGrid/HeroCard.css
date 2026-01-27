@@ -7,7 +7,7 @@
   height: 100%; /* Ajoute */
   /* overflow: hidden; */
   background: var(--color-primary-default);
-  border: 2px solid var(--color-border-accent);
+  border: 2px solid transparent;
   border-radius: 0.4rem;
   position: relative;
   cursor: pointer;
@@ -15,7 +15,7 @@
 }
 
 .hero-card:hover {
-  border-color: var(--color-item-hover);
+  /* border-color: var(--color-item-hover); */
   transform: scale(1.05);
 }
 

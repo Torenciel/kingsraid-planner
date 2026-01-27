@@ -8,20 +8,28 @@
   --color-primary-accent: #363636;
   --color-primary-hover: #474747;
   --color-primary-highlight: #6b6b6b;
+  
+  /* --color-primary-default: #f0ede9;
+  --color-primary-accent: #cac8c4;
+  --color-primary-hover: #b1afab;
+  --color-primary-highlight: #9e9d9a; */
 
-  --color-secondary-default: #344231;
+  --color-secondary-default: #56A345;
   --color-secondary-accent: #65BA52;
-  --color-secondary-hover: #51db32;
-  --color-secondary-highlight: #2fff00;
+  --color-secondary-hover: #73CB5F;
+  --color-secondary-highlight: #8AE376;
+  --color-secondary-disabled: #3E7531;
 
-  --color-background: #191919;
-  --color-background-muted: #191919;
+  --color-background-default: #191919;
+  /* --color-background-default: #F7F5F2; */
+  --color-background-muted: #0F0F11;
 
   --color-border-default: #3C3C3C;
-  --color-border-accent: #555555;
+  --color-border-accent: #606060;
 
   --color-text-default: #ffffff;
-  --color-text-muted: #626468;
+  /* --color-text-default: #000000; */
+  --color-text-muted: #999999;
 
   --color-item-selected: #65BA52;
   --color-item-hover: #3d7031;
@@ -46,9 +54,16 @@
 
 }
 
-/* Vos styles personnalisés existants */
-body {
-  background-color: var(--color-background);
+
+/* ===== GLOBAL ===== */
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+body { /* to avoid content being hidden under navbar */
+  padding-top: 60px;
+  background-color: var(--color-background-default);
   color: white;
 }
 
@@ -92,7 +107,7 @@ body {
 /* Garde tes styles existants */
 .bg-kr-dark {
   background-color: var(
-    --color-background
+    --color-background-default
   ); /* Fallback si image non disponible*/
 }
 
@@ -111,7 +126,7 @@ body {
 }
 
 .modal-content {
-  background: var(--color-background);
+  background: var(--color-background-default);
   padding: 20px;
   border-radius: 8px;
   max-width: 550px;
