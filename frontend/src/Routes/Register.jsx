@@ -65,43 +65,40 @@ const Register = () => {
       <h1 className="register-title">Create an account</h1>
 
       <form className="register-form" onSubmit={handleSubmit}>
+        <p className="input-label">Email</p>
         <input
           type="email"
           name="email"
-          placeholder="Email"
           value={formData.email}
           onChange={handleChange}
           required
         />
-
+        <p className="input-label">Display Name</p>
         <input
           type="text"
           name="displayName"
-          placeholder="Display name"
           value={formData.displayName}
           onChange={handleChange}
           required
         />
-
+        <p className="input-label">Password</p>
         <input
           type="password"
           name="password"
-          placeholder="Password"
           value={formData.password}
           onChange={handleChange}
           required
         />
-
+        <p className="input-label">Confirm Password</p>
         <input
           type="password"
           name="confirmPassword"
-          placeholder="Confirm password"
           value={formData.confirmPassword}
           onChange={handleChange}
           required
         />
 
-        {error && <p className="form-error">{error}</p>}
+        {error && <p className="form-error"><span className="form-error-icon"><IoWarningOutline /></span> {error}</p>}
 
         <button type="submit" disabled={loading}>
           {loading ? "Creating account..." : "Register"}

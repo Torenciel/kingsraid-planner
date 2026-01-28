@@ -255,7 +255,7 @@ const getArtifactImageUrl = (artifact) => {
       <FaSearch className="artifact-search-icon" />
       <input
         type="text"
-        placeholder="Search artifacts..."
+        placeholder="Search artifacts"
         value={searchTerm}
         onChange={(e) => setSearchTerm(e.target.value)}
         className="artifact-search-input"
@@ -263,7 +263,7 @@ const getArtifactImageUrl = (artifact) => {
         </div>
 
       {showLoading ? (
-        <div className="artifact-loading">Loading artifacts...</div>
+        <div className="artifact-loading">Loading artifacts</div>
       ) : (
         <>
           <div className="artifact-grid">

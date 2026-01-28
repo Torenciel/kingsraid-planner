@@ -31,8 +31,8 @@
   /* --color-text-default: #000000; */
   --color-text-muted: #999999;
 
-  --color-item-selected: #65BA52;
-  --color-item-hover: #3d7031;
+  --color-item-hover: #56A345;
+  --color-item-selected: #8AE376;
   --color-item-selected-shadow: rgba(251, 190, 36, 0.5);
 
   --color-stars-default: #fbbf24;
@@ -40,8 +40,8 @@
 
   --color-validation-default: #28a745;
   --color-validation-hover: #21893a;
-  --color-error-default:red;
-  --color-error-hover:red;
+  --color-error-default: rgb(197, 50, 50);
+  --color-error-hover:rgb(213, 49, 49);
   --color-cancel-default:#474747;
   --color-cancel-hover:#363636;
 
