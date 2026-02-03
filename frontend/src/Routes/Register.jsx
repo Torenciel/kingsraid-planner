@@ -1,10 +1,13 @@
 // frontend/src/Routes/Register.jsx
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
+import { IoWarningOutline } from "react-icons/io5";
 import "./Register.css";
 
 const Register = () => {
   const navigate = useNavigate();
+  const { refetchAuth } = useAuth();
 
   const [formData, setFormData] = useState({
     email: "",
@@ -40,6 +43,7 @@ const Register = () => {
         headers: {
           "Content-Type": "application/json",
         },
+        credentials: "include",
         body: JSON.stringify(formData),
       });
 
@@ -52,7 +56,8 @@ const Register = () => {
       }
 
       // Temporary success flow
-      navigate("/login");
+      await refetchAuth();
+      navigate("/", { replace: true });
     } catch (err) {
       setError("Network error");
     } finally {

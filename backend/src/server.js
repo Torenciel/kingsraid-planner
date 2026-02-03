@@ -22,8 +22,14 @@ console.log('📂 KingsRaid data path:', KINGSRAID_DATA_PATH);
 console.log('📂 Exists?', fs.existsSync(KINGSRAID_DATA_PATH));
 
 // Middleware
-app.use(cors());
+app.use(
+  cors({
+    origin: "http://localhost:3000", // Frontend port
+    credentials: true,
+  })
+);
 app.use(express.json());
+app.use(cookieParser());
 
 // Connexion MongoDB
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/kingsraid-planner';
@@ -70,7 +76,14 @@ app.use('/', routes);
 // 1. Servir les fichiers statiques KingsRaid (déjà présent)
 app.use('/kingsraid-data', express.static(KINGSRAID_DATA_PATH));
 
-// 2. Route de debug (à déplacer ou garder ici)
+// 2.Serve uploaded files (avatars)
+app.use(
+  "/uploads",
+  express.static(path.join(__dirname, "..", "uploads"))
+);
+
+
+// 3. Route de debug (à déplacer ou garder ici)
 app.get('/api/debug', (req, res) => {
   const masangPath = path.join(KINGSRAID_DATA_PATH, 'hero_release_order_masang.json');
   const heroesDataPath = path.join(KINGSRAID_DATA_PATH, 'table-data', 'heroes');

@@ -72,6 +72,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  font-weight: 600;
 }
 
 /* ===== STANDARD DROPDOWN ===== */
@@ -217,7 +218,29 @@
 .login-link{
   margin-right: 40px;
   color: var(--color-text-muted);
+  font-weight: 600;
 }
 .login-link:hover{
   color: var(--color-text-default);
+}
+
+/* profile-avatar */
+
+.navbar-dropdown-item {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  gap: 10px;
+  margin-right: 20px;
+}
+.avbar-profile-label{
+  font-size: 16px;
+  font-weight: 400;
+}
+
+.navbar-profile-avatar {
+  width: 48px;
+  height: 48px;
+  object-fit: cover;
+  border-radius: 50%;
 }

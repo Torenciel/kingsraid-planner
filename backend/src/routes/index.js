@@ -9,6 +9,7 @@ const gearsetRoutes = require('./gearset.routes');
 const perkRoutes = require('./perk.routes');
 const teamRoutes = require('./team.routes');
 const authRoutes = require('./auth.routes');
+const userRoutes = require("./user.routes");
 
 // Monter toutes les routes avec un préfixe API
 router.use('/api/v2/heroes', heroRoutes);
@@ -17,6 +18,7 @@ router.use('/api/v2/gearsets', gearsetRoutes);
 router.use('/api/v2/perks', perkRoutes);
 router.use('/api/v2/teams', teamRoutes);
 router.use("/api/v2/auth", authRoutes);
+router.use("/api/v2/users", userRoutes);
 
 // Routes de santé et informations
 router.get('/api/v2/health', (req, res) => {

@@ -1,15 +1,21 @@
 const express = require("express");
 const bcrypt = require("bcrypt");
 const User = require("../models/User");
+const { requireAuth } = require("../middlewares/auth.middleware");
+const {
+  signAccessToken,
+  signRefreshToken,
+  verifyRefreshToken,
+} = require("../utils/jwt");
 
 const router = express.Router();
 
-// ================= REGISTER =================
+// ================= REGISTER ================= POST /api/v2/auth/register
 router.post("/register", async (req, res) => {
   try {
     const { email, password, confirmPassword, displayName } = req.body;
 
-    // 1. Basic validation
+    // 1. Validation
     if (!email || !password || !confirmPassword || !displayName) {
       return res.status(400).json({
         success: false,
@@ -24,7 +30,7 @@ router.post("/register", async (req, res) => {
       });
     }
 
-    // 2. Check if user already exists
+    // 2. Check existing user
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(409).json({
@@ -43,14 +49,28 @@ router.post("/register", async (req, res) => {
       passwordHash,
     });
 
-    // 5. Response without sensitive data
+    // 5. SIGN TOKENS (NEW)
+    const accessToken = signAccessToken(user);
+    const refreshToken = signRefreshToken(user);
+
+    // 6. SET COOKIES (NEW)
+    res.cookie("accessToken", accessToken, {
+      httpOnly: true,
+      sameSite: "lax",
+      secure: false,
+      maxAge: 15 * 60 * 1000, // 15 minutes
+    });
+
+    res.cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+      sameSite: "lax",
+      secure: false,
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    });
+
+    // 7. Response
     res.status(201).json({
       success: true,
-      user: {
-        id: user._id,
-        email: user.email,
-        displayName: user.displayName,
-      },
     });
   } catch (error) {
     console.error("Register error:", error);
@@ -61,12 +81,11 @@ router.post("/register", async (req, res) => {
   }
 });
 
-// ================= LOGIN =================
+// ================= LOGIN (JWT) ================= POST /api/v2/auth/login
 router.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    // 1. Basic validation
     if (!email || !password) {
       return res.status(400).json({
         success: false,
@@ -74,7 +93,6 @@ router.post("/login", async (req, res) => {
       });
     }
 
-    // 2. Find user and explicitly include passwordHash
     const user = await User.findOne({ email }).select("+passwordHash");
 
     if (!user) {
@@ -84,7 +102,6 @@ router.post("/login", async (req, res) => {
       });
     }
 
-    // 3. Account status checks
     if (user.status === "banned") {
       return res.status(403).json({
         success: false,
@@ -92,19 +109,6 @@ router.post("/login", async (req, res) => {
       });
     }
 
-    if (user.status === "inactive") {
-      if (
-        user.deactivatedUntil &&
-        user.deactivatedUntil.getTime() > Date.now()
-      ) {
-        return res.status(403).json({
-          success: false,
-          message: "This account is temporarily deactivated",
-        });
-      }
-    }
-
-    // 4. Password comparison
     const isPasswordValid = await bcrypt.compare(
       password,
       user.passwordHash
@@ -117,11 +121,26 @@ router.post("/login", async (req, res) => {
       });
     }
 
-    // 5. Update metadata
     user.lastLoginAt = new Date();
     await user.save();
 
-    // 6. Successful response (no sensitive data)
+    const accessToken = signAccessToken(user);
+    const refreshToken = signRefreshToken(user);
+
+    res.cookie("accessToken", accessToken, {
+      httpOnly: true,
+      sameSite: "lax",
+      secure: false,
+      maxAge: 15 * 60 * 1000,
+    });
+
+    res.cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+      sameSite: "lax",
+      secure: false,
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+
     res.json({
       success: true,
       user: {
@@ -129,6 +148,7 @@ router.post("/login", async (req, res) => {
         email: user.email,
         displayName: user.displayName,
         role: user.role,
+        createdAt: user.createdAt,
       },
     });
   } catch (error) {
@@ -140,5 +160,38 @@ router.post("/login", async (req, res) => {
   }
 });
 
+// ================= ME ================= GET /api/v2/auth/me
+router.get("/me", requireAuth, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).select(
+      "_id email displayName role profilePicture createdAt"
+    );
+
+    if (!user) {
+      return res.status(401).json({
+        authenticated: false,
+      });
+    }
+
+    res.json({
+      authenticated: true,
+      user,
+    });
+  } catch (error) {
+    console.error("Me error:", error);
+    res.status(500).json({
+      authenticated: false,
+      message: "Server error",
+    });
+  }
+});
+
+
+// ================= LOGOUT ================= POST /api/v2/auth/logout
+router.post("/logout", (req, res) => {
+  res.clearCookie("accessToken");
+  res.clearCookie("refreshToken");
+  res.json({ success: true });
+});
 
 module.exports = router;

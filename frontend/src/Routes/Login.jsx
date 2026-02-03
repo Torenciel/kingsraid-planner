@@ -1,10 +1,16 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
 import { IoWarningOutline } from "react-icons/io5";
 import "./Login.css";
 
 const Login = () => {
   const navigate = useNavigate();
+  const { refetchAuth } = useAuth();
+
+  const location = useLocation();
+  const from = location.state?.from?.pathname || "/";
+
 
   const [formData, setFormData] = useState({
     email: "",
@@ -15,11 +21,13 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
-    setFormData((prev) => ({
-      ...prev,
-      [e.target.name]: e.target.value,
-    }));
-  };
+  setError(null);
+  setFormData((prev) => ({
+    ...prev,
+    [e.target.name]: e.target.value,
+  }));
+};
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -32,6 +40,7 @@ const Login = () => {
         headers: {
           "Content-Type": "application/json",
         },
+        credentials: "include", // REQUIRED for JWT cookies
         body: JSON.stringify(formData),
       });
 
@@ -44,7 +53,8 @@ const Login = () => {
       }
 
       // Temporary success behavior (session comes next)
-      navigate("/");
+      await refetchAuth();
+      navigate(from, { replace: true });
     } catch (err) {
       setError("Network error");
     } finally {

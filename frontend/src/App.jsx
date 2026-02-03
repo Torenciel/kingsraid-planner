@@ -11,14 +11,22 @@ import Navbar from "./components/UI/Navbar";
 import About from "./Routes/About";
 import Home from "./Routes/Home";
 import Login from "./Routes/Login";
+import Profile from "./Routes/Profile";
 import NotFound from "./Routes/NotFound";
 import Register from "./Routes/Register";
 import TeamEdit from "./Routes/TeamEdit";
 import Teams from "./Routes/Teams";
+import ChangeUsername from "./Routes/Account/ChangeUsername";
+import ChangePassword from "./Routes/Account/ChangePassword";
+import ChangeEmail from "./Routes/Account/ChangeEmail";
+
+import ProtectedRoute from "./components/Guards/ProtectedRoute";
 
 
 
-// IMPORT TOUS LES CONTEXT PROVIDERS
+
+// IMPORT EVERY CONTEXT PROVIDER HERE
+import { AuthProvider } from "./contexts/AuthContext";
 import { TeamProvider } from "./contexts/TeamContext";
 import { HeroProvider } from "./contexts/HeroContext";
 import { ArtifactProvider } from "./contexts/ArtifactContext";
@@ -35,63 +43,67 @@ function AppRoutes() {
     <Routes>
       {/* Main routes */}
       <Route path="/" element={<Home />} />
-      <Route path="/teams" element={<Navigate to="/teams/public" replace />} />
-      <Route path="/teams/:tab" element={<Teams key={location.key} />} />
-      <Route
-        path="/my-teams"
-        element={<Navigate to="/teams/private" replace />}
-      />
-      <Route path="/team/edit" element={<TeamEdit />} />
-      <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
+      <Route path="/login" element={<Login />} />
       <Route path="/about" element={<About />} />
+      <Route path="/teams/:tab" element={<Teams key={location.key} />} />
+      <Route path="/teams" element={<Navigate to="/teams/public" replace />} />
+
+      {/* Auth required routes (Require Loging-in)*/}
+      <Route path="/profile" element={<ProtectedRoute><Profile/></ProtectedRoute>} />
+      <Route path="/teams/private" element={<ProtectedRoute><Teams/></ProtectedRoute>} />
+      <Route path="/team/edit" element={<ProtectedRoute><TeamEdit /></ProtectedRoute>} />
+      <Route path="/account/username" element={<ProtectedRoute><ChangeUsername /></ProtectedRoute>} />
+      <Route path="/account/email" element={<ProtectedRoute><ChangeEmail /></ProtectedRoute>} />
+      <Route path="/account/password" element={<ProtectedRoute><ChangePassword /></ProtectedRoute>} />
+
+
+      {/* Admin routes */}
 
 
 
       {/* 404 route */}
       <Route path="*" element={<NotFound />} />
     </Routes>
-
-    //   {/* 404 route */}
-    //   <Route path="*" element={<NotFound />} />
-    // </Routes>
   );
 }
 
 function App() {
   return (
     <BrowserRouter>
-      {/* HIÉRARCHIE DES PROVIDERS (ordre important) */}
+      <AuthProvider>
+      {/* PROVIDERS HIERARCHY (logical order) */}
       {/* 
         Ordre logique :
-        1. HeroProvider (utilisé par les providers suivants)
-        2. ArtifactProvider 
-        3. GearSetProvider
-        4. PerksProvider
-        5. ModalProvider (utilise les providers précédents)
-        6. OverlayProvider (utilise les providers précédents)
-        7. TeamProvider (utilise tous les précédents)
+        HeroProvider (Used by the next 4 providers)
+        ArtifactProvider 
+        GearSetProvider
+        PerksProvider
+        ModalProvider (Use precedents providers to show modals)
+        OverlayProvider (Use precedents providers to show overlay)
+        TeamProvider (Use precedents providers to manage team data)
       */}
-      <HeroProvider>
-        <ArtifactProvider>
-          <GearSetProvider>
-            <PerksProvider>
-              <ModalProvider>
-                <OverlayProvider>
-                  <TeamProvider>
-                    <div className="app">
-                      <Navbar />
-                      <main className="main-content">
-                        <AppRoutes />
-                      </main>
-                    </div>
-                  </TeamProvider>
-                </OverlayProvider>
-              </ModalProvider>
-            </PerksProvider>
-          </GearSetProvider>
-        </ArtifactProvider>
-      </HeroProvider>
+        <HeroProvider>
+          <ArtifactProvider>
+            <GearSetProvider>
+              <PerksProvider>
+                <ModalProvider>
+                  <OverlayProvider>
+                    <TeamProvider>
+                      <div className="app">
+                        <Navbar />
+                        <main className="main-content">
+                          <AppRoutes />
+                        </main>
+                      </div>
+                    </TeamProvider>
+                  </OverlayProvider>
+                </ModalProvider>
+              </PerksProvider>
+            </GearSetProvider>
+          </ArtifactProvider>
+        </HeroProvider>
+      </AuthProvider>
     </BrowserRouter>
   );
 }

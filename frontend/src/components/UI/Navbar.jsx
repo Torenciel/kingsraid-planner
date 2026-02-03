@@ -1,13 +1,17 @@
 // components/UI/Navbar.jsx
 import { useEffect, useRef, useState } from "react";
+import { Link } from "react-router-dom";
+import { useAuth } from "../../contexts/AuthContext";
 import { BiTime } from "react-icons/bi";
 import { FaUserGroup } from "react-icons/fa6";
-import { Link } from "react-router-dom";
+
 import "./Navbar.css";
 
 const BASE_PATH = process.env.PUBLIC_URL || "";
 
+
 const Navbar = () => {
+  const { user, isAuthenticated, loading, logout } = useAuth();
   const [activeDropdown, setActiveDropdown] = useState(null);
   const timeoutRef = useRef(null);
 
@@ -226,12 +230,66 @@ const Navbar = () => {
           )}
         </div>
       </div>
-      {/* Login link */}
+      {/* ========== AUTH SECTION ========== */}
+{!loading && (
+  <div
+    className="navbar-dropdown-container"
+    onMouseEnter={() => handleMouseEnter("profile")}
+    onMouseLeave={handleMouseLeave}
+  >
+    {!isAuthenticated ? (
       <div className="navbar-link">
         <Link to="/login" className="navbar-link login-link">
           Log in
         </Link>
       </div>
+    ) : (
+      <>
+      <Link
+        to="/profile"
+        className="navbar-dropdown-item"
+        onClick={handleItemClick}
+        >
+        <label className="navbar-profile-label">{user.displayName}</label>
+      <img
+        src={
+          user.profilePicture === "default-avatar.png"
+            ? "/default-avatar.png"
+            : `http://localhost:3002/${user.profilePicture}?v=${user.avatarVersion}`
+        }
+        alt="Profile"
+        className="navbar-profile-avatar"
+      />
+        </Link>
+        {activeDropdown === "profile" && (
+          <div
+            className="navbar-dropdown-menu"
+            onMouseEnter={cancelClose}
+          >
+            <Link
+              to="/profile"
+              className="navbar-dropdown-item"
+              onClick={handleItemClick}
+            >
+              Profile
+            </Link>
+
+            <button
+              className="navbar-dropdown-item"
+              onClick={() => {
+                handleItemClick();
+                logout();
+              }}
+            >
+              Logout
+            </button>
+          </div>
+        )}
+      </>
+    )}
+  </div>
+)}
+
     </nav>
   );
 };
