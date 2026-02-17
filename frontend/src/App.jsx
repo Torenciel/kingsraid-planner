@@ -19,10 +19,12 @@ import Teams from "./Routes/Teams";
 import ChangeUsername from "./Routes/Account/ChangeUsername";
 import ChangePassword from "./Routes/Account/ChangePassword";
 import ChangeEmail from "./Routes/Account/ChangeEmail";
+import VerifyPending from "./Routes/Account/VerifyPending";
+import VerifyEmail from "./Routes/Account/VerifyEmail";
+import ForgotPassword from "./Routes/Account/ForgotPassword";
+import ResetPassword from "./Routes/Account/ResetPassword";
 
 import ProtectedRoute from "./components/Guards/ProtectedRoute";
-
-
 
 
 // IMPORT EVERY CONTEXT PROVIDER HERE
@@ -48,6 +50,11 @@ function AppRoutes() {
       <Route path="/about" element={<About />} />
       <Route path="/teams/:tab" element={<Teams key={location.key} />} />
       <Route path="/teams" element={<Navigate to="/teams/public" replace />} />
+      <Route path="/verify-pending" element={<VerifyPending />} />
+      <Route path="/verify-email" element={<VerifyEmail />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/reset-password/:token" element={<ResetPassword />} />
+
 
       {/* Auth required routes (Require Loging-in)*/}
       <Route path="/profile" element={<ProtectedRoute><Profile/></ProtectedRoute>} />

@@ -1,11 +1,15 @@
+const path = require('path');
+require('dotenv').config({
+  path: path.resolve(__dirname, '../.env'),
+});
+
+
 const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
-const path = require('path');
 const fs = require('fs');
 const cookieParser = require("cookie-parser");
 
-require('dotenv').config();
 
 const app = express();
 const SERVER_PORT = process.env.SERVER_PORT || 3002;
@@ -47,7 +51,7 @@ mongoose.connect(MONGODB_URI, {
   // Continuer même si MongoDB échoue (mode dégradé)
 });
 
-// =============== 🔥 MODIFICATION PRINCIPALE ===============
+// =============== MODIFICATION PRINCIPALE ===============
 // Importer les routes centralisées depuis index.js
 const routes = require('./routes'); // Ceci va importer ./routes/index.js
 

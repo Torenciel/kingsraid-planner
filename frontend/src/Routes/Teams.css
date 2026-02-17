@@ -19,7 +19,9 @@
 /* Individual tab button */
 .binder-tab {
   background: var(--color-primary-default);
-  border: 2px solid var(--color-border-default);
+  max-width: 160px;
+  width: 100%;
+  /* border: 2px solid var(--color-border-default); */
   border-radius: 10px;
   color: var(--color-text-muted);
   font-size: 16px;
@@ -33,13 +35,13 @@
 /* Tab hover effect */
 .binder-tab:hover {
   background: var(--color-primary-accent);
-  color: white;
+  color: var(--color-text-default);
 }
 
 /* Active tab styling */
 .binder-tab.active {
   background: var(--color-primary-accent);
-  color: white;
+  color: var(--color-text-default);
   z-index: 5;
 }
 
@@ -111,7 +113,7 @@
   position: absolute;
   top: 50%;
   left: 50%;
-  color: var(--color-text-default);
+  color: var(--color-text-white);
   /* color: var(--color-secondary-accent); */
   transform: translate(-50%, -50%);
   font-size: 14px;
@@ -162,7 +164,7 @@
 
 .search-input {
   background: var(--color-primary-default);
-  color: white;
+  color: var(--color-text-default);
   border-radius: 6px;
   padding: 10px 40px 10px 40px;
   width: 100%;
@@ -199,14 +201,14 @@
 }
 
 .clear-search-btn:hover {
-  color: white;
+  color: var(--color-text-default);
   background: rgba(255, 255, 255, 0.1);
 }
 
 /* Select All Button */
 .select-all-btn {
   background: var(--color-primary-default);
-  color: white;
+  color: var(--color-text-default);
   border-radius: 6px;
   padding: 10px 16px;
   font-size: 14px;
@@ -231,7 +233,7 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  color: white;
+  color: var(--color-text-default);
   font-size: 16px;
   transition: all 0.2s ease;
   flex-shrink: 0;
@@ -329,11 +331,11 @@
   right: 0;
   background: linear-gradient(
     to top,
-    rgba(0, 0, 0, 0.7),
-    rgba(0, 0, 0, 0.4),
+    rgba(0, 0, 0, 0.6),
+    rgba(0, 0, 0, 0.3),
     transparent
   );
-  color: var(--color-text-default);
+  color: var(--color-text-white);
   padding: 4px 2px 2px 2px;
   font-size: 12px;
   font-weight: 600;
@@ -349,7 +351,7 @@
   width: 100%;
   height: 100%;
   background: #333;
-  color: white;
+  color: var(--color-text-default);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -428,8 +430,8 @@
   background: var(--color-primary-default);
   border-radius: 6px;
   /* overflow-y: auto; */
-  height: 272px;
-  max-height: 272px;
+  height: 274px;
+  max-height: 274px;
 }
 
 .active-filters-label {
@@ -450,7 +452,7 @@
 
 .filter-tag {
   background: var(--color-primary-accent);
-  color: white;
+  color: var(--color-text-default);
   padding: 8px 12px;
   border-radius: 20px;
   font-size: 14px;
@@ -497,14 +499,14 @@
 }
 
 .teams-count-header-span {
-  color: white;
+  color: var(--color-text-default);
   font-size: 18px;
   font-weight: 500;
 }
 
 /* ========== TAB CONTENT ========== */
 .tab-content {
-  color: white;
+  color: var(--color-text-default);
   background: var(--color-primary-default);
   border-radius: 6px;
   padding: 25px;
@@ -514,7 +516,7 @@
 .tab-content h2 {
   margin-bottom: 12px;
   font-size: 24px;
-  color: white;
+  color: var(--color-text-default);
   font-weight: 700;
 }
 

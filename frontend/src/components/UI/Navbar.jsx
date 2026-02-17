@@ -72,7 +72,7 @@ const Navbar = () => {
       { to: "/feedback", label: "Feedback" },
       { to: "/discord", label: "Discord" },
       { to: "/github", label: "Github" },
-      { to: "/about", label: "About" },
+      { to: "/about", label: "About us" },
     ],
   };
 
@@ -263,7 +263,7 @@ const Navbar = () => {
         </Link>
         {activeDropdown === "profile" && (
           <div
-            className="navbar-dropdown-menu"
+            className="navbar-dropdown-menu auth-dropdown"
             onMouseEnter={cancelClose}
           >
             <Link

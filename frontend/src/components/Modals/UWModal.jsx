@@ -460,7 +460,7 @@ const UWModal = ({ data, onClose }) => {
           <StarRating
             value={selectedStars}
             onChange={(stars) => {
-              // console.log("⭐ UWModal - Stars changées:", stars);
+              // console.log("UWModal - Stars changées:", stars);
               setSelectedStars(stars);
             }}
             maxStars={5}
@@ -480,7 +480,7 @@ const UWModal = ({ data, onClose }) => {
       <div className="btn-modal">
         <button 
           onClick={() => {
-            // console.log("❌ UWModal - Cancel cliqué");
+            // console.log("UWModal - Cancel cliqué");
             onClose();
           }} 
           className="btn-modal-cancel"

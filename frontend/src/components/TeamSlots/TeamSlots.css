@@ -18,11 +18,11 @@
 .team-slots-counter {
   text-align: center;
   font-size: 0.875rem;
-  color: white;
+  color: var(--color-text-default);
   margin-top: 1rem;
 }
 
 .team-slots-counter span {
-  color: white;
+  color: var(--color-text-default);
   font-weight: 600;
 }

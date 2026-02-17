@@ -84,7 +84,7 @@
   font-weight: bold;
   margin-bottom: 1rem;
   text-align: center;
-  color: white;
+  color: var(--color-text-default);
 }
 
 

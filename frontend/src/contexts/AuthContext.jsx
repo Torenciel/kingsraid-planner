@@ -36,7 +36,7 @@ export const AuthProvider = ({ children }) => {
       setLoading(false);
     }
   };
-
+  
   const logout = async () => {
     await fetch("http://localhost:3002/api/v2/auth/logout", {
       method: "POST",
@@ -50,6 +50,15 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     fetchMe();
   }, []);
+
+  useEffect(() => {
+    if (!user?.preferences?.theme) return;
+
+    document.documentElement.setAttribute(
+      "data-theme",
+      user.preferences.theme
+    );
+  }, [user?.preferences?.theme]);
 
   return (
     <AuthContext.Provider

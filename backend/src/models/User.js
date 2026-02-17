@@ -23,6 +23,28 @@ const UserSchema = new mongoose.Schema(
       default: false,
     },
 
+    // === EMAIL VERIFICATION ===
+    emailVerificationToken: {
+      type: String,
+      select: false,
+    },
+    emailVerificationExpires: {
+      type: Date,
+      select: false,
+    },
+    emailVerificationLastSentAt: {
+      type: Date,
+      select: false,
+    },
+
+    // === PASSWORD RESET ===
+    passwordResetToken: {
+      type: String,
+    },
+    passwordResetExpires: {
+      type: Date,
+    },
+
     // === PUBLIC PROFILE ===
     displayName: {
       type: String,

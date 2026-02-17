@@ -2,17 +2,12 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Couleurs Dark*/
+/* Dark theme */
 :root {
   --color-primary-default: #262626;
   --color-primary-accent: #363636;
   --color-primary-hover: #474747;
   --color-primary-highlight: #6b6b6b;
-  
-  /* --color-primary-default: #f0ede9;
-  --color-primary-accent: #cac8c4;
-  --color-primary-hover: #b1afab;
-  --color-primary-highlight: #9e9d9a; */
 
   --color-secondary-default: #56A345;
   --color-secondary-accent: #65BA52;
@@ -28,8 +23,8 @@
   --color-border-accent: #606060;
 
   --color-text-default: #ffffff;
-  /* --color-text-default: #000000; */
   --color-text-muted: #999999;
+  --color-text-white: #ffffff;
 
   --color-item-hover: #56A345;
   --color-item-selected: #8AE376;
@@ -49,9 +44,35 @@
   --color-scrollbar-thumb-hover: #868686;
 }
 
-/* Couleurs light*/
-[data-theme="light"] {
+/* Light theme */
+:root[data-theme="light"] {
+  --color-primary-default: #f0f0f0;
+  --color-primary-accent: #e1e1e1;
+  --color-primary-hover: #d3d3d3;
+  --color-primary-highlight: #c5c5c5;
 
+  --color-secondary-default: #56A345;
+  --color-secondary-accent: #65BA52;
+  --color-secondary-hover: #73CB5F;
+  --color-secondary-highlight: #8AE376;
+
+  --color-background-default: #ffffff;
+  --color-background-muted: #ECEAE7;
+
+  --color-border-default: #d1d1d1;
+  --color-border-accent: #b5b5b5;
+
+  --color-text-default: #000000;
+  --color-text-muted: #999999;
+    --color-text-white: #ffffff;
+
+  --color-item-hover: #56A345;
+  --color-item-selected: #73CB5F;
+
+  --color-validation-default: #28a745;
+  --color-error-default: rgb(180, 40, 40);
+
+  --color-scrollbar-thumb-default: #aaaaaa;
 }
 
 
@@ -64,7 +85,7 @@
 body { /* to avoid content being hidden under navbar */
   padding-top: 60px;
   background-color: var(--color-background-default);
-  color: white;
+  color: var(--color-text-default);
 }
 
 /* ======================================================================== */
@@ -136,7 +157,7 @@ body { /* to avoid content being hidden under navbar */
 
 .modal-title {
   margin-top: 0;
-  color: #ffffff;
+  color: var(--color-text-default);
   display: flex;
   align-items: center;
   margin-bottom: 20px;
@@ -191,7 +212,7 @@ body { /* to avoid content being hidden under navbar */
   height: 0;
   border-left: 8px solid transparent;
   border-right: 8px solid transparent;
-  border-top: 8px solid #262626;
+  border-top: 8px solid var(--color-primary-default);
   bottom: -7px;
   left: 50%;
   transform: translateX(-50%);

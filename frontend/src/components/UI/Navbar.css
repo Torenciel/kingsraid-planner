@@ -31,7 +31,6 @@
 .navbar-brand-text {
   font-size: 26px;
   font-weight: 600;
-  color: var(--color-text-default);
 }
 
 /* ===== LINKS ===== */
@@ -83,10 +82,10 @@
   margin-top: 0px;
   left: 50%;
   transform: translateX(-50%);
-  background-color: var(--color-primary-default);
-  border: 1px solid var(--color-border-default);
-  border-radius: 8px;
-  min-width: 180px;
+  background-color: var(--color-background-muted);
+  /* border: 1px solid var(--color-border-default); */
+  /* border-radius: 0px 0px 10px 10px; */
+  min-width: 140px;
   padding: 8px 0;
   z-index: 10000;
 }
@@ -94,7 +93,7 @@
 .navbar-dropdown-item {
   display: block;
   padding: 10px 20px;
-  color: white;
+  color: var(--color-text-default);
   text-decoration: none;
   transition: color 0.2s ease;
 }
@@ -127,11 +126,11 @@
 .team-main-button {
   flex: 1;
   padding: 12px;
-  background: var(--color-primary-accent);
-  border: 1px solid var(--color-primary-hover);
+  background: var(--color-primary-default);
+  /* border: 1px solid var(--color-primary-accent); */
   border-radius: 10px;
   text-decoration: none;
-  color: white;
+  color: var(--color-text-default);
   transition: background 0.2s ease;
 }
 
@@ -163,13 +162,13 @@
 }
 
 .section-icon {
-  color: var(--color-item-selected);
+  color: var(--color-secondary-default);
 }
 
 .section-title {
   font-size: 14px;
   font-weight: 600;
-  color: white;
+  color: var(--color-text-default);
   margin: 0;
 }
 
@@ -184,8 +183,7 @@
   align-items: center;
   gap: 10px;
   padding: 6px;
-  background: var(--color-primary-accent);
-  border: 1px solid var(--color-primary-hover);
+  background: var(--color-primary-default);
   border-radius: 8px;
   cursor: pointer;
 }
@@ -203,10 +201,9 @@
 
 .recent-team-fallback {
   display: none;
-  background: #555;
+  background: var(--color-primary-default);
   align-items: center;
   justify-content: center;
-  color: var(--color-item-selected);
 }
 
 .recent-team-name {
@@ -215,6 +212,7 @@
 }
 
 /* Login link */
+
 .login-link{
   margin-right: 40px;
   color: var(--color-text-muted);
@@ -232,10 +230,15 @@
   cursor: pointer;
   gap: 10px;
   margin-right: 20px;
+  color: var(--color-text-muted);
 }
-.avbar-profile-label{
+
+.navbar-dropdown-item:hover{
+  color: var(--color-text-default);
+}
+.navbar-profile-label{
   font-size: 16px;
-  font-weight: 400;
+  font-weight: 600;
 }
 
 .navbar-profile-avatar {
@@ -243,4 +246,8 @@
   height: 48px;
   object-fit: cover;
   border-radius: 50%;
+}
+
+.auth-dropdown{
+  top: calc(100% + -4px);
 }

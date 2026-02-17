@@ -1,0 +1,50 @@
+.verify-page {
+  max-width: 400px;
+  margin: 2rem auto;
+  padding: 1rem;
+}
+
+.verify-card {
+  /* padding: 2rem; */
+  border-radius: 6px;
+  text-align: center;
+}
+
+.verify-title {
+  font-size: 24px;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+/* Message container */
+.verify-message {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* Success state */
+.verify-message.success {
+  color: var(--color-validation-default);
+}
+
+/* Error state */
+.verify-message.error {
+  color: var(--color-error-default);
+}
+
+/* Button */
+.verify-button {
+  display: inline-block;
+  margin-top: 1rem;
+  padding: 0.75rem;
+  border-radius: 4px;
+  text-decoration: none;
+  background-color: var(--color-secondary-default);
+  color: var(--color-text-default);
+  transition: background-color 0.2s ease;
+}
+
+.verify-button:hover {
+  background-color: var(--color-secondary-hover);
+}

@@ -3,12 +3,9 @@
   align-items: center;
   justify-content: space-evenly;
   max-width: 1280px;
-  margin-left: auto;
-  margin-right: auto;
-  padding-left: 1rem;
-  padding-right: 1rem;
-  padding-top: 5rem;
-  padding-bottom: 2rem;
+  margin: 0 auto;
+  padding: 2rem 2rem;
+  min-height: calc(100vh - 60px);
 }
 
 /* ===== TEXTE ===== */
@@ -25,7 +22,7 @@
   font-family: 'Inter', sans-serif;
   font-weight: 700;
   font-size: clamp(2.5rem, 5vw, 3rem);
-  color: white;
+  color: var(--color-text-default);
   margin: 0;
 }
 
@@ -33,7 +30,7 @@
   font-family: 'Inter', sans-serif;
   font-weight: 400;
   font-size: clamp(1.1rem, 2.5vw, 1.25rem);
-  color: #ccc;
+  color: var(--color-text-muted);
   margin: 0;
 }
 

@@ -207,4 +207,48 @@ router.patch("/me/email", requireAuth, async (req, res) => {
   }
 });
 
+
+// PATCH /api/v2/users/me/preferences
+router.patch("/me/preferences", requireAuth, async (req, res) => {
+  try {
+    const allowedKeys = [
+      "theme",
+      "profileVisibility",
+      "defaultTeamVisibility",
+    ];
+
+    const updates = {};
+
+    for (const key of allowedKeys) {
+      if (req.body[key]) {
+        updates[`preferences.${key}`] = req.body[key];
+      }
+    }
+
+    if (Object.keys(updates).length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: "No valid preferences provided",
+      });
+    }
+
+    const user = await User.findByIdAndUpdate(
+      req.user.id,
+      { $set: updates },
+      { new: true }
+    ).select("_id preferences");
+
+    res.json({
+      success: true,
+      preferences: user.preferences,
+    });
+  } catch (error) {
+    console.error("Update preferences error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
+  }
+});
+
 module.exports = router;

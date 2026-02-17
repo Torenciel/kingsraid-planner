@@ -118,13 +118,13 @@
 }
 
 .perk-title {
-  color: white;
+  color: var(--color-text-default);
   font-weight: bold;
   font-size: 14px;
   text-align: center;
 }
 .perk-description {
-  color: white;
+  color: var(--color-text-default);
   font-size: 12px;
   text-align: center;
   word-break: break-word;

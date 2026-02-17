@@ -1,6 +1,8 @@
 import { useState, useRef } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import { Navigate, Link } from "react-router-dom";
+import Toggle from "../components/UI/Toggle";
+
 import "./Profile.css";
 
 import { FaDiscord, FaYoutube, FaTwitch } from "react-icons/fa";
@@ -60,9 +62,54 @@ const Profile = () => {
     }
   };
 
+  // Toggle checkbox preferences
+  const [preferences, setPreferences] = useState({
+  profilePrivate: false,
+  teamsPrivateByDefault: false,
+  lightMode: false,
+});
+
+  const togglePreference = (key) => {
+  setPreferences((prev) => ({
+    ...prev,
+    [key]: !prev[key],
+  }));
+  };
+
+  const updatePreference = async (key, value) => {
+  await fetch("http://localhost:3002/api/v2/users/me/preferences", {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    credentials: "include",
+    body: JSON.stringify({
+      [key]: value,
+    }),
+  });
+
+  await refetchAuth();
+};
+
+  const toggleTheme = async () => {
+  const newTheme =
+    user.preferences.theme === "dark" ? "light" : "dark";
+
+  await fetch("http://localhost:3002/api/v2/users/me/preferences", {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify({ theme: newTheme }),
+  });
+
+  await refetchAuth(); // THIS is what updates the UI + theme
+};
+
+
   return (
       <div className="profile-container">
-         <div className="profile-banner" style={{ backgroundImage: "url(/kingsraid-data/assets/heroes/Loman/sa.png)" }}/>
+         {/* <div className="profile-banner" style={{ backgroundImage: "url(/kingsraid-data/assets/heroes/Loman/sa.png)" }}/> */}
+         <div className="profile-banner" style={{ backgroundImage: "url(/city.png)" }}/>
       <div className="profile-wrapper">        
       <div className="profile-avatar-container">
         <div
@@ -86,7 +133,7 @@ const Profile = () => {
 
             <div className="profile-user-info">
               <label className="profile-display-name">{user.displayName}</label>
-              <label className="profile-display-role">{user.role}</label>
+              {/* <label className="profile-display-role">{user.role}</label> */}
               {/* <label className="profile-display-Registered-date"> Registered since {formatDate(user.createdAt)}</label> */}
             </div>
 
@@ -132,9 +179,46 @@ const Profile = () => {
         <div className="profile-preferences-container">
           <div className="profile-preferences-section">
           <label className="profile-preferences-title">Preferences</label>
-          <p>Set the profile to private</p>
-          <p>Set teams to private be default</p>
-          <p>Lightmode</p>
+          <Toggle
+            label="Set profile to private"
+            checked={user.preferences.profileVisibility === "private"}
+            onChange={() =>
+              updatePreference(
+                "profileVisibility",
+                user.preferences.profileVisibility === "private"
+                  ? "public"
+                  : "private"
+              )
+            }
+          />
+
+
+          <Toggle
+            label="Set teams to private by default"
+            checked={user.preferences.defaultTeamVisibility === "private"}
+            onChange={() =>
+              updatePreference(
+                "defaultTeamVisibility",
+                user.preferences.defaultTeamVisibility === "private"
+                  ? "public"
+                  : "private"
+              )
+            }
+          />
+
+
+          <Toggle
+            label="Light mode"
+            checked={user.preferences.theme === "light"}
+            onChange={() =>
+              updatePreference(
+                "theme",
+                user.preferences.theme === "light" ? "dark" : "light"
+              )
+            }
+          />
+
+
         </div>
         </div>
         <div className="profile-edit-container">

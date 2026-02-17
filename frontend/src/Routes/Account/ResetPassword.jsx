@@ -1,40 +1,57 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { IoWarningOutline } from "react-icons/io5";
 import "../Login.css";
 
-const ForgotPassword = () => {
-  const [email, setEmail] = useState("");
-  const [message, setMessage] = useState(null);
+const ResetPassword = () => {
+  const { token } = useParams();
+  const navigate = useNavigate();
+
+  const [formData, setFormData] = useState({
+    password: "",
+    confirmPassword: "",
+  });
+
   const [error, setError] = useState(null);
+  const [message, setMessage] = useState(null);
   const [loading, setLoading] = useState(false);
+
+  const handleChange = (e) => {
+    setError(null);
+    setFormData((prev) => ({
+      ...prev,
+      [e.target.name]: e.target.value,
+    }));
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
-    setMessage(null);
     setLoading(true);
 
     try {
       const response = await fetch(
-        "http://localhost:3002/api/v2/auth/forgot-password",
+        `http://localhost:3002/api/v2/auth/reset-password/${token}`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email }),
+          body: JSON.stringify(formData),
         }
       );
 
       const data = await response.json();
 
       if (!response.ok) {
-        setError(data.message || "Something went wrong");
+        setError(data.message || "Reset failed");
         return;
       }
 
-      setMessage(
-        "If an account exists with this email, a reset link has been sent."
-      );
+      setMessage("Password successfully updated.");
+
+      setTimeout(() => {
+        navigate("/login");
+      }, 2000);
+
     } catch (err) {
       setError("Network error");
     } finally {
@@ -44,14 +61,24 @@ const ForgotPassword = () => {
 
   return (
     <div className="login-page">
-      <h1 className="login-title">Forgot Password</h1>
+      <h1 className="login-title">Reset Password</h1>
 
       <form className="login-form" onSubmit={handleSubmit}>
-        <p className="input-label">Email</p>
+        <p className="input-label">New Password</p>
         <input
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          type="password"
+          name="password"
+          value={formData.password}
+          onChange={handleChange}
+          required
+        />
+
+        <p className="input-label">Confirm Password</p>
+        <input
+          type="password"
+          name="confirmPassword"
+          value={formData.confirmPassword}
+          onChange={handleChange}
           required
         />
 
@@ -71,17 +98,11 @@ const ForgotPassword = () => {
         )}
 
         <button type="submit" disabled={loading}>
-          {loading ? "Sending..." : "Send reset link"}
+          {loading ? "Updating..." : "Reset Password"}
         </button>
       </form>
-
-      <p className="form-link">
-        <Link to="/login" className="form-link-label">
-          Back to login
-        </Link>
-      </p>
     </div>
   );
 };
 
-export default ForgotPassword;
+export default ResetPassword;

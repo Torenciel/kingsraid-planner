@@ -199,7 +199,7 @@
 .create-button {
   padding: 10px 24px;
   background: #4CAF50;
-  color: white;
+  color: var(--color-text-default);
   border: none;
   border-radius: 6px;
   cursor: pointer;
@@ -235,7 +235,7 @@
   height: 16px;
   border: 2px solid rgba(255,255,255,0.3);
   border-radius: 50%;
-  border-top-color: white;
+  border-top-color: var(--color-text-default);
   animation: spin 1s ease-in-out infinite;
   margin-right: 8px;
 }
@@ -269,7 +269,7 @@
 .error-container button {
   padding: 10px 20px;
   background: #4CAF50;
-  color: white;
+  color: var(--color-text-default);
   border: none;
   border-radius: 6px;
   cursor: pointer;

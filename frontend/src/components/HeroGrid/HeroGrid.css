@@ -35,7 +35,7 @@
   border: 1px solid var(--color-border-default);
   border-radius: 0.375rem;
   padding: 0.25rem 0.75rem;
-  color: white;
+  color: var(--color-text-default);
   font-size: 0.875rem;
   cursor: pointer;
 }
@@ -52,7 +52,7 @@
 
 .hero-grid-filter-select option {
   background-color: var(--color-primary-default);
-  color: white;
+  color: var(--color-text-default);
 }
 
 .hero-grid-filter-input {
@@ -60,7 +60,7 @@
   border: 1px solid var(--color-border-default);
   border-radius: 0.375rem;
   padding: 0.25rem 0.75rem;
-  color: white;
+  color: var(--color-text-default);
   font-size: 0.875rem;
   width: 8rem;
 }
@@ -82,7 +82,7 @@
 
 .hero-grid-loading-text {
   font-size: 1.25rem;
-  color: white;
+  color: var(--color-text-default);
 }
 
 /* ========== Compteur ========== */
