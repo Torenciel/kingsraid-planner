@@ -77,7 +77,6 @@ async saveTeam(teamData) {
     method: 'POST',
     body: JSON.stringify({
       teamData,
-      createdBy: 'current-user' // À remplacer plus tard
     })
   });
 }

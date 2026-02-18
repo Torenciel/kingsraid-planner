@@ -1,7 +1,8 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useModal } from "../../contexts/ModalContext";
 import { useTeam } from "../../contexts/TeamContext";
 import TeamSlot from "./TeamSlot";
+import { sortTeamByPosition } from "../../utils/sortTeamByPosition";
 import "./TeamSlots.css";
 
 const TeamSlots = () => {
@@ -12,59 +13,45 @@ const TeamSlots = () => {
     advancements,
     perks,
     removeHeroFromTeam,
-    MAX_TEAM_SLOTS,
   } = useTeam();
-  const { openModal } = useModal();
 
+  const { openModal } = useModal();
 
   const [artifactsData, setArtifactsData] = useState([]);
   const [heroesData, setHeroesData] = useState({});
   const [gearSetsData, setGearSetsData] = useState([]);
 
-  // Charger les données des artifacts depuis MongoDB
+  // Load artifacts
   useEffect(() => {
     const loadArtifactsData = async () => {
       try {
         const response = await fetch("http://localhost:3002/api/v2/artifacts");
         const data = await response.json();
-        
-        let artifactsArray = [];
-        
-        if (Array.isArray(data)) {
-          artifactsArray = data;
-        } else if (data && typeof data === 'object') {
-          if (data._id) {
-            artifactsArray = [data];
-          } else {
-            artifactsArray = Object.values(data).filter(item => item !== null);
-          }
-        }
-        
-        setArtifactsData(artifactsArray);
-        
-      } catch (error) {
-        console.error("Erreur lors du chargement des artifacts:", error);
+        setArtifactsData(Array.isArray(data) ? data : []);
+      } catch {
         setArtifactsData([]);
       }
     };
+
     loadArtifactsData();
   }, []);
 
-  // Charger les données des GearSets depuis MongoDB
+  // Load gear sets
   useEffect(() => {
     const loadGearSetsData = async () => {
       try {
         const response = await fetch("http://localhost:3002/api/v2/gearsets");
         const data = await response.json();
-        setGearSetsData(data);
-      } catch (error) {
-        console.error("Erreur lors du chargement des gearsets:", error);
+        setGearSetsData(Array.isArray(data) ? data : []);
+      } catch {
+        setGearSetsData([]);
       }
     };
+
     loadGearSetsData();
   }, []);
 
-  // 🆕 CHARGER LES DONNÉES DES HÉROS DEPUIS MONGODB (compatible overlay)
+  // Load hero metadata (for position)
   useEffect(() => {
     const loadHeroesData = async () => {
       const loadedHeroesData = {};
@@ -73,48 +60,59 @@ const TeamSlots = () => {
       for (const hero of validHeroes) {
         if (hero && !heroesData[hero.name]) {
           try {
-            const heroSlug = hero.name.toLowerCase().replace(/\s+/g, '-');
-            const mongoResponse = await fetch(
+            const heroSlug = hero.name.toLowerCase().replace(/\s+/g, "-");
+            const response = await fetch(
               `http://localhost:3002/api/v2/heroes/${heroSlug}`
             );
-            
-            if (mongoResponse.ok) {
-              const mongoData = await mongoResponse.json();
-              loadedHeroesData[hero.name] = mongoData;
-              console.log(`✅ Héros ${hero.name} chargé depuis MongoDB`);
-            } else {
-              throw new Error("MongoDB non disponible");
+
+            if (response.ok) {
+              const data = await response.json();
+              loadedHeroesData[heroSlug] = data.hero;
             }
-            
-          } catch (mongoError) {
-            console.log(`🔄 Fallback JSON pour ${hero.name}`);
-            try {
-              const jsonResponse = await fetch(
-                `/kingsraid-data/table-data/heroes/${hero.name}.json`
-              );
-              if (jsonResponse.ok) {
-                const jsonData = await jsonResponse.json();
-                loadedHeroesData[hero.name] = jsonData;
-              }
-            } catch (jsonError) {
-              console.error(`Erreur pour ${hero.name}:`, jsonError);
-            }
+          } catch {
+            // silent
           }
         }
       }
 
       if (Object.keys(loadedHeroesData).length > 0) {
-        setHeroesData((prev) => ({ ...prev, ...loadedHeroesData }));
+        setHeroesData((prev) => ({
+          ...prev,
+          ...loadedHeroesData,
+        }));
       }
     };
 
     loadHeroesData();
   }, [team]);
 
+  // Build hero metadata map for sorting
+  const heroMap = useMemo(() => {
+    return heroesData;
+  }, [heroesData]);
+
+  // Build sortable array (DO NOT mutate team)
+  const sortedIndexes = useMemo(() => {
+    const teamWithMeta = team
+      .map((hero, index) => {
+        if (!hero) return null;
+
+        return {
+          heroSlug: hero.slug || hero.name.toLowerCase().replace(/\s+/g, "-"),
+          slotPosition: index,
+        };
+      })
+      .filter(Boolean);
+
+    const sorted = sortTeamByPosition(teamWithMeta, heroMap);
+
+    return sorted.map((item) => item.slotPosition);
+  }, [team, heroMap]);
+
   const handleSubSlotClick = (teamSlotIndex, subSlotIndex) => {
     const hero = team[teamSlotIndex];
     if (!hero) {
-      alert("Please add a hero to this slot first!");
+      alert("Please add a hero to this slot first.");
       return;
     }
 
@@ -122,31 +120,24 @@ const TeamSlots = () => {
       teamSlotIndex,
       subSlotIndex,
       heroName: hero.name,
-      heroSlug: hero.name.toLowerCase().replace(/\s+/g, '-'),
+      heroSlug: hero.name.toLowerCase().replace(/\s+/g, "-"),
       currentItem: subSlots[teamSlotIndex]?.[subSlotIndex],
       currentStars: subStars[teamSlotIndex]?.[subSlotIndex] || 0,
-      // 🔥 CORRECTION : Passer la valeur telle quelle (null/0/1/2)
       currentAdvancement: advancements[teamSlotIndex],
     };
 
     switch (subSlotIndex) {
-      case 0: // UW
+      case 0:
         openModal("uw", modalData);
         break;
-      case 1: // UT
+      case 1:
         openModal("ut", modalData);
         break;
-      case 2: // Artifact
-        openModal("artifact", {
-          ...modalData,
-          artifacts: artifactsData
-        });
+      case 2:
+        openModal("artifact", { ...modalData, artifacts: artifactsData });
         break;
-      case 3: // GearSet
-        openModal("gearset", {
-          ...modalData,
-          gearSets: gearSetsData
-        });
+      case 3:
+        openModal("gearset", { ...modalData, gearSets: gearSetsData });
         break;
       default:
         break;
@@ -156,27 +147,24 @@ const TeamSlots = () => {
   const handlePerkClick = (teamSlotIndex) => {
     const hero = team[teamSlotIndex];
     if (!hero) {
-      alert("Please add a hero to this slot first!");
+      alert("Please add a hero to this slot first.");
       return;
     }
 
-    const modalData = {
+    openModal("perk", {
       teamSlotIndex,
       heroClass: hero.role,
       heroName: hero.name,
-      heroSlug: hero.name.toLowerCase().replace(/\s+/g, '-'),
+      heroSlug: hero.name.toLowerCase().replace(/\s+/g, "-"),
       currentPerks: perks[teamSlotIndex] || [],
-    };
-
-    openModal("perk", modalData);
+    });
   };
 
   if (!Array.isArray(team)) {
-    console.error("Team is not an array:", team);
     return (
       <div className="team-slots-container">
         <div className="text-red-500 p-4">
-          Error: Team data is not an array. Please check TeamContext.
+          Error: Team data is not an array.
         </div>
       </div>
     );
@@ -185,26 +173,20 @@ const TeamSlots = () => {
   return (
     <div className="team-slots-container">
       <div className="team-slots-grid" id="team-slots">
-        {team.map((hero, index) => {
-          return (
-            <TeamSlot
-              key={index}
-              hero={hero}
-              teamSlotIndex={index}
-              subSlots={subSlots[index]}
-              subStars={subStars[index]}
-              // 🔥 CORRECTION : Utiliser ?? null au lieu de || "none"
-              advancement={advancements[index] ?? null}
-              perks={perks[index] || []}
-              artifactsData={artifactsData}
-              heroesData={heroesData}
-              gearSetsData={gearSetsData}
-              onRemoveHero={removeHeroFromTeam}
-              onSubSlotClick={handleSubSlotClick}
-              onPerkClick={handlePerkClick}
-            />
-          );
-        })}
+        {sortedIndexes.map((originalIndex) => (
+          <TeamSlot
+            key={originalIndex}
+            hero={team[originalIndex]}
+            teamSlotIndex={originalIndex}
+            subSlots={subSlots[originalIndex]}
+            subStars={subStars[originalIndex]}
+            advancement={advancements[originalIndex] ?? null}
+            perks={perks[originalIndex] || []}
+            onRemoveHero={removeHeroFromTeam}
+            onSubSlotClick={handleSubSlotClick}
+            onPerkClick={handlePerkClick}
+          />
+        ))}
       </div>
     </div>
   );

@@ -16,6 +16,7 @@ function requireAuth(req, res, next) {
     req.user = {
       id: decoded.sub,
       role: decoded.role,
+      displayName: decoded.displayName,
     };
 
     next();

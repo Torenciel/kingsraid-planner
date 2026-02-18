@@ -63,7 +63,7 @@ export const TeamProvider = ({ children }) => {
   };
 
   // 🔥 SAUVEGARDER UNE ÉQUIPE
-  const saveTeam = async (teamName = 'My Team', createdBy = 'anonymous') => {
+  const saveTeam = async (teamName = 'My Team') => {
     try {
       setLoading(true);
       
@@ -86,16 +86,17 @@ export const TeamProvider = ({ children }) => {
       
       console.log('📤 Données complètes envoyées:', teamData);
       
-      const response = await fetch(`${API_BASE_URL}/api/v2/teams`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          teamData,
-          createdBy
-        })
-      });
+const response = await fetch(`${API_BASE_URL}/api/v2/teams`, {
+  method: 'POST',
+  credentials: 'include',   // THIS IS REQUIRED
+  headers: {
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({
+    teamData
+  })
+});
+
       
       console.log('Response status:', response.status);
       

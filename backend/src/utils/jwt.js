@@ -5,7 +5,7 @@ const ACCESS_TOKEN_SECRET =
 const REFRESH_TOKEN_SECRET =
   process.env.REFRESH_TOKEN_SECRET || "dev-refresh-secret-change-me";
 
-const ACCESS_TOKEN_EXPIRES_IN = "15m";
+const ACCESS_TOKEN_EXPIRES_IN = "60m";
 const REFRESH_TOKEN_EXPIRES_IN = "7d";
 
 function signAccessToken(user) {
@@ -13,6 +13,7 @@ function signAccessToken(user) {
     {
       sub: user._id.toString(),
       role: user.role,
+      displayName: user.displayName
     },
     ACCESS_TOKEN_SECRET,
     { expiresIn: ACCESS_TOKEN_EXPIRES_IN }
