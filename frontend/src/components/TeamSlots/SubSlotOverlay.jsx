@@ -2,6 +2,7 @@ import { useEffect, useLayoutEffect, useRef, useState, useCallback } from "react
 import "./SubSlotOverlay.css";
 import { useHeroContext } from "../../contexts/HeroContext";
 import { useArtifacts } from "../../contexts/ArtifactContext";
+import { useGearSets } from "../../contexts/GearSetContext";
 
 const SubSlotOverlay = ({
   subSlotIndex,
@@ -21,6 +22,8 @@ const SubSlotOverlay = ({
 
   const { loadHeroDetails } = useHeroContext();
   const { allArtifacts } = useArtifacts();
+  const { getGearSetBySlug, parseGearSetData } = useGearSets();
+
 
   /* =========================
      ADVANCEMENT UTILS
@@ -259,6 +262,99 @@ const SubSlotOverlay = ({
       };
     }
 
+    /* ---------- GEAR SET ---------- */
+    if (subSlotIndex === 3) {
+      if (!item) {
+        return {
+          title: "Gear Set",
+          stats: [{ type: "text", content: "No gear set selected" }],
+          isGearSet: true,
+        };
+      }
+
+      const parsed = parseGearSetData(item);
+
+      if (!parsed) {
+        return {
+          title: "Gear Set",
+          stats: [{ type: "text", content: "Invalid gear set data" }],
+          isGearSet: true,
+        };
+      }
+
+      // Multi set (2P / 2P)
+      if (parsed.type === "multi") {
+        const stats = [];
+
+        parsed.sets.forEach((slug) => {
+          const set = getGearSetBySlug(slug);
+
+          if (set) {
+            stats.push({
+              type: "separator",
+              content: `${set.name} (2 Pieces)`,
+            });
+
+            if (set.bonus2P) {
+              stats.push({
+                type: "text",
+                content: set.bonus2P,
+              });
+            }
+          }
+        });
+
+        return {
+          title: "Multiple Gear Sets",
+          stats,
+          isGearSet: true,
+        };
+      }
+
+      // Single set
+      if (parsed.type === "single") {
+        const slug = parsed.sets?.[0];
+        const set = getGearSetBySlug(slug);
+
+        if (!set) {
+          return {
+            title: "Gear Set",
+            stats: [{ type: "text", content: "Loading gear set..." }],
+            isGearSet: true,
+          };
+        }
+
+        const pieces = parsed.data?.pieces || 4;
+
+        const stats = [
+          {
+            type: "separator",
+            content: `${set.name} (${pieces} Pieces)`,
+          },
+        ];
+
+        if (pieces >= 2 && set.bonus2P) {
+          stats.push({
+            type: "text",
+            content: set.bonus2P,
+          });
+        }
+
+        if (pieces >= 4 && set.bonus4P) {
+          stats.push({
+            type: "text",
+            content: set.bonus4P,
+          });
+        }
+
+        return {
+          title: set.name,
+          stats,
+          isGearSet: true,
+        };
+      }
+    }
+
     return null;
   }, [
     subSlotIndex,
@@ -269,6 +365,8 @@ const SubSlotOverlay = ({
     allArtifacts,
     formatUWUTDescription,
     getAdvancementString,
+    getGearSetBySlug,
+    parseGearSetData,
   ]);
 
   useEffect(() => {
