@@ -1,0 +1,234 @@
+/* ===============================
+   BANNER
+================================= */
+
+.profile-banner {
+  height: 180px;
+  background-size: cover;
+  background-position: calc(50%) calc(30%);
+  background-repeat: no-repeat;
+  border-radius: 6px 6px 0 0;
+  opacity: 0.9;
+
+  position: relative;
+  z-index: 1;
+
+  cursor: pointer;
+  overflow: hidden;
+}
+
+/* Banner hover overlay */
+.profile-banner-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  color: var(--color-text-white);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-weight: 600;
+  font-size: 16px;
+  letter-spacing: 0.5px;
+
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  z-index: 2;
+}
+
+.profile-banner:hover .profile-banner-overlay {
+  opacity: 1;
+}
+
+
+/* ===============================
+   AVATAR POSITIONING
+================================= */
+
+.profile-header-center {
+  position: relative;
+  margin-top: -55px; /* pulls avatar into banner */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  z-index: 5;
+  pointer-events: none;
+}
+
+/* Wrapper around avatar */
+.profile-avatar-wrapper {
+  position: relative;
+  width: 110px;
+  height: 110px;
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+/* Background circle gap behind avatar (top half only) */
+.profile-avatar-wrapper::before {
+  content: "";
+  position: absolute;
+  inset: -20px;
+  border-radius: 50%;
+  background: var(--color-background-default);
+  z-index: -1;
+
+  /* Show only top half to create banner separation effect */
+  clip-path: inset(0 0 50% 0);
+}
+
+
+/* ===============================
+   AVATAR IMAGE
+================================= */
+
+.profile-avatar {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+
+  position: relative;
+  z-index: 2;
+
+  outline: 10px solid var(--color-primary-default);
+}
+
+
+/* ===============================
+   AVATAR HOVER OVERLAY
+================================= */
+
+.profile-avatar-overlay {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background-color: rgba(0, 0, 0, 0.5);
+  color: var(--color-text-white);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  pointer-events: none;
+
+  z-index: 3;
+}
+
+.profile-avatar-wrapper:hover .profile-avatar-overlay {
+  opacity: 1;
+}
+
+
+/* ===============================
+   USER INFO
+================================= */
+
+.profile-user-info {
+  margin-top: 0px;
+  text-align: center;
+}
+
+.profile-display-name {
+  font-size: 24px;
+  font-weight: 600;
+}
+
+
+/* ===============================
+   MIDDLE BAR
+================================= */
+
+.profile-middle-bar {
+  margin-top: -100px;
+  background-color: var(--color-primary-default);
+  border-radius: 0 0 6px 6px;
+  padding: 25px 0px;
+
+  display: grid;
+  grid-template-columns: 0.45fr 0.1fr 0.45fr;
+  align-items: center;
+
+  position: relative;
+  z-index: 2;
+}
+
+
+/* ===============================
+   STATS
+================================= */
+
+.profile-stats-section {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+}
+
+.profile-stats-section p {
+  text-align: center;
+  font-weight: 600;
+  font-size: 24px;
+  line-height: 24px;
+}
+
+.profile-stats-section span {
+  font-size: 16px;
+  color: var(--color-text-default);
+}
+
+.profil-stats-upvoted {
+  border-left: 1px solid var(--color-text-default);
+  border-right: 1px solid var(--color-text-default);
+  padding: 0 20px;
+}
+
+
+/* ===============================
+   SOCIALS
+================================= */
+
+.profile-socials-container {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+}
+
+.profile-social-link {
+  color: var(--color-text-white);
+  padding: 8px;
+  border-radius: 6px;
+  transition: background-color 0.2s ease;
+}
+
+.discord-link { background-color: #7289da; }
+.youtube-link { background-color: #FF0000; }
+.twitch-link { background-color: #6441a5; }
+
+.discord-link:hover { background-color: #95a6e4; }
+.youtube-link:hover { background-color: #ec5353; }
+.twitch-link:hover { background-color: #8469b6; }
+
+
+/* ===============================
+   STATES
+================================= */
+
+.profile-upload-input-hidden {
+  display: none;
+}
+
+.profile-loading {
+  margin-top: 8px;
+}
+
+.profile-error {
+  margin-top: 8px;
+  color: red;
+}

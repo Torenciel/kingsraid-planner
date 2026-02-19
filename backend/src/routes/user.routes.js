@@ -7,27 +7,26 @@ const multer = require("multer");
 const User = require("../models/User");
 const { requireAuth } = require("../middlewares/auth.middleware");
 
-
 const router = express.Router();
 
-// ================= MULTER CONFIG =================
+/* ======================================================
+   DIRECTORIES SETUP
+====================================================== */
 
 const AVATARS_DIR = path.join(__dirname, "..", "..", "uploads", "avatars");
+const BANNERS_DIR = path.join(__dirname, "..", "..", "uploads", "banners");
 
-// Ensure avatars directory exists
 if (!fs.existsSync(AVATARS_DIR)) {
   fs.mkdirSync(AVATARS_DIR, { recursive: true });
 }
 
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, AVATARS_DIR);
-  },
-  filename: (req, file, cb) => {
-    const ext = path.extname(file.originalname).toLowerCase();
-    cb(null, `user_${req.user.id}${ext}`);
-  },
-});
+if (!fs.existsSync(BANNERS_DIR)) {
+  fs.mkdirSync(BANNERS_DIR, { recursive: true });
+}
+
+/* ======================================================
+   MULTER CONFIG
+====================================================== */
 
 const fileFilter = (req, file, cb) => {
   const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
@@ -37,58 +36,125 @@ const fileFilter = (req, file, cb) => {
   cb(null, true);
 };
 
-const upload = multer({
-  storage,
-  fileFilter,
-  limits: {
-    fileSize: 2 * 1024 * 1024, // 2MB max
+/* ---------------- AVATAR STORAGE ---------------- */
+
+const avatarStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, AVATARS_DIR);
+  },
+  filename: (req, file, cb) => {
+    const ext = path.extname(file.originalname).toLowerCase();
+    cb(null, `user_${req.user.id}${ext}`);
   },
 });
 
-// ================= UPLOAD AVATAR =================
+const uploadAvatar = multer({
+  storage: avatarStorage,
+  fileFilter,
+  limits: { fileSize: 2 * 1024 * 1024 }, // 2MB
+});
 
-router.post(
-  "/me/avatar",
-  requireAuth,
-  upload.single("avatar"),
-  async (req, res) => {
-    try {
-      if (!req.file) {
-        return res.status(400).json({
-          success: false,
-          message: "No image provided",
-        });
-      }
+/* ---------------- BANNER STORAGE ---------------- */
 
-      const relativePath = `uploads/avatars/${req.file.filename}`;
+const bannerStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, BANNERS_DIR);
+  },
+  filename: (req, file, cb) => {
+    const ext = path.extname(file.originalname).toLowerCase();
+    cb(null, `banner_${req.user.id}${ext}`);
+  },
+});
 
-      const user = await User.findById(req.user.id);
-      if (!user) {
-        return res.status(404).json({
-          success: false,
-          message: "User not found",
-        });
-      }
+const uploadBanner = multer({
+  storage: bannerStorage,
+  fileFilter,
+  limits: { fileSize: 4 * 1024 * 1024 }, // 4MB
+});
 
-      // Update profile picture path
-      user.profilePicture = relativePath;
-      await user.save();
+/* ======================================================
+   UPLOAD AVATAR
+====================================================== */
+router.patch("/me/avatar", requireAuth, async (req, res) => {
+  try {
+    const { type, value, index, variant } = req.body;
 
-      res.json({
-        success: true,
-        profilePicture: relativePath,
-      });
-    } catch (error) {
-      console.error("Avatar upload error:", error);
-      res.status(500).json({
+    const allowedTypes = [
+      "default",
+      "hero-ico",
+      "hero-sw",
+      "hero-ut",
+      "hero-skill",
+      "artifact",
+    ];
+
+    if (!allowedTypes.includes(type)) {
+      return res.status(400).json({
         success: false,
-        message: "Failed to upload avatar",
+        message: "Invalid avatar type",
       });
     }
-  }
-);
 
-// PATCH /api/v2/users/me/display-name
+    const user = await User.findById(req.user.id);
+
+    user.avatar = {
+      type,
+      value: type === "default" ? null : value,
+      index: req.body.index ?? null,
+      variant: req.body.variant ?? null
+    };
+
+    await user.save();
+
+    res.json({ success: true, avatar: user.avatar });
+
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Failed to update avatar",
+    });
+  }
+});
+
+
+/* ======================================================
+   UPLOAD BANNER
+====================================================== */
+
+router.patch("/me/banner", requireAuth, async (req, res) => {
+  try {
+    const { type, value } = req.body;
+
+    if (!["default", "hero"].includes(type)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid banner type",
+      });
+    }
+
+    const user = await User.findById(req.user.id);
+
+    user.banner = {
+      type,
+      value: type === "hero" ? value : null,
+    };
+
+    await user.save();
+
+    res.json({ success: true, banner: user.banner });
+
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Failed to update banner",
+    });
+  }
+});
+
+/* ======================================================
+   UPDATE DISPLAY NAME
+====================================================== */
+
 router.patch("/me/display-name", requireAuth, async (req, res) => {
   try {
     const { displayName } = req.body;
@@ -104,12 +170,13 @@ router.patch("/me/display-name", requireAuth, async (req, res) => {
       req.user.id,
       { displayName },
       { new: true }
-    ).select("_id email displayName role profilePicture createdAt");
+    ).select("_id email displayName role profilePicture bannerPicture createdAt");
 
     res.json({
       success: true,
       user,
     });
+
   } catch (error) {
     console.error("Change display name error:", error);
     res.status(500).json({
@@ -119,8 +186,10 @@ router.patch("/me/display-name", requireAuth, async (req, res) => {
   }
 });
 
+/* ======================================================
+   CHANGE PASSWORD
+====================================================== */
 
-// PATCH /api/v2/users/me/password
 router.patch("/me/password", requireAuth, async (req, res) => {
   try {
     const { currentPassword, newPassword, confirmPassword } = req.body;
@@ -141,11 +210,7 @@ router.patch("/me/password", requireAuth, async (req, res) => {
 
     const user = await User.findById(req.user.id).select("+passwordHash");
 
-    const isValid = await bcrypt.compare(
-      currentPassword,
-      user.passwordHash
-    );
-
+    const isValid = await bcrypt.compare(currentPassword, user.passwordHash);
     if (!isValid) {
       return res.status(401).json({
         success: false,
@@ -156,9 +221,8 @@ router.patch("/me/password", requireAuth, async (req, res) => {
     user.passwordHash = await bcrypt.hash(newPassword, 10);
     await user.save();
 
-    res.json({
-      success: true,
-    });
+    res.json({ success: true });
+
   } catch (error) {
     console.error("Change password error:", error);
     res.status(500).json({
@@ -168,8 +232,10 @@ router.patch("/me/password", requireAuth, async (req, res) => {
   }
 });
 
+/* ======================================================
+   CHANGE EMAIL
+====================================================== */
 
-// PATCH /api/v2/users/me/email
 router.patch("/me/email", requireAuth, async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -195,9 +261,8 @@ router.patch("/me/email", requireAuth, async (req, res) => {
     user.emailVerified = false;
     await user.save();
 
-    res.json({
-      success: true,
-    });
+    res.json({ success: true });
+
   } catch (error) {
     console.error("Change email error:", error);
     res.status(500).json({
@@ -207,8 +272,10 @@ router.patch("/me/email", requireAuth, async (req, res) => {
   }
 });
 
+/* ======================================================
+   UPDATE PREFERENCES
+====================================================== */
 
-// PATCH /api/v2/users/me/preferences
 router.patch("/me/preferences", requireAuth, async (req, res) => {
   try {
     const allowedKeys = [
@@ -242,6 +309,7 @@ router.patch("/me/preferences", requireAuth, async (req, res) => {
       success: true,
       preferences: user.preferences,
     });
+
   } catch (error) {
     console.error("Update preferences error:", error);
     res.status(500).json({

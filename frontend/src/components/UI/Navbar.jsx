@@ -1,21 +1,22 @@
-// components/UI/Navbar.jsx
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
+import { useArtifacts } from "../../contexts/ArtifactContext";
+import { resolveAvatarUrl } from "../../utils/avatarResolver";
 import { BiTime } from "react-icons/bi";
 import { FaUserGroup } from "react-icons/fa6";
+import SmartAvatarImage from "../UI/SmartAvatarImage";
+
 
 import "./Navbar.css";
 
-const BASE_PATH = process.env.PUBLIC_URL || "";
-
-
 const Navbar = () => {
   const { user, isAuthenticated, loading, logout } = useAuth();
+  const { allArtifacts } = useArtifacts();
+
   const [activeDropdown, setActiveDropdown] = useState(null);
   const timeoutRef = useRef(null);
 
-  // Gestionnaires d'événements
   const handleMouseEnter = (dropdownName) => {
     clearTimeout(timeoutRef.current);
     setActiveDropdown(dropdownName);
@@ -35,14 +36,12 @@ const Navbar = () => {
     setActiveDropdown(null);
   };
 
-  // Cleanup
   useEffect(() => {
     return () => {
       clearTimeout(timeoutRef.current);
     };
   }, []);
 
-  // Teams récemment éditées (3 slots fixes)
   const recentTeams = [
     {
       id: 1,
@@ -61,7 +60,6 @@ const Navbar = () => {
     },
   ];
 
-  // Données pour les autres dropdowns
   const dropdownItems = {
     tools: [
       { to: "/tier-list", label: "Tier list" },
@@ -76,39 +74,34 @@ const Navbar = () => {
     ],
   };
 
+  const avatarUrl =
+    user && isAuthenticated
+      ? resolveAvatarUrl(user.avatar, allArtifacts)
+      : "/default-avatar.png";
+
   return (
     <nav className="navbar">
-      {/* Logo */}
       <Link to="/" className="navbar-brand-link">
         <span className="navbar-brand">
-          {/* <img
-            src="/Oddy_logo.png"
-            alt="King's Raid Planner Logo"
-            className="navbar-logo"
-            width="60"
-            height="60"
-          /> */}
           <span className="navbar-brand-text">KRP</span>
         </span>
       </Link>
 
-      {/* Navigation links */}
       <div className="navbar-links">
-        {/* ========== DROPDOWN TEAMS AVANCÉ ========== */}
+        {/* TEAMS */}
         <div
           className="navbar-dropdown-container"
           onMouseEnter={() => handleMouseEnter("teams")}
           onMouseLeave={handleMouseLeave}
         >
-          {/* Changed from button to Link */}
           <Link
             to="/teams/public"
             className="navbar-dropdown-toggle-link"
             onClick={handleItemClick}
           >
-          <button className="navbar-dropdown-toggle">
-            <span className="dropdown-button-content">Teams</span>
-          </button>
+            <button className="navbar-dropdown-toggle">
+              <span className="dropdown-button-content">Teams</span>
+            </button>
           </Link>
 
           {activeDropdown === "teams" && (
@@ -122,16 +115,14 @@ const Navbar = () => {
                     <FaUserGroup className="section-icon" />
                     <h4 className="section-title">Teams</h4>
                   </div>
-                  {/* Boutons principaux */}
+
                   <div className="teams-main-buttons">
                     <Link
                       to="/teams/private"
                       className="team-main-button"
                       onClick={handleItemClick}
                     >
-                      <div className="team-button-text">
-                        <div className="team-button-title">My Teams</div>
-                      </div>
+                      <div className="team-button-title">My Teams</div>
                     </Link>
 
                     <Link
@@ -139,18 +130,20 @@ const Navbar = () => {
                       className="team-main-button"
                       onClick={handleItemClick}
                     >
-                      <div className="team-button-text">
-                        <div className="team-button-title">Create a Team</div>
+                      <div className="team-button-title">
+                        Create a Team
                       </div>
                     </Link>
                   </div>
 
-                  {/* Teams récemment éditées */}
                   <div className="recent-teams-section">
                     <div className="section-header">
                       <BiTime size={18} className="section-icon" />
-                      <h4 className="section-title">Recently edited</h4>
+                      <h4 className="section-title">
+                        Recently edited
+                      </h4>
                     </div>
+
                     <div className="recent-teams-list">
                       {recentTeams.map((team) => (
                         <div key={team.id} className="recent-team-item">
@@ -158,16 +151,13 @@ const Navbar = () => {
                             src={team.image}
                             alt={team.name}
                             className="recent-team-image"
-                            onError={(e) => {
-                              e.target.style.display = "none";
-                              e.target.nextElementSibling.style.display =
-                                "flex";
-                            }}
                           />
                           <div className="recent-team-fallback">
                             {team.name.charAt(0)}
                           </div>
-                          <div className="recent-team-name">{team.name}</div>
+                          <div className="recent-team-name">
+                            {team.name}
+                          </div>
                         </div>
                       ))}
                     </div>
@@ -178,7 +168,7 @@ const Navbar = () => {
           )}
         </div>
 
-        {/* ========== DROPDOWN TOOLS ========== */}
+        {/* TOOLS */}
         <div
           className="navbar-dropdown-container"
           onMouseEnter={() => handleMouseEnter("tools")}
@@ -189,7 +179,10 @@ const Navbar = () => {
           </button>
 
           {activeDropdown === "tools" && (
-            <div className="navbar-dropdown-menu" onMouseEnter={cancelClose}>
+            <div
+              className="navbar-dropdown-menu"
+              onMouseEnter={cancelClose}
+            >
               {dropdownItems.tools.map((item) => (
                 <Link
                   key={item.to}
@@ -204,7 +197,7 @@ const Navbar = () => {
           )}
         </div>
 
-        {/* ========== DROPDOWN MORE ========== */}
+        {/* MORE */}
         <div
           className="navbar-dropdown-container"
           onMouseEnter={() => handleMouseEnter("more")}
@@ -215,7 +208,10 @@ const Navbar = () => {
           </button>
 
           {activeDropdown === "more" && (
-            <div className="navbar-dropdown-menu" onMouseEnter={cancelClose}>
+            <div
+              className="navbar-dropdown-menu"
+              onMouseEnter={cancelClose}
+            >
               {dropdownItems.more.map((item) => (
                 <Link
                   key={item.to}
@@ -230,66 +226,64 @@ const Navbar = () => {
           )}
         </div>
       </div>
-      {/* ========== AUTH SECTION ========== */}
-{!loading && (
-  <div
-    className="navbar-dropdown-container"
-    onMouseEnter={() => handleMouseEnter("profile")}
-    onMouseLeave={handleMouseLeave}
-  >
-    {!isAuthenticated ? (
-      <div className="navbar-link">
-        <Link to="/login" className="navbar-link login-link">
-          Log in
-        </Link>
-      </div>
-    ) : (
-      <>
-      <Link
-        to="/profile"
-        className="navbar-dropdown-item"
-        onClick={handleItemClick}
+
+      {/* AUTH */}
+      {!loading && (
+        <div
+          className="navbar-dropdown-container"
+          onMouseEnter={() => handleMouseEnter("profile")}
+          onMouseLeave={handleMouseLeave}
         >
-        <label className="navbar-profile-label">{user.displayName}</label>
-      <img
-        src={
-          user.profilePicture === "default-avatar.png"
-            ? "/default-avatar.png"
-            : `http://localhost:3002/${user.profilePicture}?v=${user.avatarVersion}`
-        }
-        alt="Profile"
-        className="navbar-profile-avatar"
-      />
-        </Link>
-        {activeDropdown === "profile" && (
-          <div
-            className="navbar-dropdown-menu auth-dropdown"
-            onMouseEnter={cancelClose}
-          >
-            <Link
-              to="/profile"
-              className="navbar-dropdown-item"
-              onClick={handleItemClick}
-            >
-              Profile
+          {!isAuthenticated ? (
+            <Link to="/login" className="navbar-link login-link">
+              Log in
             </Link>
+          ) : (
+            <>
+              <Link
+                to="/profile"
+                className="navbar-dropdown-item"
+                onClick={handleItemClick}
+              >
+                <label className="navbar-profile-label">
+                  {user.displayName}
+                </label>
+                <SmartAvatarImage
+                  avatar={user.avatar}
+                  src={avatarUrl}
+                  className="navbar-profile-avatar"
+                />
 
-            <button
-              className="navbar-dropdown-item"
-              onClick={() => {
-                handleItemClick();
-                logout();
-              }}
-            >
-              Logout
-            </button>
-          </div>
-        )}
-      </>
-    )}
-  </div>
-)}
+              </Link>
 
+              {activeDropdown === "profile" && (
+                <div
+                  className="navbar-dropdown-menu auth-dropdown"
+                  onMouseEnter={cancelClose}
+                >
+                  <Link
+                    to="/profile"
+                    className="navbar-dropdown-item"
+                    onClick={handleItemClick}
+                  >
+                    Profile
+                  </Link>
+
+                  <button
+                    className="navbar-dropdown-item"
+                    onClick={() => {
+                      handleItemClick();
+                      logout();
+                    }}
+                  >
+                    Logout
+                  </button>
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      )}
     </nav>
   );
 };

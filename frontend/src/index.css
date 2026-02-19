@@ -132,40 +132,12 @@ body { /* to avoid content being hidden under navbar */
   ); /* Fallback si image non disponible*/
 }
 
-/* ========== Styles pour les modales ========== */
-.modal {
-  display: flex;
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.8);
-  z-index: 1000;
-  align-items: center;
-  justify-content: center;
-}
 
-.modal-content {
-  background: var(--color-background-default);
-  padding: 20px;
-  border-radius: 8px;
-  max-width: 550px;
-  width: auto;
-  max-height: 90vh;
-}
-
-.modal-title {
-  margin-top: 0;
-  color: var(--color-text-default);
-  display: flex;
-  align-items: center;
-  margin-bottom: 20px;
-}
 
 /* ========== Stars ========== */
 
 
+/*=========== Modal ========== */
 
 
 

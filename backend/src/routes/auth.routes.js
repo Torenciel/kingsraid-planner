@@ -292,7 +292,7 @@ router.post("/login", async (req, res) => {
 router.get("/me", requireAuth, async (req, res) => {
   try {
     const user = await User.findById(req.user.id).select(
-      "_id email displayName role profilePicture createdAt preferences"
+      "_id email displayName role avatar banner preferences createdAt"
     );
 
     if (!user) {

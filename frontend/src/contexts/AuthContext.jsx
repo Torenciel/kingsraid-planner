@@ -20,10 +20,11 @@ export const AuthProvider = ({ children }) => {
       const data = await response.json();
 
       if (response.ok && data.authenticated) {
-        setUser({
-          ...data.user,
-          avatarVersion: Date.now(),
-        });
+      setUser({
+        ...data.user,
+        avatarVersion: Date.now(),
+        bannerVersion: Date.now(),
+      });
         setIsAuthenticated(true);
       } else {
         setUser(null);

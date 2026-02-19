@@ -10,35 +10,8 @@ import StarRating from "./StarRating";
 const ArtifactModal = ({ data, onClose }) => {
   const { teamSlotIndex, subSlotIndex, currentItem, currentStars } = data;
   const { updateSubSlot } = useTeam();
-  const { allArtifacts, loading } = useArtifacts();
+  const { allArtifacts, loading, getArtifactPublicUrl } = useArtifacts();
   const { showOverlay, hideOverlay } = useOverlay();
-
-// Fonction pour obtenir le chemin d'image
-const getArtifactImageUrl = (artifact) => {
-  if (!artifact) return '';
-  
-  if (artifact.thumbnail) {
-    // Si c'est déjà une URL complète
-    if (artifact.thumbnail.startsWith('http')) {
-      return artifact.thumbnail;
-    }
-    // Si c'est un chemin avec artifacts/ (format MongoDB)
-    else if (artifact.thumbnail.includes('artifacts/')) {
-      const filename = artifact.thumbnail.split('/').pop(); // "Madame's Bronze Mirrors.png"
-      // Encoder seulement les espaces, garder les apostrophes
-      const encodedFilename = filename.replace(/\s/g, '%20');
-      return `/kingsraid-data/assets/artifacts/${encodedFilename}`;
-    }
-    // Sinon, encoder directement
-    else {
-      const encodedFilename = artifact.thumbnail.replace(/\s/g, '%20');
-      return `/kingsraid-data/assets/artifacts/${encodedFilename}`;
-    }
-  }
-  
-  // Fallback très basique si vraiment pas de thumbnail
-  return `/kingsraid-data/assets/artifacts/unknown.png`;
-};
 
   // Fonction pour obtenir le nom de fichier pour la sauvegarde
   const getArtifactFilename = (artifact) => {
@@ -207,46 +180,6 @@ const getArtifactImageUrl = (artifact) => {
     return false;
   };
 
-  // Fonction pour gérer les erreurs de chargement d'image
-  const handleImageError = (e, artifact) => {
-    // Essayer plusieurs alternatives
-    const name = artifact.name || artifact.slug || '';
-    
-    if (name) {
-      
-      // 1. Essayer avec encodage
-      const encodedName = encodeURIComponent(`${name}.png`);
-      const encodedPath = `/kingsraid-data/assets/artifacts/${encodedName}`;
-      if (encodedPath !== e.target.src) {
-        e.target.src = encodedPath;
-        return;
-      }
-      
-      // 2. Essayer sans apostrophe
-      const noApostropheName = name.replace(/'/g, '');
-      const noApostrophePath = `/kingsraid-data/assets/artifacts/${encodeURIComponent(noApostropheName)}.png`;
-      if (noApostrophePath !== e.target.src) {
-        e.target.src = noApostrophePath;
-        return;
-      }
-      
-      // 3. Essayer avec underscore
-      const underscoreName = name.replace(/'/g, '').replace(/\s+/g, '_');
-      const underscorePath = `/kingsraid-data/assets/artifacts/${underscoreName}.png`;
-      if (underscorePath !== e.target.src) {
-        e.target.src = underscorePath;
-        return;
-      }
-    }
-    
-    // Si tout échoue, afficher le fallback
-    e.target.style.display = "none";
-    const fallback = e.target.nextElementSibling;
-    if (fallback) {
-      fallback.style.display = "flex";
-    }
-  };
-
   return (
     <div className="artifact-modal-container">
       <h3 className="artifact-modal-title">Artifact</h3>
@@ -281,7 +214,7 @@ const getArtifactImageUrl = (artifact) => {
 
             {displayArtifacts.map((artifact) => {
               const isSelected = isArtifactSelected(artifact);
-              const imageUrl = getArtifactImageUrl(artifact);
+              const imageUrl = getArtifactPublicUrl(artifact);
               const displayName = artifact.name || artifact.slug || 'Unknown';
 
               return (
@@ -296,7 +229,6 @@ const getArtifactImageUrl = (artifact) => {
                     src={imageUrl}
                     alt={displayName}
                     className="artifact-image"
-                    onError={(e) => handleImageError(e, artifact)}
                   />
                   <div className="artifact-fallback">
                     {displayName.length > 10

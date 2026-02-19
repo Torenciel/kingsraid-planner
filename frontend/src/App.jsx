@@ -26,6 +26,9 @@ import ResetPassword from "./Routes/Account/ResetPassword";
 
 import ProtectedRoute from "./components/Guards/ProtectedRoute";
 
+import ModalManager from "./components/Modals/ModalManager";
+
+
 
 // IMPORT EVERY CONTEXT PROVIDER HERE
 import { AuthProvider } from "./contexts/AuthContext";
@@ -103,6 +106,7 @@ function App() {
                           <AppRoutes />
                         </main>
                       </div>
+                      <ModalManager/>
                     </TeamProvider>
                   </OverlayProvider>
                 </ModalProvider>

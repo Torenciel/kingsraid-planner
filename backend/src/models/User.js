@@ -54,10 +54,40 @@ const UserSchema = new mongoose.Schema(
       maxlength: 20,
     },
 
-    profilePicture: {
-      type: String,
-      default: "default-avatar.png",
+    // === PROFILE MEDIA ===
+    avatar: {
+      type: {
+        type: String,
+        default: "default"
+      },
+      value: {
+        type: String,
+        default: null
+      },
+      index: {
+        type: Number,
+        default: null
+      },
+      variant: {
+        type: Number,
+        default: null
+      }
     },
+
+
+    banner: {
+      type: {
+        type: String,
+        enum: ["default", "hero"],
+        default: "default",
+      },
+      value: {
+        type: String,
+        default: null,
+      },
+    },
+
+
 
     // === SECURITY & STATUS ===
     role: {
