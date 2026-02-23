@@ -2,29 +2,29 @@
 const express = require('express');
 const router = express.Router();
 
-// Importer toutes les routes
+// Import all route modules
 const heroRoutes = require('./hero.routes');
 const artifactRoutes = require('./artifact.routes');
 const gearsetRoutes = require('./gearset.routes');
 const perkRoutes = require('./perk.routes');
 const teamRoutes = require('./team.routes');
 const authRoutes = require('./auth.routes');
-const userRoutes = require("./user.routes");
+const userRoutes = require('./user.routes');
 
-// Monter toutes les routes avec un préfixe API
+// Mount all routes under API v2 prefix
 router.use('/api/v2/heroes', heroRoutes);
 router.use('/api/v2/artifacts', artifactRoutes);
 router.use('/api/v2/gearsets', gearsetRoutes);
 router.use('/api/v2/perks', perkRoutes);
 router.use('/api/v2/teams', teamRoutes);
-router.use("/api/v2/auth", authRoutes);
-router.use("/api/v2/users", userRoutes);
+router.use('/api/v2/auth', authRoutes);
+router.use('/api/v2/users', userRoutes);
 
-// Routes de santé et informations
+// Health and status route
 router.get('/api/v2/health', (req, res) => {
   res.json({
     success: true,
-    message: 'King\'s Raid API v2 is running',
+    message: "King's Raid API v2 is running",
     timestamp: new Date().toISOString(),
     version: '2.0.0',
     endpoints: {
@@ -33,51 +33,63 @@ router.get('/api/v2/health', (req, res) => {
       gearsets: '/api/v2/gearsets',
       perks: '/api/v2/perks',
       teams: '/api/v2/teams',
-      auth: '/api/v2/auth'
+      auth: '/api/v2/auth',
+      users: '/api/v2/users'
     }
   });
 });
 
-// Documentation API basique
+// Basic API documentation endpoint
 router.get('/api/v2', (req, res) => {
   res.json({
     success: true,
-    api: 'King\'s Raid API',
+    api: "King's Raid API",
     version: '2.0.0',
-    description: 'API pour la gestion des héros, artefacts, équipements et équipes de King\'s Raid',
+    description:
+      "API for managing heroes, artifacts, gear sets, perks, users and saved teams.",
     documentation: {
       endpoints: [
         {
           path: '/api/v2/heroes',
           methods: ['GET'],
-          description: 'Gestion des héros'
+          description: 'Heroes management'
         },
         {
           path: '/api/v2/artifacts',
           methods: ['GET'],
-          description: 'Gestion des artefacts'
+          description: 'Artifacts management'
         },
         {
           path: '/api/v2/gearsets',
           methods: ['GET'],
-          description: 'Gestion des sets d\'équipement'
+          description: 'Gear sets management'
         },
         {
           path: '/api/v2/perks',
           methods: ['GET'],
-          description: 'Gestion des perks'
+          description: 'Perks management'
         },
         {
           path: '/api/v2/teams',
           methods: ['GET', 'POST', 'PUT', 'DELETE'],
-          description: 'Gestion des équipes sauvegardées'
+          description: 'Saved teams management'
+        },
+        {
+          path: '/api/v2/auth',
+          methods: ['POST'],
+          description: 'Authentication'
+        },
+        {
+          path: '/api/v2/users',
+          methods: ['GET', 'PUT'],
+          description: 'User profile management'
         }
       ]
     }
   });
 });
 
-// Redirection de la racine vers l'API
+// Redirect root to API documentation
 router.get('/', (req, res) => {
   res.redirect('/api/v2');
 });

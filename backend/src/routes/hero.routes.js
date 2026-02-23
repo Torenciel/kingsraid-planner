@@ -1,16 +1,15 @@
-// backend/src/routes/hero.routes.js
 const express = require('express');
 const router = express.Router();
 const HeroService = require('../services/heroService');
 
 const heroService = new HeroService();
 
-// GET tous les héros
+// GET all heroes
 router.get('/', async (req, res) => {
   try {
     const filters = {};
     
-    // Filtres optionnels
+    // Optional filters
     if (req.query.class) filters.class = req.query.class;
     if (req.query.name) filters.name = req.query.name;
     if (req.query.position) filters.position = req.query.position;
@@ -35,7 +34,6 @@ router.get('/', async (req, res) => {
     });
     
   } catch (error) {
-    console.error('Error fetching heroes:', error);
     res.status(500).json({ 
       success: false,
       error: 'Failed to fetch heroes',
@@ -44,7 +42,7 @@ router.get('/', async (req, res) => {
   }
 });
 
-// GET classes disponibles
+// GET available classes
 router.get('/classes', async (req, res) => {
   try {
     const classes = await heroService.getHeroClasses();
@@ -56,7 +54,6 @@ router.get('/classes', async (req, res) => {
     });
     
   } catch (error) {
-    console.error('Error fetching hero classes:', error);
     res.status(500).json({ 
       success: false,
       error: 'Failed to fetch hero classes',
@@ -65,7 +62,7 @@ router.get('/classes', async (req, res) => {
   }
 });
 
-// GET positions disponibles
+// GET available positions
 router.get('/positions', async (req, res) => {
   try {
     const positions = await heroService.getHeroPositions();
@@ -77,7 +74,6 @@ router.get('/positions', async (req, res) => {
     });
     
   } catch (error) {
-    console.error('Error fetching hero positions:', error);
     res.status(500).json({ 
       success: false,
       error: 'Failed to fetch hero positions',
@@ -86,7 +82,7 @@ router.get('/positions', async (req, res) => {
   }
 });
 
-// GET un héros par slug
+// GET hero by slug
 router.get('/:slug', async (req, res) => {
   try {
     const hero = await heroService.getHeroBySlug(req.params.slug);
@@ -123,7 +119,6 @@ router.get('/:slug', async (req, res) => {
     });
     
   } catch (error) {
-    console.error(`Error fetching hero ${req.params.slug}:`, error);
     res.status(500).json({ 
       success: false,
       error: 'Failed to fetch hero',
@@ -132,7 +127,7 @@ router.get('/:slug', async (req, res) => {
   }
 });
 
-// GET héros par classe
+// GET heroes by class
 router.get('/class/:className', async (req, res) => {
   try {
     const heroes = await heroService.getHeroesByClass(req.params.className);
@@ -155,7 +150,6 @@ router.get('/class/:className', async (req, res) => {
     });
     
   } catch (error) {
-    console.error(`Error fetching heroes by class ${req.params.className}:`, error);
     res.status(500).json({ 
       success: false,
       error: 'Failed to fetch heroes by class',
@@ -164,7 +158,7 @@ router.get('/class/:className', async (req, res) => {
   }
 });
 
-// GET recherche de héros
+// GET hero search
 router.get('/search/:term', async (req, res) => {
   try {
     const heroes = await heroService.searchHeroes(req.params.term);
@@ -187,7 +181,6 @@ router.get('/search/:term', async (req, res) => {
     });
     
   } catch (error) {
-    console.error(`Error searching heroes for ${req.params.term}:`, error);
     res.status(500).json({ 
       success: false,
       error: 'Failed to search heroes',

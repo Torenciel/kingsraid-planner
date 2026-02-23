@@ -12,11 +12,10 @@ const GearSetModal = ({ data, onClose }) => {
     allGearSets: gearSets, 
     loading, 
     getGearSetBySlug,
-    getGearSetImageUrl,
-    createGearSetForSave 
+    getGearSetImageUrl
   } = useGearSets();
 
-  // 🔥 NOUVELLE FONCTION - Format direct pour la sauvegarde
+  // Direct format for saving
   const createSimpleGearSetObject = (selectedSlugs) => {
     if (selectedSlugs.length === 0) return null;
     
@@ -45,7 +44,7 @@ const GearSetModal = ({ data, onClose }) => {
       return {
         isMultiSet: true,
         sets: [gearSet1.slug, gearSet2.slug],
-        gearSetSlug: gearSet1.slug, // Pour compatibilité
+        gearSetSlug: gearSet1.slug,
         gearSetInfo: {
           name: `${gearSet1.name} + ${gearSet2.name}`,
           thumbnail: getGearSetImageUrl(gearSet1),
@@ -72,24 +71,18 @@ const GearSetModal = ({ data, onClose }) => {
   const getInitialSelection = () => {
     if (!currentItem) return [];
     
-    // 🔥 AMÉLIORATION : Meilleure extraction des slugs
     if (typeof currentItem === 'object') {
-      // Format multi-set
       if (currentItem.isMultiSet && currentItem.sets) {
         return currentItem.sets;
       }
       
-      // Format avec gearSetSlug
       if (currentItem.gearSetSlug) {
         return [currentItem.gearSetSlug];
       }
       
-      // Format avec sets (compatibilité)
       if (currentItem.sets && Array.isArray(currentItem.sets)) {
         return currentItem.sets;
       }
-      
-      return [];
     }
     
     return [];
@@ -112,22 +105,12 @@ const GearSetModal = ({ data, onClose }) => {
   };
 
   const handleConfirm = () => {
-    console.log("🎯 GearSetModal - handleConfirm");
-    console.log("Selected sets:", selectedSets);
-    
     if (selectedSets.length === 0) {
-      console.log("➡️ Setting gear set to null");
       updateSubSlot(teamSlotIndex, subSlotIndex, null, 0);
     } else {
-      // 🔥 UTILISER la nouvelle fonction simple
       const gearSetData = createSimpleGearSetObject(selectedSets);
-      
-      console.log("➡️ Gear set data to save:", gearSetData);
-      
       if (gearSetData) {
         updateSubSlot(teamSlotIndex, subSlotIndex, gearSetData, 0);
-      } else {
-        console.error("❌ Failed to create gear set data");
       }
     }
     
@@ -179,17 +162,12 @@ const GearSetModal = ({ data, onClose }) => {
     return getGearSetBySlug(setSlug);
   };
 
-  const sortedGearSets = [...gearSets].sort((a, b) => 
-    (a.sortOrder || 999) - (b.sortOrder || 999)
+  const sortedGearSets = [...gearSets].sort(
+    (a, b) => (a.sortOrder || 999) - (b.sortOrder || 999)
   );
 
   const allOptions = [
-    {
-      id: "empty",
-      slug: "empty",
-      name: "Empty",
-      isEmpty: true,
-    },
+    { id: "empty", slug: "empty", name: "Empty", isEmpty: true },
     ...sortedGearSets,
   ];
 
@@ -206,17 +184,16 @@ const GearSetModal = ({ data, onClose }) => {
     <div className="gearset-modal-container">
       <h3 className="gearset-modal-title">Gear Set</h3>
 
-      {/* SECTION HAUTE : Set Bonuses Actifs */}
       <div className="gearset-bonus-section">
         {selectedSets.length === 0 ? (
-          <div className="gearset-bonus-placeholder">Select 1 or 2 gear sets</div>
+          <div className="gearset-bonus-placeholder">
+            Select 1 or 2 gear sets
+          </div>
         ) : (
           <div className="gearset-bonus-list">
-            {selectedSets.map((setSlug, index) => {
+            {selectedSets.map((setSlug) => {
               const set = getSelectedSet(setSlug);
               if (!set) return null;
-
-              const pieces = selectedSets.length === 1 ? 4 : 2;
 
               return (
                 <div key={setSlug} className="gearset-bonus-item">
@@ -233,7 +210,9 @@ const GearSetModal = ({ data, onClose }) => {
                     {selectedSets.length === 1 && (
                       <div className="gearset-bonus-row">
                         <span className="gearset-bonus-label">4P :</span>
-                        <span className="gearset-bonus-text active">{set.bonus4P}</span>
+                        <span className="gearset-bonus-text active">
+                          {set.bonus4P}
+                        </span>
                       </div>
                     )}
                   </div>
@@ -244,7 +223,6 @@ const GearSetModal = ({ data, onClose }) => {
         )}
       </div>
 
-      {/* SECTION BASSE : Grid des sets */}
       <div className="gearset-grid-section">        
         <div className="gearset-grid">
           {allOptions.map((set) => {
@@ -254,7 +232,9 @@ const GearSetModal = ({ data, onClose }) => {
             const isDisabled =
               !set.isEmpty && selectedSets.length >= 2 && !isSelected;
             
-            const selectionIndex = isSelected ? selectedSets.indexOf(set.slug) + 1 : 0;
+            const selectionIndex = isSelected
+              ? selectedSets.indexOf(set.slug) + 1
+              : 0;
 
             return (
               <div
@@ -262,8 +242,12 @@ const GearSetModal = ({ data, onClose }) => {
                 className={`gearset-option ${isSelected ? "selected" : ""} ${
                   isDisabled ? "disabled" : ""
                 } ${set.isEmpty ? "empty-option" : ""}`}
-                onClick={() => !isDisabled && handleSetClick(set.slug || "empty")}
-                onMouseEnter={(e) => !set.isEmpty && handleGearSetHover(set, e)}
+                onClick={() =>
+                  !isDisabled && handleSetClick(set.slug || "empty")
+                }
+                onMouseEnter={(e) =>
+                  !set.isEmpty && handleGearSetHover(set, e)
+                }
                 onMouseLeave={hideOverlay}
               >
                 {set.isEmpty ? (
@@ -283,7 +267,9 @@ const GearSetModal = ({ data, onClose }) => {
                       }}
                     />
                     <div className="gearset-fallback">
-                      {set.name.length > 12 ? set.name.substring(0, 10) + '...' : set.name}
+                      {set.name.length > 12
+                        ? set.name.substring(0, 10) + '...'
+                        : set.name}
                     </div>
                     
                     {isSelected && (
@@ -294,7 +280,7 @@ const GearSetModal = ({ data, onClose }) => {
                     
                     {isDisabled && (
                       <div className="gearset-disabled-overlay">
-                        <div className="gearset-disabled-icon">✗</div>
+                        <div className="gearset-disabled-icon">×</div>
                       </div>
                     )}
                   </>
@@ -305,19 +291,11 @@ const GearSetModal = ({ data, onClose }) => {
         </div>
       </div>
 
-      {/* Boutons avec logs de débug */}
       <div className="btn-modal">
         <button onClick={onClose} className="btn-modal-cancel">
           Cancel
         </button>
-        <button 
-          onClick={() => {
-            console.log("🔍 Debug - Current selectedSets:", selectedSets);
-            console.log("🔍 Debug - Would create:", createSimpleGearSetObject(selectedSets));
-            handleConfirm();
-          }} 
-          className="btn-modal-confirm"
-        >
+        <button onClick={handleConfirm} className="btn-modal-confirm">
           Confirm
         </button>
       </div>

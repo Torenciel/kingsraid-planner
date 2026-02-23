@@ -25,7 +25,7 @@ export const OverlayProvider = ({ children }) => {
   const SHOW_DELAY = 100;
   const HIDE_DELAY = 100;
 
-  // Types d'overlays supportés
+  // Support overlay type
   const OVERLAY_TYPES = {
     ITEM_INFO: 'item_info',
     HERO_INFO: 'hero_info',
@@ -86,9 +86,7 @@ export const OverlayProvider = ({ children }) => {
     }
   }, []);
 
-  // Fonctions spécifiques pour le nouveau système
-
-  // Overlay pour info d'artefact
+  // Artifact Overlay
   const showArtifactOverlay = useCallback((artifact, stars = 0, position) => {
     const content = (
       <div className="artifact-overlay">
@@ -108,7 +106,7 @@ export const OverlayProvider = ({ children }) => {
     });
   }, [showOverlay]);
 
-  // Overlay pour info de gear set
+  // Gearset Overlay 
   const showGearSetOverlay = useCallback((gearSet, pieces = 0, position) => {
     const content = (
       <div className="gearset-overlay">
@@ -136,7 +134,7 @@ export const OverlayProvider = ({ children }) => {
     });
   }, [showOverlay]);
 
-  // Overlay pour info de héros
+  // Hero Overlay
   const showHeroOverlay = useCallback((hero, position) => {
     const content = (
       <div className="hero-overlay">
@@ -175,7 +173,7 @@ export const OverlayProvider = ({ children }) => {
     });
   }, [showOverlay]);
 
-  // Overlay pour info de perk
+  // Perk Overlay
   const showPerkOverlay = useCallback((perk, position) => {
     const content = (
       <div className="perk-overlay">
@@ -205,72 +203,7 @@ export const OverlayProvider = ({ children }) => {
     });
   }, [showOverlay]);
 
-  // Overlay pour stats d'équipe
-  const showTeamStatsOverlay = useCallback((teamStats, position) => {
-    const content = (
-      <div className="team-stats-overlay">
-        <h4>Team Statistics</h4>
-        <div className="stats-grid">
-          <div className="stat-item">
-            <strong>Heroes:</strong> {teamStats.totalHeroes}
-          </div>
-          <div className="stat-item">
-            <strong>UW Stars:</strong> {teamStats.totalUWStars}
-          </div>
-          <div className="stat-item">
-            <strong>UT Stars:</strong> {teamStats.totalUTStars}
-          </div>
-          <div className="stat-item">
-            <strong>Artifact Stars:</strong> {teamStats.totalArtifactStars}
-          </div>
-          <div className="stat-item">
-            <strong>Transcendence:</strong> {teamStats.totalTranscendence}
-          </div>
-          <div className="stat-item">
-            <strong>SW Heroes:</strong> {teamStats.hasSW}
-          </div>
-        </div>
-        {teamStats.classes && Object.keys(teamStats.classes).length > 0 && (
-          <div className="classes-section">
-            <h5>Classes:</h5>
-            <div className="classes-list">
-              {Object.entries(teamStats.classes).map(([className, count]) => (
-                <div key={className} className="class-item">
-                  {className}: {count}
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-      </div>
-    );
-
-    showOverlay(content, position, OVERLAY_TYPES.STATS_INFO, teamStats);
-  }, [showOverlay]);
-
-  // Overlay pour comparaison d'items
-  const showCompareOverlay = useCallback((itemA, itemB, position) => {
-    const content = (
-      <div className="compare-overlay">
-        <h4>Comparison</h4>
-        <div className="compare-grid">
-          <div className="compare-item">
-            <h5>{itemA.name}</h5>
-            {renderItemStats(itemA)}
-          </div>
-          <div className="compare-vs">VS</div>
-          <div className="compare-item">
-            <h5>{itemB.name}</h5>
-            {renderItemStats(itemB)}
-          </div>
-        </div>
-      </div>
-    );
-
-    showOverlay(content, position, OVERLAY_TYPES.COMPARE_INFO, { itemA, itemB });
-  }, [showOverlay]);
-
-  // Fonction pour rendre les valeurs d'artefact
+  //Render artifact values
   const renderArtifactValues = (values, stars) => {
     if (!values || typeof values !== 'object') return null;
 
@@ -296,7 +229,7 @@ export const OverlayProvider = ({ children }) => {
     );
   };
 
-  // Fonction pour rendre les stats d'un item
+  // Render item stats
   const renderItemStats = (item) => {
     if (!item) return null;
 
@@ -320,21 +253,21 @@ export const OverlayProvider = ({ children }) => {
     }
   };
 
-  // Gestionnaire d'événements pour fermer l'overlay
+  // Evetn handler to close overlay
   const handleDocumentClick = useCallback((event) => {
     if (overlayRef.current && !overlayRef.current.contains(event.target)) {
       hideOverlay(true);
     }
   }, [hideOverlay]);
 
-  // Gestionnaire d'événements pour les touches
+  // Event handler with keybind
   const handleKeyDown = useCallback((event) => {
     if (event.key === 'Escape' && overlayVisible) {
       hideOverlay(true);
     }
   }, [overlayVisible, hideOverlay]);
 
-  // Effets pour les événements
+  // Events Effect
   useEffect(() => {
     if (overlayVisible) {
       document.addEventListener('mousedown', handleDocumentClick);
@@ -347,7 +280,7 @@ export const OverlayProvider = ({ children }) => {
     };
   }, [overlayVisible, handleDocumentClick, handleKeyDown]);
 
-  // Nettoyage
+  // Cleanup
   useEffect(() => {
     return () => {
       clearShowTimeout();
@@ -356,7 +289,7 @@ export const OverlayProvider = ({ children }) => {
   }, []);
 
   const value = {
-    // États
+    // States
     overlayVisible,
     overlayType,
     overlayData,
@@ -364,21 +297,19 @@ export const OverlayProvider = ({ children }) => {
     // Types
     OVERLAY_TYPES,
     
-    // Fonctions de base
+    // Basic functions
     showOverlay,
     hideOverlay,
     clearShowTimeout,
     clearHideTimeout,
     
-    // Fonctions spécifiques
+    // Specific functions
     showArtifactOverlay,
     showGearSetOverlay,
     showHeroOverlay,
     showPerkOverlay,
-    showTeamStatsOverlay,
-    showCompareOverlay,
     
-    // Utilitaires
+    // Utils
     isOverlayVisible: (type = null) => {
       if (type === null) return overlayVisible;
       return overlayVisible && overlayType === type;
@@ -390,7 +321,7 @@ export const OverlayProvider = ({ children }) => {
     <OverlayContext.Provider value={value}>
       {children}
 
-      {/* Overlay global */}
+      {/* Global Overlay */}
       {overlayVisible && overlayContent && (
         <div
           ref={overlayRef}

@@ -13,68 +13,58 @@ const ArtifactModal = ({ data, onClose }) => {
   const { allArtifacts, loading, getArtifactPublicUrl } = useArtifacts();
   const { showOverlay, hideOverlay } = useOverlay();
 
-  // Fonction pour obtenir le nom de fichier pour la sauvegarde
+  // Get filename for saving
   const getArtifactFilename = (artifact) => {
     if (!artifact) return '';
     
     if (artifact.thumbnail) {
-      // Extraire juste le nom du fichier
       if (artifact.thumbnail.includes('artifacts/')) {
         return artifact.thumbnail.split('/').pop();
       }
       return artifact.thumbnail;
     }
     
-    // Fallback
     return `${artifact.name || artifact.slug || ''}.png`;
   };
 
-  // Initialiser l'état
+  // Initialize state
   const [selectedArtifact, setSelectedArtifact] = useState(() => {
-    // Si pas d'item, retourner null
     if (!currentItem) return null;
-    
-    // Attendre que les artefacts soient chargés
-    if (!allArtifacts || allArtifacts.length === 0) {
-      return null;
-    }
-    
-    // Si currentItem a artifactSlug (format de sauvegarde)
+    if (!allArtifacts || allArtifacts.length === 0) return null;
+
     if (currentItem.artifactSlug) {
       const found = allArtifacts.find(a => a.slug === currentItem.artifactSlug);
       if (found) return found;
     }
-    
-    // Si currentItem est déjà un objet artefact MongoDB
+
     if (currentItem.slug) {
       const found = allArtifacts.find(a => a.slug === currentItem.slug);
       if (found) return found;
     }
-    
+
     return null;
   });
   
   const [selectedStars, setSelectedStars] = useState(currentStars || 0);
   const [searchTerm, setSearchTerm] = useState("");
 
-  // Effet pour réessayer de trouver l'artefact quand les données sont chargées
+  // Retry finding artifact when data loads
   useEffect(() => {
     if (allArtifacts.length > 0 && currentItem && !selectedArtifact) {
       let foundArtifact = null;
       
-      // Essayer par artifactSlug
       if (currentItem.artifactSlug) {
         foundArtifact = allArtifacts.find(a => a.slug === currentItem.artifactSlug);
       }
-      
-      // Essayer par slug
+
       if (!foundArtifact && currentItem.slug) {
         foundArtifact = allArtifacts.find(a => a.slug === currentItem.slug);
       }
-      
-      // Essayer par _id
+
       if (!foundArtifact && currentItem._id) {
-        foundArtifact = allArtifacts.find(a => a._id?.toString() === currentItem._id.toString());
+        foundArtifact = allArtifacts.find(
+          a => a._id?.toString() === currentItem._id.toString()
+        );
       }
       
       if (foundArtifact) {
@@ -91,14 +81,16 @@ const ArtifactModal = ({ data, onClose }) => {
       return allArtifacts.filter((artifact) => {
         const name = artifact.name || '';
         const slug = artifact.slug || '';
-        return name.toLowerCase().includes(searchLower) || 
-               slug.toLowerCase().includes(searchLower);
+        return (
+          name.toLowerCase().includes(searchLower) ||
+          slug.toLowerCase().includes(searchLower)
+        );
       });
     }
     return allArtifacts;
   }, [searchTerm, allArtifacts]);
 
-  // Fonction pour obtenir les données d'un artifact
+  // Prepare artifact data for overlay
   const getArtifactData = (artifact) => {
     if (!artifact) return null;
     
@@ -112,20 +104,18 @@ const ArtifactModal = ({ data, onClose }) => {
     };
   };
 
-  // Créer l'objet pour la sauvegarde
+  // Create object for saving
   const createArtifactObjectForSave = (artifact, stars) => {
     if (!artifact) return null;
     
-    const artifactFilename = getArtifactFilename(artifact);
-    
     return {
-    artifactSlug: artifact.slug || artifact._id?.toString(),
-    artifactInfo: {
-      name: artifact.name,
-      thumbnail: artifact.thumbnail || getArtifactImageUrl(artifact),
-      description: artifact.description || ""
-    },
-    stars: stars
+      artifactSlug: artifact.slug || artifact._id?.toString(),
+      artifactInfo: {
+        name: artifact.name,
+        thumbnail: artifact.thumbnail,
+        description: artifact.description || ""
+      },
+      stars: stars
     };
   };
 
@@ -133,7 +123,10 @@ const ArtifactModal = ({ data, onClose }) => {
     if (!selectedArtifact) {
       updateSubSlot(teamSlotIndex, subSlotIndex, null, 0);
     } else {
-      const artifactData = createArtifactObjectForSave(selectedArtifact, selectedStars);
+      const artifactData = createArtifactObjectForSave(
+        selectedArtifact,
+        selectedStars
+      );
       updateSubSlot(teamSlotIndex, subSlotIndex, artifactData, selectedStars);
     }
     onClose();
@@ -157,7 +150,7 @@ const ArtifactModal = ({ data, onClose }) => {
         title={artifactData.name}
         stars={selectedStars}
         description={artifactData.description}
-        values={artifactData.values || artifactData.value}
+        values={artifactData.values}
         itemType="artifact"
       />,
       position
@@ -166,34 +159,34 @@ const ArtifactModal = ({ data, onClose }) => {
 
   const isArtifactSelected = (artifact) => {
     if (!selectedArtifact || !artifact) return false;
-    
-    // Comparer par slug
+
     if (selectedArtifact.slug && artifact.slug) {
       return selectedArtifact.slug === artifact.slug;
     }
-    
-    // Comparer par _id
+
     if (selectedArtifact._id && artifact._id) {
-      return selectedArtifact._id.toString() === artifact._id.toString();
+      return (
+        selectedArtifact._id.toString() === artifact._id.toString()
+      );
     }
-    
+
     return false;
   };
 
   return (
     <div className="artifact-modal-container">
       <h3 className="artifact-modal-title">Artifact</h3>
-      <div className="artifact-search-container">
 
-      <FaSearch className="artifact-search-icon" />
-      <input
-        type="text"
-        placeholder="Search artifacts"
-        value={searchTerm}
-        onChange={(e) => setSearchTerm(e.target.value)}
-        className="artifact-search-input"
+      <div className="artifact-search-container">
+        <FaSearch className="artifact-search-icon" />
+        <input
+          type="text"
+          placeholder="Search artifacts"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="artifact-search-input"
         />
-        </div>
+      </div>
 
       {showLoading ? (
         <div className="artifact-loading">Loading artifacts</div>
@@ -215,14 +208,19 @@ const ArtifactModal = ({ data, onClose }) => {
             {displayArtifacts.map((artifact) => {
               const isSelected = isArtifactSelected(artifact);
               const imageUrl = getArtifactPublicUrl(artifact);
-              const displayName = artifact.name || artifact.slug || 'Unknown';
+              const displayName =
+                artifact.name || artifact.slug || 'Unknown';
 
               return (
                 <div
                   key={artifact.slug || artifact._id || artifact.id}
-                  className={`artifact-option ${isSelected ? "selected" : ""}`}
+                  className={`artifact-option ${
+                    isSelected ? "selected" : ""
+                  }`}
                   onClick={() => setSelectedArtifact(artifact)}
-                  onMouseEnter={(e) => handleArtifactHover(artifact, e)}
+                  onMouseEnter={(e) =>
+                    handleArtifactHover(artifact, e)
+                  }
                   onMouseLeave={hideOverlay}
                 >
                   <img
@@ -250,11 +248,6 @@ const ArtifactModal = ({ data, onClose }) => {
 
       {selectedArtifact && (
         <div className="artifact-stars-section">
-          {/* <div className="artifact-stars-label">
-            <span className="artifact-stars-name">
-              {selectedArtifact.name || selectedArtifact.slug}
-            </span>
-          </div> */}
           <StarRating
             value={selectedStars}
             onChange={setSelectedStars}

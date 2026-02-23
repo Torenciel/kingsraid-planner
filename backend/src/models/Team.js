@@ -1,6 +1,19 @@
 const mongoose = require('mongoose');
 const mongoosePaginate = require('mongoose-paginate-v2');
 
+// Generate slug automatically on creation
+if (this.isNew && !this.slug) {
+  const slugify = (text) => {
+    return text
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9\s-]/g, "")
+      .replace(/\s+/g, "-");
+  };
+
+  this.slug = `${slugify(this.name)}-${this._id}`;
+}
+
 // =============================
 // NESTED SCHEMAS
 // =============================
@@ -153,6 +166,12 @@ const TeamSchema = new mongoose.Schema({
     default: 'My Team'
   },
 
+  slug: {
+    type: String,
+    required: true,
+    unique: true,
+  },
+
   description: {
     type: String,
     trim: true,
@@ -224,6 +243,26 @@ const TeamSchema = new mongoose.Schema({
 });
 
 // =============================
+// VALIDATE
+// =============================
+
+TeamSchema.pre('validate', function (next) {
+  if (this.isNew && !this.slug) {
+    const slugify = (text) => {
+      return text
+        .toLowerCase()
+        .trim()
+        .replace(/[^a-z0-9\s-]/g, '')
+        .replace(/\s+/g, '-');
+    };
+
+    this.slug = `${slugify(this.name)}-${this._id}`;
+  }
+
+  next();
+});
+
+// =============================
 // PRE-SAVE
 // =============================
 
@@ -267,6 +306,7 @@ TeamSchema.methods.toAPIFormat = function() {
   return {
     id: teamObj._id.toString(),
     name: teamObj.name,
+    slug: teamObj.slug,
     description: teamObj.description,
     teamSize: teamObj.teamSize,
     heroes: teamObj.heroes,

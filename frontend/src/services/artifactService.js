@@ -29,7 +29,7 @@ class ArtifactService {
       this.allArtifacts =
         data && typeof data === "object" ? Object.keys(data) : [];
       console.log(
-        `✅ Artifacts loaded once: ${this.allArtifacts.length} artifacts`
+        `Artifacts loaded once: ${this.allArtifacts.length} artifacts`
       );
     } catch (err) {
       this.error = err.message;

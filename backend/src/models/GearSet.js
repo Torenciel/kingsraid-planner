@@ -44,19 +44,18 @@ const GearSetSchema = new mongoose.Schema({
     type: Date, 
     default: Date.now 
   }
-  
 });
 
-// Middleware
+// Middleware to update updatedAt before saving
 GearSetSchema.pre('save', function(next) {
   this.updatedAt = Date.now();
   next();
 });
 
-// Indexes (seulement ceux-ci)
+// Text index
 GearSetSchema.index({ name: 'text' });
 
-// Méthode API
+// Method to format for API responses
 GearSetSchema.methods.toAPIFormat = function() {
   return {
     _id: this._id,

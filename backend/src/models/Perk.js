@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 const perkSchema = new mongoose.Schema({
-  //  SLUG : Identifiant URL-friendly
+  // Slug: URL-friendly identifier
   slug: {
     type: String,
     required: true,
@@ -26,7 +26,7 @@ const perkSchema = new mongoose.Schema({
   
   tier: {
     type: String,
-    enum: ['t1', 't2', 't3', 't5'], // ❌ Supprimé t4
+    enum: ['t1', 't2', 't3', 't5'], // t4 removed
     required: true
   },
   
@@ -39,7 +39,7 @@ const perkSchema = new mongoose.Schema({
     required: true
   },
   
-  // Champs pour T3/T5 seulement
+  // Fields required only for T3/T5 perks
   heroSlug: {
     type: String,
     required: function() { 
@@ -80,17 +80,17 @@ const perkSchema = new mongoose.Schema({
     type: Date,
     default: Date.now
   }
-  
-  //  SUPPRIMÉ: tags
+
+  // Removed: tags
 });
 
-// Index composé pour T1/T2
+// Compound index for T1/T2
 perkSchema.index({ name: 1, class: 1, tier: 1 }, { 
   unique: true,
   partialFilterExpression: { tier: { $in: ['t1', 't2'] } }
 });
 
-// Index composé pour T3/T5
+// Compound index for T3/T5
 perkSchema.index({ 
   name: 1, 
   heroSlug: 1, 
@@ -102,17 +102,17 @@ perkSchema.index({
   partialFilterExpression: { tier: { $in: ['t3', 't5'] } }
 });
 
-// Index pour les recherches courantes
+// Indexes for common queries
 perkSchema.index({ tier: 1, class: 1 });
 perkSchema.index({ heroSlug: 1, tier: 1 });
 perkSchema.index({ tier: 1, type: 1 });
 
-// Méthode pour formater pour l'API
+// Method to format for API responses
 perkSchema.methods.toAPIFormat = function() {
   return {
-    _id: this._id,           //  ObjectId MongoDB
-    slug: this.slug,         //  Slug URL-friendly
-    name: this.name,         //  Nom d'affichage
+    _id: this._id,
+    slug: this.slug,
+    name: this.name,
     description: this.description,
     thumbnail: this.thumbnail,
     tier: this.tier,

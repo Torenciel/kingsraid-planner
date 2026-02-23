@@ -8,7 +8,7 @@ class ImageCacheService {
   async preloadArtifactImages(artifacts) {
     if (this.preloaded) return;
 
-    console.log("🖼️ Pre-loading and caching artifact images...");
+    console.log("Pre-loading and caching artifact images...");
 
     const preloadPromises = artifacts.map((artifactName) => {
       return new Promise((resolve) => {
@@ -27,7 +27,7 @@ class ImageCacheService {
 
     await Promise.all(preloadPromises);
     this.preloaded = true;
-    console.log(`✅ Pre-loaded ${artifacts.length} artifact images`);
+    console.log(`Pre-loaded ${artifacts.length} artifact images`);
   }
 
   getCachedImage(artifactName) {

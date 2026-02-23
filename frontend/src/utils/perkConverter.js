@@ -1,12 +1,12 @@
 // frontend/src/utils/perkConverter.js
 
 /**
- * Convertit les perks structurées (objet) en indices (tableau)
+ * Convert structured perks (object) into indices (array)
  */
 export const perksToIndices = (perksObj, heroClass, heroName) => {
   if (!perksObj) return [];
   
-  // Si c'est déjà un tableau d'indices
+  // If already an array of indices
   if (Array.isArray(perksObj)) {
     return perksObj;
   }
@@ -26,7 +26,7 @@ export const perksToIndices = (perksObj, heroClass, heroName) => {
   
   // T2 perks (row 1: indices 10-14)
   if (perksObj.t2?.selected && heroClass) {
-    // Mappage T2 selon la classe
+    // T2 mapping based on class
     const T2_MAPPING = {
       'Knight': ['experienced-fighter', 'excellent-strategy', 'battle-cry', 'shield-of-protection', 'swift-move'],
       'Warrior': ['opportune-strike', 'warlike', 'offensive-guard', 'tactical-foresight', 'blood-wrath'],
@@ -41,7 +41,7 @@ export const perksToIndices = (perksObj, heroClass, heroName) => {
     perksObj.t2.selected.forEach(slug => {
       const index = classMapping.indexOf(slug);
       if (index !== -1) {
-        indices.push(10 + index); // Row 1
+        indices.push(10 + index);
       }
     });
   }
@@ -49,10 +49,10 @@ export const perksToIndices = (perksObj, heroClass, heroName) => {
   // T3 perks (rows 2-3)
   if (perksObj.t3) {
     const t3Map = {
-      s1: { light: 20, dark: 21 }, // Row 2
-      s2: { light: 22, dark: 23 }, // Row 2
-      s3: { light: 30, dark: 31 }, // Row 3
-      s4: { light: 32, dark: 33 }  // Row 3
+      s1: { light: 20, dark: 21 },
+      s2: { light: 22, dark: 23 },
+      s3: { light: 30, dark: 31 },
+      s4: { light: 32, dark: 33 }
     };
     
     Object.entries(perksObj.t3).forEach(([skill, type]) => {
@@ -64,7 +64,7 @@ export const perksToIndices = (perksObj, heroClass, heroName) => {
   
   // T5 perk (row 4)
   if (perksObj.t5) {
-    const t5Map = { light: 40, dark: 41 }; // Row 4
+    const t5Map = { light: 40, dark: 41 };
     if (t5Map[perksObj.t5]) {
       indices.push(t5Map[perksObj.t5]);
     }
@@ -74,7 +74,7 @@ export const perksToIndices = (perksObj, heroClass, heroName) => {
 };
 
 /**
- * Convertit les indices en perks structurées
+ * Convert indices into structured perks
  */
 export const indicesToPerks = (indices, heroClass, heroName) => {
   if (!Array.isArray(indices)) {
@@ -93,10 +93,8 @@ export const indicesToPerks = (indices, heroClass, heroName) => {
     t5: null
   };
   
-  // T1 mapping
   const t1Slugs = ['atk-up', 'hp-up', 'def-up', 'crit-resist-up', 'monster-hunting'];
   
-  // T2 mapping
   const T2_MAPPING = {
     'Knight': ['experienced-fighter', 'excellent-strategy', 'battle-cry', 'shield-of-protection', 'swift-move'],
     'Warrior': ['opportune-strike', 'warlike', 'offensive-guard', 'tactical-foresight', 'blood-wrath'],
@@ -111,14 +109,12 @@ export const indicesToPerks = (indices, heroClass, heroName) => {
     const rowIndex = Math.floor(index / 10);
     const colIndex = index % 10;
     
-    // T1 (row 0)
     if (rowIndex === 0 && colIndex < 5) {
       const slug = t1Slugs[colIndex];
       if (slug && !perksObj.t1.selected.includes(slug)) {
         perksObj.t1.selected.push(slug);
       }
     }
-    // T2 (row 1)
     else if (rowIndex === 1 && colIndex < 5 && heroClass) {
       const classMapping = T2_MAPPING[heroClass];
       if (classMapping && classMapping[colIndex]) {
@@ -128,7 +124,6 @@ export const indicesToPerks = (indices, heroClass, heroName) => {
         }
       }
     }
-    // T3 (rows 2-3)
     else if (rowIndex === 2 || rowIndex === 3) {
       const t3ReverseMap = {
         20: { skill: 's1', type: 'light' },
@@ -146,7 +141,6 @@ export const indicesToPerks = (indices, heroClass, heroName) => {
         perksObj.t3[mapping.skill] = mapping.type;
       }
     }
-    // T5 (row 4)
     else if (rowIndex === 4) {
       if (index === 40) perksObj.t5 = 'light';
       else if (index === 41) perksObj.t5 = 'dark';

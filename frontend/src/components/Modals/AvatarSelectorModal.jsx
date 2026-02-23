@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo } from "react";
+import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { useArtifacts } from "../../contexts/ArtifactContext";
 import { useHeroContext } from "../../contexts/HeroContext";
 import {
@@ -12,7 +12,7 @@ import "./AvatarSelectorModal.css";
 const ITEMS_PER_LOAD = 35;
 
 const AvatarSelectorModal = ({ data, onClose }) => {
-  const { onSelect } = data;
+  const { onSelect } = data || {};
 
   const { allArtifacts } = useArtifacts();
   const { allHeroes } = useHeroContext();
@@ -22,7 +22,6 @@ const AvatarSelectorModal = ({ data, onClose }) => {
   const [selectedKey, setSelectedKey] = useState(null);
 
   const gridRef = useRef(null);
-  const loaderRef = useRef(null);
 
   // ===============================
   // Build Items
@@ -49,25 +48,20 @@ const AvatarSelectorModal = ({ data, onClose }) => {
       );
     }
 
-if (activeTab === "skill") {
-  return allHeroes.flatMap(hero => {
-    const skills = [];
-
-    for (let i = 1; i <= 4; i++) {
-      skills.push({
-        type: "hero-skill",
-        value: hero.slug,
-        index: i,
-        variant: null, // resolved dynamically
-        src: getHeroSkillUrl(hero.slug, i),
+    if (activeTab === "skill") {
+      return allHeroes.flatMap(hero => {
+        const skills = [];
+        for (let i = 1; i <= 4; i++) {
+          skills.push({
+            type: "hero-skill",
+            value: hero.slug,
+            index: i,
+            src: getHeroSkillUrl(hero.slug, i),
+          });
+        }
+        return skills;
       });
     }
-
-    return skills;
-  });
-}
-
-
 
     if (activeTab === "artifact") {
       return allArtifacts.map(artifact => ({
@@ -80,40 +74,44 @@ if (activeTab === "skill") {
     return [];
   }, [activeTab, allHeroes, allArtifacts]);
 
-  // Reset on tab change
+  // ===============================
+  // Reset when tab changes
+  // ===============================
   useEffect(() => {
-    setVisibleCount(ITEMS_PER_LOAD);
+    setVisibleCount(Math.min(ITEMS_PER_LOAD, allItems.length));
     setSelectedKey(null);
 
     if (gridRef.current) {
       gridRef.current.scrollTop = 0;
     }
-  }, [activeTab]);
+  }, [activeTab, allItems.length]);
 
-  // Infinite scroll
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting) {
-          setVisibleCount(prev =>
-            Math.min(prev + ITEMS_PER_LOAD, allItems.length)
-          );
-        }
-      },
-      {
-        root: gridRef.current,
-        threshold: 0.1,
-      }
-    );
+  // ===============================
+  // SCROLL BASED INFINITE LOAD
+  // ===============================
+  const handleScroll = useCallback(() => {
+    const grid = gridRef.current;
+    if (!grid) return;
 
-    if (loaderRef.current) {
-      observer.observe(loaderRef.current);
+    const { scrollTop, scrollHeight, clientHeight } = grid;
+
+    // If user is near bottom (within 150px)
+    if (scrollTop + clientHeight >= scrollHeight - 150) {
+      setVisibleCount(prev =>
+        Math.min(prev + ITEMS_PER_LOAD, allItems.length)
+      );
     }
-
-    return () => observer.disconnect();
   }, [allItems.length]);
 
-  const visibleItems = allItems.slice(0, visibleCount);
+  useEffect(() => {
+    const grid = gridRef.current;
+    if (!grid) return;
+
+    grid.addEventListener("scroll", handleScroll);
+    return () => grid.removeEventListener("scroll", handleScroll);
+  }, [handleScroll]);
+
+  const visibleItems = allItems;
 
   return (
     <div className="avatar-modal-container">
@@ -160,41 +158,36 @@ if (activeTab === "skill") {
               className={`avatar-option ${isSelected ? "selected" : ""}`}
               onClick={() => {
                 setSelectedKey(key);
-                onSelect(item);
+                if (onSelect) onSelect(item);
                 onClose();
               }}
             >
               <img
-  src={item.src}
-  loading="lazy"
-  alt="Avatar"
-  onError={(e) => {
-    if (item.type !== "hero-skill") {
-      e.target.style.display = "none";
-      return;
-    }
+                src={item.src}
+                loading="lazy"
+                alt="Avatar"
+                onError={(e) => {
+                  if (item.type !== "hero-skill") {
+                    e.target.style.display = "none";
+                    return;
+                  }
 
-    const tried = e.target.dataset.tried || "0";
+                  const tried = e.target.dataset.tried || "0";
 
-    if (tried === "0") {
-      e.target.dataset.tried = "1";
-      e.target.src = getHeroSkillUrl(item.value, item.index, 1);
-    } else if (tried === "1") {
-      e.target.dataset.tried = "2";
-      e.target.src = getHeroSkillUrl(item.value, item.index, 2);
-    } else {
-      e.target.style.display = "none";
-    }
-  }}
-/>
-
+                  if (tried === "0") {
+                    e.target.dataset.tried = "1";
+                    e.target.src = getHeroSkillUrl(item.value, item.index, 1);
+                  } else if (tried === "1") {
+                    e.target.dataset.tried = "2";
+                    e.target.src = getHeroSkillUrl(item.value, item.index, 2);
+                  } else {
+                    e.target.style.display = "none";
+                  }
+                }}
+              />
             </div>
           );
         })}
-
-        {visibleCount < allItems.length && (
-          <div ref={loaderRef} className="avatar-loader-trigger" />
-        )}
       </div>
     </div>
   );

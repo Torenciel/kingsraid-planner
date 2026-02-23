@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 const ArtifactSchema = new mongoose.Schema({
-  // 🔥 SLUG : Identifiant URL-friendly
+  // Slug: URL-friendly identifier
   slug: { 
     type: String, 
     required: true, 
@@ -9,7 +9,7 @@ const ArtifactSchema = new mongoose.Schema({
     index: true 
   },
   
-  // 🔥 NAME : Nom d'affichage
+  // Name: Display name
   name: { 
     type: String, 
     required: true,
@@ -21,7 +21,7 @@ const ArtifactSchema = new mongoose.Schema({
     required: true 
   },
   
-  // Valeurs par étoile (0-5)
+  // Values per star level (0-5)
   value: {
     type: mongoose.Schema.Types.Mixed,
     required: true,
@@ -60,16 +60,16 @@ const ArtifactSchema = new mongoose.Schema({
   }
 });
 
-// Middleware pour mettre à jour updatedAt
+// Middleware to update updatedAt before saving
 ArtifactSchema.pre('save', function(next) {
   this.updatedAt = Date.now();
   next();
 });
 
-// Index pour recherche textuelle
+// Text search index
 ArtifactSchema.index({ name: 'text', description: 'text' });
 
-// Méthode utilitaire pour formater les valeurs
+// Utility method to format values based on star level
 ArtifactSchema.methods.getFormattedValues = function(starLevel = 0) {
   const formatted = {};
   
@@ -89,12 +89,12 @@ ArtifactSchema.methods.getFormattedValues = function(starLevel = 0) {
   return formatted;
 };
 
-// Méthode pour formater pour l'API
+// Method to format for API responses
 ArtifactSchema.methods.toAPIFormat = function() {
   return {
-    _id: this._id,           // 🔥 ObjectId MongoDB
-    slug: this.slug,         // 🔥 Slug URL-friendly
-    name: this.name,         // 🔥 Nom d'affichage
+    _id: this._id,
+    slug: this.slug,
+    name: this.name,
     description: this.description,
     thumbnail: this.thumbnail,
     value: this.value,

@@ -1,5 +1,5 @@
 // backend/src/services/gearsetService.js
-const GearSet = require('../models/GearSet'); // Vérifiez le nom exact
+const GearSet = require('../models/GearSet');
 
 class GearsetService {
   async getAllGearsets() {
@@ -21,7 +21,7 @@ class GearsetService {
       .lean();
   }
   
-  // Méthode optionnelle pour recherche
+  // Search method (optional)
   async searchGearsets(searchTerm) {
     return await GearSet.find({
       $or: [

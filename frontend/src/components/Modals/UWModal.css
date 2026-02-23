@@ -1,6 +1,6 @@
 /* UWModal.css */
 
-/* ========== Options UW ========== */
+/* ========== UW option ========== */
 .uw-option {
   width: 64px;
   height: 64px;
@@ -13,20 +13,20 @@
   box-sizing: border-box;
 }
 
-/* Style au survol */
+/* Hover */
 .uw-option:hover {
   border-color: var(--color-item-hover);
   transform: scale(1.05);
 }
 
-/* Style sélectionné */
+/* Selected */
 .uw-option.selected {
   border-color: var(--color-item-selected);
   background-color: rgba(251, 191, 36, 0.1);
   transform: scale(1.05);
 }
 
-/* Image UW */
+/* UW img */
 .uw-option img {
   width: 100%;
   height: 100%;
@@ -50,6 +50,7 @@
   border-radius: 3px;
 }
 
+/* ========== Empty ========== */
 .uw-option.empty {
   display: flex;
   align-items: center;
@@ -59,7 +60,7 @@
   font-weight: 500;
 }
 
-/* ========== Options d'advancement ========== */
+/* ========== Advancement option ========== */
 .advancement-options {
   display: flex;
   gap: 10px;
@@ -125,7 +126,7 @@
   object-fit: contain;
 }
 
-/* ========== Titres et texte ========== */
+/* ========== Title ========== */
 .uw-modal-title {
   font-size: 1.125rem;
   font-weight: bold;

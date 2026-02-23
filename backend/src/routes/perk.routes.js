@@ -1,11 +1,10 @@
-// backend/src/routes/perk.routes.js
 const express = require('express');
 const router = express.Router();
 const PerkService = require('../services/perkService');
 
 const perkService = new PerkService();
 
-// GET toutes les perks
+// GET all perks
 router.get('/', async (req, res) => {
   try {
     const perks = await perkService.getAllPerks();
@@ -27,7 +26,6 @@ router.get('/', async (req, res) => {
     });
     
   } catch (error) {
-    console.error('Error fetching perks:', error);
     res.status(500).json({ 
       success: false,
       error: 'Failed to fetch perks',
@@ -36,12 +34,12 @@ router.get('/', async (req, res) => {
   }
 });
 
-// GET perks par tier
+// GET perks by tier
 router.get('/tier/:tier', async (req, res) => {
   try {
     const filters = {};
     
-    // Filtres optionnels
+    // Optional filters
     if (req.query.class) filters.class = req.query.class;
     if (req.query.heroSlug) filters.heroSlug = req.query.heroSlug;
     
@@ -66,7 +64,6 @@ router.get('/tier/:tier', async (req, res) => {
     });
     
   } catch (error) {
-    console.error(`Error fetching tier ${req.params.tier} perks:`, error);
     res.status(500).json({ 
       success: false,
       error: 'Failed to fetch perks',
@@ -75,7 +72,7 @@ router.get('/tier/:tier', async (req, res) => {
   }
 });
 
-// GET perks d'un héros (T3/T5)
+// GET hero perks (T3/T5)
 router.get('/hero/:heroSlug', async (req, res) => {
   try {
     const perks = await perkService.getHeroPerks(req.params.heroSlug);
@@ -99,7 +96,6 @@ router.get('/hero/:heroSlug', async (req, res) => {
     });
     
   } catch (error) {
-    console.error(`Error fetching perks for hero ${req.params.heroSlug}:`, error);
     res.status(500).json({ 
       success: false,
       error: 'Failed to fetch hero perks',
@@ -108,7 +104,7 @@ router.get('/hero/:heroSlug', async (req, res) => {
   }
 });
 
-// GET perks T1/T2 par classe
+// GET T1/T2 perks by class
 router.get('/class/:className', async (req, res) => {
   try {
     const perks = await perkService.getClassPerks(req.params.className);
@@ -131,7 +127,6 @@ router.get('/class/:className', async (req, res) => {
     });
     
   } catch (error) {
-    console.error(`Error fetching class perks for ${req.params.className}:`, error);
     res.status(500).json({ 
       success: false,
       error: 'Failed to fetch class perks',
@@ -140,7 +135,7 @@ router.get('/class/:className', async (req, res) => {
   }
 });
 
-// GET recherche de perks
+// GET perk search
 router.get('/search/:term', async (req, res) => {
   try {
     const perks = await perkService.searchPerks(req.params.term);
@@ -164,7 +159,6 @@ router.get('/search/:term', async (req, res) => {
     });
     
   } catch (error) {
-    console.error(`Error searching perks for ${req.params.term}:`, error);
     res.status(500).json({ 
       success: false,
       error: 'Failed to search perks',

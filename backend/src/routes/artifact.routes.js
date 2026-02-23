@@ -1,19 +1,18 @@
-// backend/src/routes/artifact.routes.js
 const express = require('express');
 const router = express.Router();
 const ArtifactService = require('../services/artifactService');
 
 const artifactService = new ArtifactService();
 
-// GET tous les artefacts
+// GET all artifacts
 router.get('/', async (req, res) => {
   try {
     const artifacts = await artifactService.getAllArtifacts();
     
     const formattedArtifacts = artifacts.map(artifact => ({
-      id: artifact._id.toString(),    // ObjectId vers string
-      slug: artifact.slug,            // Slug URL-friendly
-      name: artifact.name,            // Nom d'affichage
+      id: artifact._id.toString(), // ObjectId to string
+      slug: artifact.slug,         // URL-friendly slug
+      name: artifact.name,         // Display name
       description: artifact.description,
       thumbnail: artifact.thumbnail,
       value: artifact.value,
@@ -27,7 +26,6 @@ router.get('/', async (req, res) => {
     });
     
   } catch (error) {
-    console.error('Error fetching artifacts:', error);
     res.status(500).json({ 
       success: false,
       error: 'Failed to fetch artifacts',
@@ -36,7 +34,7 @@ router.get('/', async (req, res) => {
   }
 });
 
-// GET un artefact par slug
+// GET artifact by slug
 router.get('/:slug', async (req, res) => {
   try {
     const artifact = await artifactService.getArtifactBySlug(req.params.slug);
@@ -67,7 +65,6 @@ router.get('/:slug', async (req, res) => {
     });
     
   } catch (error) {
-    console.error(`Error fetching artifact ${req.params.slug}:`, error);
     res.status(500).json({ 
       success: false,
       error: 'Failed to fetch artifact',
@@ -76,7 +73,7 @@ router.get('/:slug', async (req, res) => {
   }
 });
 
-// GET recherche d'artefacts
+// GET artifact search
 router.get('/search/:term', async (req, res) => {
   try {
     const artifacts = await artifactService.searchArtifacts(req.params.term);
@@ -97,7 +94,6 @@ router.get('/search/:term', async (req, res) => {
     });
     
   } catch (error) {
-    console.error(`Error searching artifacts for ${req.params.term}:`, error);
     res.status(500).json({ 
       success: false,
       error: 'Failed to search artifacts',

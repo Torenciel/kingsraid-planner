@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-// 🔥 FONCTION COMMUNE POUR LES SLUGS (comme les autres scripts)
+// Common slug generator function
 function createSlug(name) {
   if (!name) return 'unknown';
   
@@ -15,7 +15,8 @@ function createSlug(name) {
     .trim();
 }
 
-// === SCHÉMAS IMBRIQUÉS (gardez ceux-ci) ===
+// === Nested Schemas ===
+
 const SkillSchema = new mongoose.Schema({
   name: { type: String, default: '' },
   cost: { type: String, default: null },
@@ -40,7 +41,7 @@ const T3PerkSchema = new mongoose.Schema({
   dark: { type: PerkOptionSchema, default: () => ({}) }
 }, { _id: false });
 
-// Schema flexible pour les valeurs UW
+// Flexible schema for UW values
 const UWValueLevelSchema = new mongoose.Schema({}, { 
   _id: false,
   strict: false
@@ -80,7 +81,8 @@ const SWSchema = new mongoose.Schema({
   story: { type: String, default: '' }
 }, { _id: false });
 
-// === SCHÉMA PRINCIPAL HERO  ===
+// === Main Hero Schema ===
+
 const HeroSchema = new mongoose.Schema({
   infos: {
     name: { type: String, required: true, index: true },
@@ -141,7 +143,7 @@ const HeroSchema = new mongoose.Schema({
   visual: { type: String, default: null },
   aliases: { type: [String], default: null },
   
-  // Métadonnées
+  // Metadata
   slug: { 
     type: String, 
     required: true, 
@@ -159,41 +161,34 @@ const HeroSchema = new mongoose.Schema({
   strict: false
 });
 
-// === MIDDLEWARE CORRIGÉ (SANS BUG) ===
+// === Middleware ===
+
 HeroSchema.pre('save', function(next) {
   this.updatedAt = Date.now();
   
-  // 1. S'assurer que le slug existe (CORRIGÉ)
+  // Ensure slug exists
   if (!this.slug && this.infos?.name) {
-    this.slug = createSlug(this.infos.name); // ✅ Utilise la vraie fonction
+    this.slug = createSlug(this.infos.name);
   }
   
-  // 2. Fonction pour normaliser UNIQUEMENT les chemins d'images
+  // Normalize only image paths
   const normalizeImagePath = (imagePath) => {
-    if (!imagePath || imagePath === '' || imagePath === null || imagePath === undefined) {
-      return '';
-    }
+    if (!imagePath) return '';
     
-    // Si le chemin commence déjà par "heroes/", le garder tel quel
     if (imagePath.startsWith('heroes/')) {
       return imagePath;
     }
     
-    // Si c'est juste un nom de fichier, ajouter le chemin du héros
     const heroName = this.infos?.name || 'unknown';
     return `heroes/${heroName}/${imagePath}`;
   };
   
-  // 🔥 CORRECTION : NE PAS NORMALISER this.infos.name !
-  // this.infos.name reste le nom du héros, pas un chemin d'image
+  // Normalize actual image fields only
   
-  // 3. Normaliser les VRAIS chemins d'images
-  // Infos thumbnail
   if (this.infos?.thumbnail) {
     this.infos.thumbnail = normalizeImagePath(this.infos.thumbnail);
   }
   
-  // Skills
   if (this.skills && this.skills instanceof Map) {
     for (const [key, skill] of this.skills) {
       if (skill?.thumbnail) {
@@ -202,12 +197,10 @@ HeroSchema.pre('save', function(next) {
     }
   }
   
-  // UW
   if (this.uw?.thumbnail) {
     this.uw.thumbnail = normalizeImagePath(this.uw.thumbnail);
   }
   
-  // UTs
   if (this.uts && this.uts instanceof Map) {
     for (const [key, ut] of this.uts) {
       if (ut?.thumbnail) {
@@ -216,17 +209,14 @@ HeroSchema.pre('save', function(next) {
     }
   }
   
-  // SW
   if (this.sw?.thumbnail) {
     this.sw.thumbnail = normalizeImagePath(this.sw.thumbnail);
   }
   
-  // Splashart
   if (this.splashart) {
     this.splashart = normalizeImagePath(this.splashart);
   }
   
-  // Costumes
   if (this.costumes) {
     this.costumes = normalizeImagePath(this.costumes);
   }
@@ -234,19 +224,19 @@ HeroSchema.pre('save', function(next) {
   next();
 });
 
-// === MÉTHODES POUR L'API (COMME LES AUTRES MODÈLES) ===
+// === API Methods ===
+
 HeroSchema.methods.toAPIFormat = function() {
   return {
-    _id: this._id,                     // 🔥 ObjectId MongoDB
-    slug: this.slug,                   // 🔥 Slug URL-friendly
-    name: this.infos?.name || '',      // 🔥 Nom d'affichage
+    _id: this._id,
+    slug: this.slug,
+    name: this.infos?.name || '',
     title: this.infos?.title || '',
     class: this.infos?.class || 'Unknown',
     position: this.infos?.position || 'Unknown',
     thumbnail: this.infos?.thumbnail || '',
     releaseOrder: this.releaseOrder || 999,
     
-    // Stats utiles pour le frontend
     hasUW: !!this.uw?.name,
     hasSW: !!this.sw?.requirement,
     utsCount: this.uts ? this.uts.size : 0,
@@ -256,7 +246,7 @@ HeroSchema.methods.toAPIFormat = function() {
 
 HeroSchema.methods.toSimpleJSON = function() {
   return {
-    id: this._id.toString(),          // String pour le frontend
+    id: this._id.toString(),
     slug: this.slug,
     name: this.infos?.name || '',
     class: this.infos?.class || 'Unknown',
@@ -264,7 +254,8 @@ HeroSchema.methods.toSimpleJSON = function() {
   };
 };
 
-// === INDEXES (déjà bons) ===
+// === Indexes ===
+
 HeroSchema.index({ slug: 1 });
 HeroSchema.index({ 'infos.name': 1 });
 HeroSchema.index({ 'infos.class': 1 });

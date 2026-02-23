@@ -1,10 +1,10 @@
 /* HeroCard.css */
 
-/* ========== Carte de héros ========== */
+/* ========== Hero Card ========== */
 .hero-card {
   aspect-ratio: 1;
-  width: 100%; /* Ajoute */
-  height: 100%; /* Ajoute */
+  width: 100%; 
+  height: 100%;
   /* overflow: hidden; */
   background: var(--color-primary-default);
   border: 2px solid transparent;
@@ -24,7 +24,7 @@
   box-shadow: 0 0 5px var(--color-item-selected-shadow);
 }
 
-/* ========== Image du héros ========== */
+/* ========== Hero img ========== */
 .hero-image {
   width: 100%;
   height: 100%;
@@ -32,7 +32,7 @@
   border-radius: 0.25rem;
 }
 
-/* ========== Nom du héros ========== */
+/* ========== Hero name ========== */
 .hero-name {
   position: absolute;
   bottom: 0;
@@ -56,7 +56,7 @@
   border-radius: 0.25rem;
 }
 
-/* ========== Icône de classe ========== */
+/* ========== Class icon ========== */
 
 .class-icon {
   position: absolute;

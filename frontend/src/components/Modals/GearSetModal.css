@@ -1,277 +1,45 @@
-/* GearSetModal.css */
+/* =========================================
+   GearSet Modal
+========================================= */
 
-/* ========== Options de gear set ========== */
-.gearset-option {
-  width: 64px;
-  height: 64px;
-  border: 2px solid transparent;
-  position: relative;
-  overflow: hidden;
-  cursor: pointer;
-  border-radius: 4px;
-  transition: all 0.2s;
-  box-sizing: border-box;
-}
-
-/* Style par défaut */
-.gearset-option {
-  border-color: var(--color-border-default);
-}
-
-/* Style au survol */
-.gearset-option:hover:not(.disabled) {
-  border-color: var(--color-item-hover);
-  transform: scale(1.05);
-}
-
-/* Style sélectionné */
-.gearset-option.selected {
-  border-color: var(--color-item-selected);
-  transform: scale(1.05);
-}
-
-.gearset-option.disabled {
-  opacity: 0.8;
-  cursor: not-allowed;
-}
-
-.gearset-option.disabled:hover {
-  border-color: transparent;
-  opacity: 0.5;
-  transform: none;
-}
-
-.gearset-option.empty-option {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #9ca3af;
-  font-size: 0.875rem;
-  font-weight: 500;
-}
-
-/* Image gear set */
-.gearset-option img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  border-radius: 6px;
-  transform: scale(1.2);
-  object-position: center;
-  display: block;
-}
-
-/* Fallback text */
-.gearset-fallback {
-  width: 100%;
-  height: 100%;
-  display: none;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  color: #9ca3af;
-  font-size: 0.75rem;
-  background: var(--color-primary-default);
-  border-radius: 3px;
-  padding: 0.25rem;
-  overflow: hidden;
-  box-sizing: border-box;
-  font-weight: 500;
-}
-
-/* ========== Grille de gear sets ========== */
-.gearset-grid {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 0.5rem;
-  justify-items: center;
-  margin-bottom: 1.5rem;
-  /* max-width: 60%; */
-  margin-left: auto;
-  margin-right: auto;
-}
-
-/* ========== Section des bonus ========== */
-
-
-.gearset-bonus-placeholder {
-  text-align: center;
-  color: #9ca3af;
-  font-size: 0.875rem;
-  padding: 1rem 0;
-}
-
-.gearset-bonus-list {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.gearset-bonus-item {
-  text-align: center;
-}
-
-.gearset-set-name {
-  color: var(--color-text-default);
-  font-weight: 500;
-  margin-bottom: 0.5rem;
-  font-size: 1rem;
-}
-
-.gearset-bonus-row {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 1rem;
-  margin-bottom: 0.25rem;
-}
-
-.gearset-bonus-label {
-  font-size: 0.875rem;
-  color: #d1d5db;
-  font-weight: bold;
-  min-width: 30px;
-  text-align: right;
-}
-
-.gearset-bonus-2p {
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: var(--color-item-selected);
-  text-align: left;
-  flex: 1;
-}
-
-.gearset-bonus-4p {
-  font-size: 0.875rem;
-  font-weight: 500;
-  text-align: left;
-  flex: 1;
-}
-
-.gearset-bonus-4p.active {
-  color: var(--color-item-selected);
-}
-
-.gearset-bonus-4p.inactive {
-  color: #9ca3af;
-  opacity: 0.7;
-}
-
-/* ========== Titres ========== */
-.gearset-modal-title {
-  font-size: 1.125rem;
-  font-weight: bold;
-  margin-bottom: 1rem;
-  text-align: center;
-  color: var(--color-text-default);
-}
-
-/* ========== Overlay ========== */
-
-.gearset-hover-overlay {
-  /* width: 200px; */
-}
-.hover-title {
-  color: var(--color-text-default);
-  font-weight: bold;
-  font-size: 14px;
-  text-align: center;
-  margin-bottom: 8px;
-}
-.hover-bonus-row {
-  color: var(--color-text-default);
-  font-size: 12px;
-  text-align: center;
-  word-break: break-word;
-  padding: 0 4px;
-}
-
-.hover-bonus-label {
-  font-weight: 500;
-}
-/* ===================================== */
 .gearset-modal-container {
-  padding: 16px;
   max-width: 400px;
-  margin: 0 auto;
   min-width: 300px;
-  padding: 1rem;
+  margin: 0 auto;
+  padding: 16px;
 }
 
 .gearset-modal-title {
   font-size: 20px;
+  font-weight: bold;
   color: var(--color-text-default);
+  text-align: center;
   margin-bottom: 16px;
-  text-align: center;
 }
 
-/* Bonus section */
+/* =========================================
+   Grid
+========================================= */
 
-
-.gearset-bonus-placeholder {
-  text-align: center;
-  color: #9ca3af;
-  font-style: italic;
-  padding: 16px;
-  font-size: 14px;
-}
-
-.gearset-bonus-list {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.gearset-bonus-item {
-
-  border-radius: 4px;
-  padding: 4px;
-}
-
-.gearset-set-name {
-  font-size: 15px;
-  font-weight: bold;
-  color: var(--color-text-default);
-  margin-bottom: 4px;
-}
-
-.gearset-bonus-row {
-  display: flex;
-  margin: 4px 0;
-  align-items: flex-start;
-  font-size: 13px;
-}
-
-.gearset-bonus-label {
-  font-weight: bold;
-  color: var(--color-text-default);
-  min-width: 28px;
-  /* margin-right: 2px; */
-}
-
-.gearset-bonus-2p,
-.gearset-bonus-4p {
-  color: var(--color-text-default);
-  flex: 1;
-}
-
-/* Grid compacte */
 .gearset-grid {
   display: grid;
-  grid-template-columns: repeat(5, 1fr); /* 5 colonnes */
-  gap: 4px;
-  margin-bottom: 16px;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 6px;
   max-height: 320px;
   overflow-y: auto;
   padding: 4px;
   border-radius: 6px;
+  margin-bottom: 16px;
 }
+
+/* =========================================
+   Gearset Option
+========================================= */
 
 .gearset-option {
   position: relative;
   aspect-ratio: 1;
-  border: 2px solid transparent;
+  border: 2px solid var(--color-border-default);
   border-radius: 4px;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -300,8 +68,17 @@
 
 .gearset-option.disabled:hover:not(.selected) {
   transform: none;
-  box-shadow: none;
 }
+
+.gearset-option.empty-option {
+  color: #9ca3af;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+/* =========================================
+   Images & Fallback
+========================================= */
 
 .gearset-image {
   width: 100%;
@@ -313,10 +90,7 @@
 .gearset-fallback {
   display: none;
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  inset: 0;
   align-items: center;
   justify-content: center;
   color: var(--color-text-default);
@@ -325,33 +99,32 @@
   padding: 4px;
   background: var(--color-primary-accent);
   word-break: break-word;
-  overflow: hidden;
 }
 
-/* Indicateurs */
+/* =========================================
+   Selection Indicators
+========================================= */
+
 .gearset-selected-indicator {
   position: absolute;
   top: 2px;
   right: 2px;
-  background: var(--color-secondary-accent);
-  color: black;
   width: 18px;
   height: 18px;
   border-radius: 50%;
+  background: var(--color-secondary-accent);
+  color: black;
+  font-size: 11px;
+  font-weight: bold;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 11px;
-  font-weight: bold;
   border: 1px solid #000;
 }
 
 .gearset-disabled-overlay {
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  inset: 0;
   background: rgba(0, 0, 0, 0.8);
   display: flex;
   align-items: center;
@@ -359,11 +132,95 @@
   border-radius: 4px;
 }
 
-.gearset-instructions strong {
-  color: #fbbf24;
+/* =========================================
+   Bonus Section
+========================================= */
+
+.gearset-bonus-placeholder {
+  text-align: center;
+  color: #9ca3af;
+  font-style: italic;
+  padding: 16px;
+  font-size: 14px;
 }
 
-/* Loading */
+.gearset-bonus-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.gearset-bonus-item {
+  text-align: center;
+  border-radius: 4px;
+  padding: 4px;
+}
+
+.gearset-set-name {
+  font-size: 15px;
+  font-weight: bold;
+  color: var(--color-text-default);
+  margin-bottom: 4px;
+}
+
+.gearset-bonus-row {
+  display: flex;
+  align-items: flex-start;
+  margin: 4px 0;
+  font-size: 13px;
+}
+
+.gearset-bonus-label {
+  font-weight: bold;
+  color: var(--color-text-default);
+  min-width: 28px;
+}
+
+.gearset-bonus-2p,
+.gearset-bonus-4p {
+  flex: 1;
+  color: var(--color-text-default);
+}
+
+.gearset-bonus-4p.active {
+  color: var(--color-item-selected);
+}
+
+.gearset-bonus-4p.inactive {
+  color: #9ca3af;
+  opacity: 0.7;
+}
+
+/* =========================================
+   Hover Overlay
+========================================= */
+
+.gearset-hover-overlay {}
+
+.hover-title {
+  font-weight: bold;
+  font-size: 14px;
+  text-align: center;
+  margin-bottom: 8px;
+  color: var(--color-text-default);
+}
+
+.hover-bonus-row {
+  font-size: 12px;
+  text-align: center;
+  padding: 0 4px;
+  word-break: break-word;
+  color: var(--color-text-default);
+}
+
+.hover-bonus-label {
+  font-weight: 500;
+}
+
+/* =========================================
+   Loading
+========================================= */
+
 .gearset-loading {
   text-align: center;
   padding: 40px;
@@ -371,13 +228,15 @@
   font-style: italic;
 }
 
-/* Responsive */
+/* =========================================
+   Responsive
+========================================= */
+
 @media (max-width: 768px) {
   .gearset-grid {
-    grid-template-columns: repeat(4, 1fr); /* 4 colonnes sur tablette */
-    gap: 6px;
+    grid-template-columns: repeat(4, 1fr);
   }
-  
+
   .empty-option {
     grid-column: span 2;
   }
@@ -385,14 +244,13 @@
 
 @media (max-width: 480px) {
   .gearset-grid {
-    grid-template-columns: repeat(3, 1fr); /* 3 colonnes sur mobile */
-    gap: 4px;
+    grid-template-columns: repeat(3, 1fr);
   }
-  
+
   .gearset-modal-container {
     padding: 12px;
   }
-  
+
   .btn-modal-confirm,
   .btn-modal-cancel {
     padding: 8px 16px;

@@ -1,6 +1,6 @@
 /* StarRating.css */
 
-/* ========== Conteneur principal ========== */
+/* ========== Container ========== */
 .star-rating-container {
   display: flex;
   justify-content: center;
@@ -9,7 +9,7 @@
   align-items: center;
 }
 
-/* ========== Étoiles ========== */
+/* ========== Stars ========== */
 .star-rating-star {
   font-size: 26px;
   cursor: pointer;
@@ -22,24 +22,24 @@
   transform: scale(1.1);
 }
 
-/* Étoile remplie */
+/* Filled Stars */
 .star-rating-star.filled {
   color: var(--color-stars-default);
 }
 
-/* Prévisualisation au hover */
+/* Hover */
 .star-rating-star.hover-preview {
   color: var(--color-stars-default);
   opacity: 0.6;
 }
 
-/* Étoile qui sera désélectionnée */
+/* Preview Deselected */
 .star-rating-star.will-deselect {
   color: var(--color-stars-default);
   opacity: 0.3;
 }
 
-/* ========== Option zéro (×) ========== */
+/* ========== 0 Stars (×) ========== */
 .star-rating-zero {
   font-size: 26px;
   cursor: pointer;
@@ -54,15 +54,14 @@
   color: var(--color-error-default);
 }
 
-/* ========== Variantes ========== */
-/* Pour les petits star ratings */
+/* For smaller Star rating */
 .star-rating-container.small .star-rating-star,
 .star-rating-container.small .star-rating-zero {
   font-size: 20px;
   gap: 4px;
 }
 
-/* Pour les grands star ratings */
+/* For bigger Star rating */
 .star-rating-container.large .star-rating-star,
 .star-rating-container.large .star-rating-zero {
   font-size: 32px;

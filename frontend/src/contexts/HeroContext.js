@@ -4,49 +4,43 @@ import React, { createContext, useContext, useState, useMemo, useEffect, useCall
 const HeroContext = createContext();
 
 export const HeroProvider = ({ children }) => {
-  // États
+  // State
   const [allHeroes, setAllHeroes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState({
     role: 'all',
     sort: 'name',
     search: '',
-    availability: 'all' // 'all' ou 'available'
+    availability: 'all' // 'all' or 'available'
   });
   const [source, setSource] = useState('mongodb');
   const [availableHeroesList, setAvailableHeroesList] = useState([]);
   
-  // Configuration API
+  // API configuration
   const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3002';
   const ASSETS_BASE_URL = process.env.REACT_APP_ASSETS_URL || 'http://localhost:3002';
 
-  // 🔥 CHARGER LA LISTE DES HÉROS DISPONIBLES
+  // Load available heroes list
   const loadAvailableHeroes = useCallback(async () => {
     try {
       const response = await fetch('/kingsraid-data/hero_release_order_masang.json');
       if (response.ok) {
         const data = await response.json();
         const availableNames = Object.keys(data);
-        console.log(`✅ ${availableNames.length} héros disponibles chargés`);
         setAvailableHeroesList(availableNames);
         return availableNames;
       }
-    } catch (error) {
-      console.error('Erreur chargement masang.json:', error);
-    }
+    } catch (error) {}
     return [];
   }, []);
 
-  // 🔥 CHARGER TOUS LES HÉROS
+  // Load all heroes
   const loadAllHeroes = useCallback(async () => {
     try {
       setLoading(true);
-      console.log('🔄 Chargement des héros...');
       
-      // Charger la liste des disponibles
       const availableNames = await loadAvailableHeroes();
       
-      // Charger depuis MongoDB
       const response = await fetch(`${API_BASE_URL}/api/v2/heroes`);
       
       if (response.ok) {
@@ -77,17 +71,13 @@ export const HeroProvider = ({ children }) => {
           
           setAllHeroes(formattedHeroes);
           setSource('mongodb');
-          console.log(`✅ ${formattedHeroes.length} héros chargés (${formattedHeroes.filter(h => h.isAvailable).length} disponibles)`);
           return formattedHeroes;
         }
       }
       
-      // Fallback vers le JSON local
-      console.log('⚠️ MongoDB non disponible, tentative JSON...');
       return await loadHeroesFromJSON(availableNames);
       
     } catch (error) {
-      console.error('❌ Erreur chargement héros:', error);
       const testHeroes = getTestHeroes();
       setAllHeroes(testHeroes);
       setSource('test');
@@ -97,10 +87,9 @@ export const HeroProvider = ({ children }) => {
     }
   }, [API_BASE_URL, ASSETS_BASE_URL, loadAvailableHeroes]);
 
-  // 🔥 CHARGER DEPUIS JSON LOCAL
+  // Load heroes from local JSON
   const loadHeroesFromJSON = async (availableNames = []) => {
     try {
-      // Charger depuis hero_release_order.json (tous les héros)
       const response = await fetch('/kingsraid-data/hero_release_order.json');
       if (response.ok) {
         const data = await response.json();
@@ -123,16 +112,13 @@ export const HeroProvider = ({ children }) => {
         
         setAllHeroes(formattedHeroes);
         setSource('json');
-        console.log(`✅ ${formattedHeroes.length} héros chargés depuis JSON (${formattedHeroes.filter(h => h.isAvailable).length} disponibles)`);
         return formattedHeroes;
       }
-    } catch (error) {
-      console.error('Erreur chargement JSON:', error);
-    }
+    } catch (error) {}
     return [];
   };
 
-  // 🔥 DONNÉES DE TEST
+  // Test data fallback
   const getTestHeroes = () => {
     return [
       {
@@ -177,17 +163,14 @@ export const HeroProvider = ({ children }) => {
     ];
   };
 
-  // 🔥 FILTRER ET TRIER LES HÉROS
+  // Filter and sort heroes
   const filteredHeroes = useMemo(() => {
     let result = [...allHeroes];
     
-    // 1. Filtre par disponibilité
     if (filters.availability === 'available') {
       result = result.filter(hero => hero.isAvailable === true);
     }
-    // Note: pas de filtre 'unavailable', seulement 'all' ou 'available'
     
-    // 2. Filtre par rôle
     if (filters.role !== 'all') {
       result = result.filter(hero => 
         hero.role === filters.role || 
@@ -196,7 +179,6 @@ export const HeroProvider = ({ children }) => {
       );
     }
     
-    // 3. Recherche par nom
     if (filters.search.trim()) {
       const searchTerm = filters.search.toLowerCase();
       result = result.filter(hero =>
@@ -206,7 +188,6 @@ export const HeroProvider = ({ children }) => {
       );
     }
     
-    // 4. Tri
     switch (filters.sort) {
       case 'name':
         result.sort((a, b) => a.name.localeCompare(b.name));
@@ -215,7 +196,6 @@ export const HeroProvider = ({ children }) => {
         result.sort((a, b) => (a.releaseOrder || 999) - (b.releaseOrder || 999));
         break;
       case 'masang':
-        // Tri par disponibilité (disponibles d'abord), puis par nom
         result.sort((a, b) => {
           if (a.isAvailable && !b.isAvailable) return -1;
           if (!a.isAvailable && b.isAvailable) return 1;
@@ -229,7 +209,6 @@ export const HeroProvider = ({ children }) => {
     return result;
   }, [allHeroes, filters]);
 
-  // 🔥 COMPTEURS
   const heroCount = filteredHeroes.length;
   const totalHeroes = allHeroes.length;
   const availableCount = useMemo(() => 
@@ -237,17 +216,16 @@ export const HeroProvider = ({ children }) => {
     [allHeroes]
   );
 
-  // Les autres fonctions restent inchangées...
-const loadHeroDetails = async (slug) => {
-  const response = await fetch(`${API_BASE_URL}/api/v2/heroes/${slug}`);
-  const data = await response.json();
+  const loadHeroDetails = async (slug) => {
+    const response = await fetch(`${API_BASE_URL}/api/v2/heroes/${slug}`);
+    const data = await response.json();
 
-  if (data.success && data.hero) {
-    return data.hero; //  clé
-  }
+    if (data.success && data.hero) {
+      return data.hero;
+    }
 
-  return null;
-};
+    return null;
+  };
 
   const getHeroBySlug = (slug) => {
     return allHeroes.find(hero => 
@@ -278,34 +256,25 @@ const loadHeroDetails = async (slug) => {
     return availableHeroesList.includes(heroName);
   };
 
-  // Charger au démarrage
   useEffect(() => {
     loadAllHeroes();
   }, [loadAllHeroes]);
 
-  // Valeur du contexte
   const value = {
-    // Données
     allHeroes,
     currentHeroes: filteredHeroes,
     loading,
     source,
     filters,
-    
-    // Statistiques
     heroCount,
     totalHeroes,
     availableCount,
-    
-    // Actions
     updateFilter,
     resetFilters,
     refreshHeroes,
     loadHeroDetails,
     getHeroBySlug,
     isHeroAvailable,
-    
-    // Constantes
     API_BASE_URL,
     ASSETS_BASE_URL
   };
@@ -313,8 +282,6 @@ const loadHeroDetails = async (slug) => {
   return <HeroContext.Provider value={value}>{children}</HeroContext.Provider>;
 };
 
-
-// 🔥 EXPORT DU HOOK useHeroContext
 export const useHeroContext = () => {
   const context = useContext(HeroContext);
   if (!context) {

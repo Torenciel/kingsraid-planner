@@ -1,12 +1,12 @@
 /* SaveTeamButton.css */
 
-/* Conteneur principal */
+/* Container */
 .save-team-container {
   margin: 20px 0;
   text-align: center;
 }
 
-/* Boutons */
+/* Buttons */
 .save-team-buttons {
   display: flex;
   justify-content: center;
@@ -49,7 +49,6 @@
   margin-right: 10px;
 }
 
-/* Corps du modal */
 .modal-body {
   margin: 20px 0;
 }
@@ -94,7 +93,7 @@
 }
 
 
-/* Actions du modal */
+/* Modal actions */
 .modal-actions {
   display: flex;
   justify-content: center;

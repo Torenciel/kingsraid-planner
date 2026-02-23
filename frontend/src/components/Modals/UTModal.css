@@ -1,6 +1,6 @@
 /* UTModal.css */
 
-/* ========== Options UT ========== */
+/* ========== UT option ========== */
 .ut-option {
   width: 64px;
   height: 64px;
@@ -14,20 +14,20 @@
 }
 
 
-/* Style au survol */
+/* Hover */
 .ut-option:hover {
   border-color: var(--color-item-hover);
   transform: scale(1.05);
 }
 
-/* Style sélectionné */
+/* Selected */
 .ut-option.selected {
   border-color: var(--color-item-selected);
   background-color: rgba(251, 191, 36, 0.1);
   transform: scale(1.05);
 }
 
-/* Image UT */
+/* UT img */
 .ut-option img {
   width: 100%;
   height: 100%;
@@ -59,7 +59,7 @@
   font-size: 0.875rem;
 }
 
-/* ========== Grille UT ========== */
+/* ========== Grid ========== */
 .ut-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -71,14 +71,14 @@
   margin-right: auto;
 }
 
-/* ========== Option Empty ========== */
+/* ========== Empty ========== */
 .ut-empty-container {
   display: flex;
   justify-content: center;
   margin-bottom: 1rem;
 }
 
-/* ========== Titres et texte ========== */
+/* ========== Title ========== */
 .ut-modal-title {
   font-size: 1.125rem;
   font-weight: bold;

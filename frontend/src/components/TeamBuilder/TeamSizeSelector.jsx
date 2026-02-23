@@ -10,7 +10,7 @@ const TeamSizeSelector = () => {
   const handleChange = (e) => {
     const newSize = parseInt(e.target.value);
 
-    // Vérifier si la nouvelle taille est suffisante pour les héros actuels
+    // Check if there is enough space for another hero
     const heroCount = team.filter((h) => h !== null).length;
     if (heroCount > newSize) {
       if (

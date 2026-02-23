@@ -1,6 +1,6 @@
 /* TeamBuilder.css */
 
-/* ========== Conteneur principal ========== */
+/* ========== Container ========== */
 .team-builder-container {
   max-width: 1280px;
   margin-left: auto;
@@ -12,7 +12,7 @@
   /* margin-top: 40px; Compensate for the Navbar */
 }
 
-/* ========== État de chargement ========== */
+/* ========== Loading State ========== */
 .team-builder-loading {
   max-width: 1280px;
   margin-left: auto;
@@ -26,7 +26,7 @@
   line-height: 1.75rem;
 }
 
-/* ========== En-tête ========== */
+/* ========== Header ========== */
 .team-builder-header {
   text-align: center;
   margin-bottom: 2rem;
@@ -39,7 +39,7 @@
   margin-bottom: 0.5rem;
 }
 
-/* ========== Titre d'équipe ========== */
+/* ========== Team Title ========== */
 .team-title-container {
   margin-top: 0.5rem;
   display: flex;

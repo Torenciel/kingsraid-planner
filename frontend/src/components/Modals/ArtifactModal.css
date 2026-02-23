@@ -1,6 +1,6 @@
 /* ArtifactModal.css */
 
-/* ========== Barre de recherche ========== */
+/* ========== Searchbar ========== */
 
 .artifact-search-input:focus {
   outline: none;
@@ -34,7 +34,7 @@
   transition: all 0.2s ease;
 }
 
-/* ========== Grille d'artéfacts ========== */
+/* ========== Artifact Grid ========== */
 .artifact-grid {
   display: grid;
   grid-template-columns: repeat(7, minmax(64px, 1fr));
@@ -48,7 +48,7 @@
   margin-bottom: 1rem;
 }
 
-/* Scrollbar stylisée */
+/* Scrollbar */
 .artifact-grid::-webkit-scrollbar {
   width: 6px;
 }
@@ -67,7 +67,7 @@
   background: var(--color-scrollbar-thumb-hover);
 }
 
-/* ========== Options d'artéfacts ========== */
+/* ========== Artifact option ========== */
 .artifact-option {
   width: 64px;
   height: 64px;
@@ -79,19 +79,19 @@
   box-sizing: border-box;
 }
 
-/* Style au survol (uniquement si non sélectionné) */
+/* Hover (if not selected) */
 .artifact-option:not(.selected):hover {
   border-color: var(--color-item-hover) !important;
   transform: scale(1.05);
 }
 
-/* Style sélectionné */
+/* Selected */
 .artifact-option.selected {
   border-color: var(--color-item-selected) !important;
   transform: scale(1.05);
 }
 
-/* Option "Empty" */
+/* "Empty" Option */
 .artifact-option.empty {
   display: flex;
   align-items: center;
@@ -101,7 +101,7 @@
   font-weight: 500;
 }
 
-/* Image d'artéfact */
+/* Artifact img*/
 .artifact-option img {
   width: 100%;
   height: 100%;
@@ -110,11 +110,11 @@
   display: block;
 }
 
-/* Fallback text lorsque l'image ne charge pas */
+/* Fallback text in case img isn't loading */
 .artifact-fallback {
   width: 100%;
   height: 100%;
-  display: none; /* Caché par défaut */
+  display: none; /* hidden by default */
   align-items: center;
   justify-content: center;
   text-align: center;
@@ -127,7 +127,7 @@
   box-sizing: border-box;
 }
 
-/* ========== Section étoiles ========== */
+/* ========== Stars ========== */
 .artifact-stars-section {
   margin-bottom: 1rem;
   margin-top: 1.5rem;
@@ -145,7 +145,7 @@
   font-weight: 600;
 }
 
-/* ========== Messages d'état ========== */
+/* ========== State message ========== */
 .artifact-loading,
 .artifact-no-results {
   text-align: center;
@@ -159,7 +159,7 @@
   font-style: italic;
 }
 
-/* ========== Titres ========== */
+/* ========== Title ========== */
 .artifact-modal-title {
   font-size: 1.125rem;
   font-weight: bold;

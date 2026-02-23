@@ -1,13 +1,13 @@
 /* SubSlot.css */
 
-/* ========== Grille de sous-slots ========== */
+/* ========== Grid ========== */
 .sub-slots-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 0.25rem;
 }
 
-/* ========== Sous-slot individuel ========== */
+/* ========== Individual sub-slot ========== */
 .sub-slot {
   width: 48px;
   height: 48px;
@@ -35,7 +35,7 @@
   font-size: 0.75rem;
 }
 
-/* ========== Image du sous-slot ========== */
+/* ========== Sub-slot img ========== */
 .sub-slot-image {
   width: 100%;
   height: 100%;
@@ -46,7 +46,7 @@
   z-index: 0;
 }
 
-/* ========== Textes d'étoiles ========== */
+/* ========== Sub-slot stars========== */
 .sub-slot-stars {
   position: absolute;
   bottom: 0;
@@ -89,7 +89,7 @@
   z-index: -1;
 }
 
-/* ========== Bordures d'advancement UW ========== */
+/* ========== Advancement border ========== */
 .sub-slot.uw-advancement-blue {
   border: 2px solid !important;
   border-color: #2175bb !important;
@@ -108,7 +108,7 @@
   box-shadow: 0 0 10px rgba(239, 68, 68, 0.5) !important;
 }
 
-/* ========== Icône d'advancement ========== */
+/* ========== Advancement icon ========== */
 .advancement-corner-icon {
   position: absolute;
   top: -8px;
@@ -128,7 +128,7 @@
   object-fit: contain;
 }
 
-/* ========== Fallback pour images ========== */
+/* ========== Fallback img ========== */
 .sub-slot-fallback {
   display: none;
   width: 100%;

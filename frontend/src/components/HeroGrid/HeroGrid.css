@@ -4,7 +4,7 @@
   /* padding: 8px; */
   /* border-radius: 6px; */
 }
-/* ========== Grille de héros ========== */
+/* ========== Hero Grid ========== */
 .hero-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
@@ -16,7 +16,7 @@
   border-radius: 6px;
 }
 
-/* ========== Barre de filtres ========== */
+/* ========== Grid filters ========== */
 .hero-grid-filters {
   display: flex;
   justify-content: space-between;
@@ -29,7 +29,7 @@
   gap: 0.5rem;
 }
 
-/* ========== Éléments de filtre ========== */
+/* ========== Filters elements ========== */
 .hero-grid-filter-select {
   background-color: var(--color-primary-default);
   border: 1px solid var(--color-border-default);
@@ -85,7 +85,7 @@
   color: var(--color-text-default);
 }
 
-/* ========== Compteur ========== */
+/* ========== Counter========== */
 .hero-grid-counter {
   text-align: center;
   color: #9ca3af;
@@ -98,7 +98,7 @@
   font-weight: 600;
 }
 
-/* ========== Messages d'état ========== */
+/* ========== State message ========== */
 .hero-grid-empty {
   text-align: center;
   padding: 2rem;

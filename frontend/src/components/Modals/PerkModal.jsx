@@ -10,36 +10,35 @@ const PerkModal = ({ data, onClose }) => {
   const { updatePerks, perks } = useTeam();
   const { showOverlay, hideOverlay } = useOverlay();
 
-  // 🔥 CORRECTION : Toujours travailler avec des indices dans le modal
   const [selectedIndices, setSelectedIndices] = useState([]);
   const [usedPoints, setUsedPoints] = useState(0);
   const [perkData, setPerkData] = useState([]);
   const [loading, setLoading] = useState(true);
   const maxPoints = 95;
 
-  // Initialiser les indices depuis les perks du context
+  // Init clues from perk context
   useEffect(() => {
     const heroPerks = perks[teamSlotIndex];
     
-    console.log("🔍 PerkModal - perks reçues:", heroPerks);
+    console.log("PerkModal - perks reçues:", heroPerks);
     
     if (heroPerks) {
-      // Convertir en indices (quel que soit le format)
+      // Convert in clues
       const indices = perksToIndices(heroPerks, heroClass, heroName);
-      console.log("🔍 PerkModal - indices calculés:", indices);
+      console.log("PerkModal - indices calculés:", indices);
       setSelectedIndices(indices);
     } else {
       setSelectedIndices([]);
     }
   }, [teamSlotIndex, perks, heroClass, heroName]);
 
-  // Fonction pour encoder les noms de héros pour les URLs
+  // Function for hero name used in url
   const encodeHeroName = (name) => {
     if (!name) return 'unknown';
     return encodeURIComponent(name.trim());
   };
 
-  // Charger les données des perks depuis MongoDB
+  // Load perk data from MongoDB
   useEffect(() => {
     const loadPerkData = async () => {
       try {
@@ -63,23 +62,23 @@ const PerkModal = ({ data, onClose }) => {
     loadPerkData();
   }, []);
 
-  // Fonction pour trouver une perk dans les données MongoDB
+  // Function to find perk in MongoDB
   const findPerk = (perkImageInfo, rowIndex) => {
     if (!perkImageInfo || perkData.length === 0) return null;
     
     const { name, file, tier, skill, type } = perkImageInfo;
     const heroSlugLower = heroSlug || heroName?.toLowerCase();
     
-    // Chercher par thumbnail exact
+    // Search by thumbnail exact
     let foundPerk = perkData.find(perk => perk.thumbnail === file);
     if (foundPerk) return foundPerk;
     
-    // Chercher par chemin complet pour T3/T5
+    // Search by file path T3/T5
     const fullPath = `heroes/${heroName}/perks/${file}`;
     foundPerk = perkData.find(perk => perk.thumbnail === fullPath);
     if (foundPerk) return foundPerk;
     
-    // Pour T3/T5: chercher par héro, tier, skill et type
+    // T3/T5: Searching by hero, tier, skill and type
     if (tier === 't3' || tier === 't5') {
       foundPerk = perkData.find(perk => 
         perk.heroSlug === heroSlugLower &&
@@ -90,7 +89,7 @@ const PerkModal = ({ data, onClose }) => {
       if (foundPerk) return foundPerk;
     }
     
-    // Chercher par nom (approximatif)
+    // Searching by name
     const searchName = name.toLowerCase();
     foundPerk = perkData.find(perk => 
       perk.name.toLowerCase().includes(searchName) || 
@@ -100,7 +99,7 @@ const PerkModal = ({ data, onClose }) => {
     return foundPerk;
   };
 
-  // Calculer les points utilisés
+  // Calculate points
   useEffect(() => {
     const perkLayout = [
       { count: 5, cost: 10 },
@@ -147,17 +146,17 @@ const PerkModal = ({ data, onClose }) => {
   };
 
   const handleConfirm = () => {
-    console.log("💾 PerkModal - Indices sélectionnés:", selectedIndices);
+    console.log("PerkModal - Indices sélectionnés:", selectedIndices);
     
     // Convertir les indices en structure organisée
     const perksData = indicesToPerks(selectedIndices, heroClass, heroName);
-    console.log("💾 PerkModal - Structure à sauvegarder:", perksData);
+    console.log("PerkModal - Structure à sauvegarder:", perksData);
     
     updatePerks(teamSlotIndex, perksData);
     onClose();
   };
 
-  // Gérer le hover sur une perk - AVEC LES DONNÉES MONGODB
+  // Handle hover
   const handlePerkHover = (perkImageInfo, e) => {
     if (!perkImageInfo) return;
 
@@ -176,7 +175,7 @@ const PerkModal = ({ data, onClose }) => {
     const rowIndex = Math.floor(perkImageInfo.index / 10);
     const cost = getRowCost(rowIndex);
 
-    // Trouver la perk dans les données MongoDB
+    // Find perk in mongodb
     const perkInfo = findPerk(perkImageInfo, rowIndex);
 
     let displayName = "Unknown Perk";
@@ -191,7 +190,7 @@ const PerkModal = ({ data, onClose }) => {
       displayName = perkInfo?.name || perkImageInfo.name || "Unknown Perk";
     }
 
-    // Utiliser la description de MongoDB si disponible
+    // Use mongodb description if possible
     let description = "No description available";
     if (perkInfo?.description) {
       description = perkInfo.description;
@@ -248,7 +247,7 @@ const PerkModal = ({ data, onClose }) => {
     );
   };
 
-  // Informations d'image pour chaque perk
+  // Image info for every perks
   const getPerkImageInfo = (rowIndex, perkIndex, globalIndex) => {
     // Row 1: T1 perks
     if (rowIndex === 0) {

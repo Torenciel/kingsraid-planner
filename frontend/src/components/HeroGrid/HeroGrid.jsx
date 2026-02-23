@@ -30,9 +30,9 @@ const HeroGrid = () => {
 
   return (
     <div className="hero-grid-container">
-      {/* 🎛️ BARRE DE FILTRES */}
+      {/* Filter Bar */}
       <div className="hero-grid-filters">
-        {/* Filtre Disponibilité */}
+        {/* Availability Filter */}
         <select
           value={filters.availability}
           onChange={(e) => updateFilter("availability", e.target.value)}
@@ -42,13 +42,13 @@ const HeroGrid = () => {
           <option value="available">Released Heroes ({availableCount})</option>
         </select>
 
-      {/* 📊 HERO COUNT */}
-      <div className="hero-grid-footer">
-        Showing <span className="highlight">{heroCount}</span> of {totalHeroes} heroes
-      </div>
+        {/* Hero Count */}
+        <div className="hero-grid-footer">
+          Showing <span className="highlight">{heroCount}</span> of {totalHeroes} heroes
+        </div>
 
         <div className="hero-grid-filter-group">
-          {/* Barre de recherche */}
+          {/* Search Input */}
           <input
             type="text"
             placeholder="Search by name..."
@@ -56,7 +56,8 @@ const HeroGrid = () => {
             onChange={(e) => updateFilter("search", e.target.value)}
             className="hero-grid-filter-input"
           />
-          {/* Filtre Rôle */}
+
+          {/* Role Filter */}
           <select
             value={filters.role}
             onChange={(e) => updateFilter("role", e.target.value)}
@@ -72,7 +73,7 @@ const HeroGrid = () => {
             <option value="Priest">Priest</option>
           </select>
           
-          {/* Tri */}
+          {/* Sort */}
           <select
             value={filters.sort}
             onChange={(e) => updateFilter("sort", e.target.value)}
@@ -82,17 +83,16 @@ const HeroGrid = () => {
             <option value="release">Sort by Release</option>
             <option value="masang">Sort by Availability</option>
           </select>
-
-
         </div>
       </div>
 
-      {/* 🎨 GRILLE DES HÉROS */}
+      {/* Hero Grid */}
       <div className="hero-grid">
         {currentHeroes.length === 0 ? (
           <div className="hero-grid-empty">
-            <div className="empty-icon">🔍</div>
-            <div className="empty-text">No heroes found matching your filters</div>
+            <div className="empty-text">
+              No heroes found matching your filters
+            </div>
             <button 
               className="reset-filters-btn"
               onClick={() => {
@@ -114,7 +114,6 @@ const HeroGrid = () => {
           ))
         )}
       </div>
-
     </div>
   );
 };

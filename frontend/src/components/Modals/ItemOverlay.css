@@ -1,8 +1,8 @@
 /* styles/components/itemOverlay.css */
 
-/* ========== Contenu de l'overlay (sans bordure) ========== */
-/* Pas de background, pas de border, pas de padding ici */
-/* Tout le style visuel est dans overlay-container */
+/* ========== Overlay Content ========== */
+/* No background, no border, no padding here*/
+/* All style are in  overlay-container */
 
 .item-overlay-header {
   display: flex;

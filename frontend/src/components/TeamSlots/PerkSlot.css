@@ -1,6 +1,6 @@
 /* PerkSlot.css */
 
-/* ========== Conteneur de slot de perk ========== */
+/* ========== Container ========== */
 .perk-slot-container {
   margin-top: 0px;
   width: 100%;
@@ -11,7 +11,7 @@
   color: #1f2937 !important;
   font-weight: bold;
 }
-/* ========== Slot principal de perk ========== */
+/* ========== Perk main slot ========== */
 .perk-main-slot {
   background: var(--color-primary-default);
   border: 2px solid var(--color-border-default);
@@ -35,7 +35,7 @@
   font-weight: bold;
 }
 
-/* ========== Texte du slot de perk ========== */
+/* ========== Perk slot text ========== */
 .perk-slot-text {
   font-size: 0.75rem;
 }

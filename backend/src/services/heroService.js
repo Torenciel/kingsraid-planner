@@ -1,11 +1,10 @@
-// backend/src/services/heroService.js
 const Hero = require('../models/Hero');
 
 class HeroService {
   async getAllHeroes(filters = {}) {
     const query = {};
     
-    // Appliquer les filtres
+    // Apply filters
     if (filters.class) query['infos.class'] = filters.class;
     if (filters.name) query['infos.name'] = { $regex: filters.name, $options: 'i' };
     if (filters.position) query['infos.position'] = filters.position;
@@ -23,7 +22,7 @@ class HeroService {
     
     if (!hero) return null;
     
-    // Convertir les Maps en objets pour la réponse JSON
+    // Convert Maps to plain objects for JSON response
     return this.formatHeroData(hero);
   }
   
@@ -66,7 +65,7 @@ class HeroService {
       { $sort: { name: 1 } }
     ]);
     
-    // Gérer les valeurs null/undefined
+    // Handle null/undefined values
     return classes.map(c => ({
       name: c.name || 'Unknown',
       count: c.count
@@ -91,25 +90,28 @@ class HeroService {
       { $sort: { name: 1 } }
     ]);
     
-    // Gérer les valeurs null/undefined
+    // Handle null/undefined values
     return positions.map(p => ({
       name: p.name || 'Unknown',
       count: p.count
     }));
   }
   
-  // Méthode pour formater les données du héros
+  // Method to format hero data
   formatHeroData(hero) {
     if (!hero) return null;
     
     const formatted = { ...hero };
     
-    // Convertir les Maps en objets
-    if (hero.skills instanceof Map || (hero.skills && typeof hero.skills === 'object' && hero.skills.constructor.name === 'Map')) {
+    // Convert Maps to plain objects
+    
+    if (hero.skills instanceof Map || 
+        (hero.skills && typeof hero.skills === 'object' && hero.skills.constructor.name === 'Map')) {
       formatted.skills = Object.fromEntries(hero.skills);
     }
     
-    if (hero.books instanceof Map || (hero.books && typeof hero.books === 'object' && hero.books.constructor.name === 'Map')) {
+    if (hero.books instanceof Map || 
+        (hero.books && typeof hero.books === 'object' && hero.books.constructor.name === 'Map')) {
       formatted.books = Object.fromEntries(hero.books);
     }
     
@@ -120,11 +122,12 @@ class HeroService {
       };
     }
     
-    if (hero.uts instanceof Map || (hero.uts && typeof hero.uts === 'object' && hero.uts.constructor.name === 'Map')) {
+    if (hero.uts instanceof Map || 
+        (hero.uts && typeof hero.uts === 'object' && hero.uts.constructor.name === 'Map')) {
       formatted.uts = Object.fromEntries(hero.uts);
     }
     
-    // Convertir UW value Map si nécessaire
+    // Convert UW value Map if needed
     if (hero.uw && hero.uw.value instanceof Map) {
       formatted.uw = {
         ...hero.uw,

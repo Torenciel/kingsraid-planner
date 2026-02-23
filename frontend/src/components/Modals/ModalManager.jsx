@@ -37,7 +37,7 @@ const ModalManager = () => {
 
   if (!activeModal) return null;
 
-  // Gère le clic sur l'overlay (pour fermer le modal)
+  // Close the modal when overlay is clicked
   const handleOverlayClick = (e) => {
     if (e.target === e.currentTarget) {
       closeModal();

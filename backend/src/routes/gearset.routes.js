@@ -1,11 +1,10 @@
-// backend/src/routes/gearset.routes.js
 const express = require('express');
 const router = express.Router();
 const GearsetService = require('../services/gearsetService');
 
 const gearsetService = new GearsetService();
 
-// GET /api/gearsets - Tous les gear sets
+// GET all gear sets
 router.get('/', async (req, res) => {
   try {
     const gearsets = await gearsetService.getAllGearsets();
@@ -27,7 +26,6 @@ router.get('/', async (req, res) => {
     });
     
   } catch (error) {
-    console.error('Error fetching gearsets:', error);
     res.status(500).json({ 
       success: false,
       error: 'Failed to fetch gearsets',
@@ -36,7 +34,7 @@ router.get('/', async (req, res) => {
   }
 });
 
-// GET /api/gearsets/:slug - Un gear set par slug
+// GET gear set by slug
 router.get('/:slug', async (req, res) => {
   try {
     const gearset = await gearsetService.getGearsetBySlug(req.params.slug);
@@ -65,7 +63,6 @@ router.get('/:slug', async (req, res) => {
     });
     
   } catch (error) {
-    console.error(`Error fetching gearset ${req.params.slug}:`, error);
     res.status(500).json({ 
       success: false,
       error: 'Failed to fetch gearset',
@@ -74,7 +71,7 @@ router.get('/:slug', async (req, res) => {
   }
 });
 
-// Optionnel : route de recherche
+// Optional: search route
 router.get('/search/:term', async (req, res) => {
   try {
     const gearsets = await gearsetService.searchGearsets(req.params.term);
@@ -96,7 +93,6 @@ router.get('/search/:term', async (req, res) => {
     });
     
   } catch (error) {
-    console.error(`Error searching gearsets for ${req.params.term}:`, error);
     res.status(500).json({ 
       success: false,
       error: 'Failed to search gearsets',

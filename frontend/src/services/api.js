@@ -1,20 +1,17 @@
 // src/services/api.js
 
-// Base URL configurable
+// Configurable base URL
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3002';
-const API_BASE = '/api'; // Chemin relatif de l'API
+const API_BASE = '/api'; // Relative API path
 
 class ApiService {
   constructor() {
-    // Utilise l'URL complète, pas juste le chemin relatif
+    // Use full URL, not just relative path
     this.baseURL = `${API_BASE_URL}${API_BASE}`;
-    console.log('API Service initialized with base URL:', this.baseURL);
   }
 
   async request(endpoint, options = {}) {
     const url = `${this.baseURL}${endpoint}`;
-    
-    console.log('API Request:', { url, method: options.method || 'GET' });
     
     try {
       const response = await fetch(url, {
@@ -35,16 +32,11 @@ class ApiService {
 
       return await response.json();
     } catch (error) {
-      console.error('API Request failed:', {
-        url,
-        error: error.message,
-        stack: error.stack
-      });
       throw error;
     }
   }
 
-  // ============ HÉROS ============
+  // ============ HEROES ============
 
   async getHeroes(params = {}) {
     const query = new URLSearchParams(params).toString();
@@ -69,40 +61,26 @@ class ApiService {
     return this.request(`/heroes?element=${element}`);
   }
 
-  // ============ ÉQUIPES ============
+  // ============ TEAMS ============
 
+  async saveTeam(teamData) {
+    return this.request('/v2/teams', {
+      method: 'POST',
+      body: JSON.stringify({
+        teamData,
+      })
+    });
+  }
 
-async saveTeam(teamData) {
-  return this.request('/v2/teams', {
-    method: 'POST',
-    body: JSON.stringify({
-      teamData,
-    })
-  });
-}
+  async loadTeam(teamId) {
+    return this.request(`/v2/teams/${teamId}?format=teamcontext`);
+  }
 
-async loadTeam(teamId) {
-  return this.request(`/v2/teams/${teamId}?format=teamcontext`);
-}
+  async getTeams() {
+    return this.request('/v2/teams');
+  }
 
-async getTeams() {
-  return this.request('/v2/teams');
-}
-
-  // async updateTeam(teamId, teamData) {
-  //   return this.request(`/teams/${teamId}`, {
-  //     method: 'PUT',
-  //     body: JSON.stringify(teamData),
-  //   });
-  // }
-
-  // async deleteTeam(teamId) {
-  //   return this.request(`/teams/${teamId}`, {
-  //     method: 'DELETE',
-  //   });
-  // }
-
-  // ============ UTILITAIRES ============
+  // ============ UTILITIES ============
 
   async checkHealth() {
     try {
@@ -131,12 +109,12 @@ async getTeams() {
     try {
       const response = await this.request(`/teams/${teamId}/ownership`);
       return response.isOwner || false;
-    } catch (error) {
+    } catch {
       return false;
     }
   }
 
-  // NOUVEAU : Méthode pour tester la connexion
+  // Method to test connection
   async testConnection() {
     try {
       const response = await fetch(`${API_BASE_URL}/api/debug`, {
@@ -158,33 +136,34 @@ async getTeams() {
   }
 }
 
-// Helper pour les assets
+// Asset helper
 export const getAssetUrl = (assetPath) => {
   const base = process.env.REACT_APP_ASSETS_URL || API_BASE_URL;
   return `${base}${assetPath.startsWith('/') ? assetPath : `/${assetPath}`}`;
 };
 
-// Helper pour les images de héros
+// Hero image helper
 export const getHeroImageUrl = (heroName) => {
   return getAssetUrl(`/kingsraid-data/assets/heroes/${heroName}/ico.png`);
 };
 
-// Helper pour les images d'artéfacts
+// Artifact image helper
 export const getArtifactImageUrl = (artifactName) => {
   const encodedName = encodeURIComponent(artifactName);
   return getAssetUrl(`/kingsraid-data/assets/artifacts/${encodedName}`);
 };
 
-// Singleton pour maintenir la compatibilité
+// Singleton instance
 const apiService = new ApiService();
 
-// Exporter à la fois le singleton et les fonctions individuelles
+// Team API
 export const teamAPI = {
   saveTeam: (teamData) => apiService.saveTeam(teamData),
   loadTeam: (teamId) => apiService.loadTeam(teamId),
   checkOwnership: (teamId) => apiService.checkOwnership(teamId)
 };
 
+// Hero API
 export const heroAPI = {
   getHeroes: (params) => apiService.getHeroes(params),
   getHero: (id) => apiService.getHero(id),
@@ -193,15 +172,15 @@ export const heroAPI = {
   getHeroesByElement: (element) => apiService.getHeroesByElement(element)
 };
 
-// Export pour les assets
+// Asset API
 export const assetsAPI = {
   getHeroImageUrl,
   getArtifactImageUrl,
   getAssetUrl
 };
 
-// Export complet pour les composants qui veulent tout
+// Full export
 export const api = apiService;
 
-// Export par défaut pour faciliter l'import
+// Default export
 export default apiService;

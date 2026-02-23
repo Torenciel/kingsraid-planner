@@ -26,7 +26,7 @@ const StarRating = ({
 
   return (
     <div className={`star-rating-container ${size}`}>
-      {/* Option 0 étoiles (×) */}
+      {/* 0 Stars (×) */}
       {showZeroOption && (
         <span
           className="star-rating-zero"
@@ -38,7 +38,7 @@ const StarRating = ({
         </span>
       )}
 
-      {/* Étoiles 1-5 */}
+      {/* 1-5 Stars */}
       {Array.from({ length: maxStars }, (_, index) => {
         const starValue = index + 1;
         const isFilled = starValue <= value;

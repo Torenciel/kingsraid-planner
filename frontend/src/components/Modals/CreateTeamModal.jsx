@@ -1,12 +1,12 @@
 // frontend/src/components/Modals/CreateTeamModal.jsx
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom'; // ✅ IMPORT AJOUTÉ
+import { useNavigate } from 'react-router-dom';
 import { useTeam } from '../../contexts/TeamContext';
 import './CreateTeamModal.css';
 
 const CreateTeamModal = ({ onTeamCreated, onClose }) => {
   const { createTeamWithModal } = useTeam();
-  const navigate = useNavigate(); // ✅ VARIABLE AJOUTÉE
+  const navigate = useNavigate();
   
   const [teamName, setTeamName] = useState('');
   const [isPublic, setIsPublic] = useState(false);
@@ -15,7 +15,7 @@ const CreateTeamModal = ({ onTeamCreated, onClose }) => {
   
   const handleCreateTeam = async () => {
     if (!teamName || !teamName.trim()) {
-      setError('Veuillez donner un nom à votre équipe');
+      setError('Please provide a team name');
       return;
     }
     
@@ -25,21 +25,17 @@ const CreateTeamModal = ({ onTeamCreated, onClose }) => {
     try {
       const result = await createTeamWithModal(teamName.trim(), isPublic);
       
-      console.log('📝 Résultat création:', result);
-      
       if (result.success) {
-        // ✅ NAVIGATE EST DÉFINI
         navigate(result.fullUrl);
         
         if (onTeamCreated) {
           onTeamCreated(result);
         }
       } else {
-        setError(result.error || 'Erreur lors de la création');
+        setError(result.error || 'Error while creating team');
       }
-    } catch (err) {
-      setError('Erreur de connexion');
-      console.error(err);
+    } catch {
+      setError('Connection error');
     } finally {
       setIsCreating(false);
     }
@@ -51,9 +47,8 @@ const CreateTeamModal = ({ onTeamCreated, onClose }) => {
     }
   };
   
-  // Générer le slug prévisualisé
   const generateSlug = (name) => {
-    if (!name.trim()) return 'nom-de-lequipe';
+    if (!name.trim()) return 'team-name';
     return name
       .toLowerCase()
       .replace(/[^\w\s]/gi, '')
@@ -65,26 +60,26 @@ const CreateTeamModal = ({ onTeamCreated, onClose }) => {
     <div className="create-modal-overlay">
       <div className="create-modal-content">
         <div className="create-modal-header">
-          <h2>🏗️ Créer une nouvelle équipe</h2>
+          <h2>Create a New Team</h2>
           <button onClick={onClose} className="close-button">×</button>
         </div>
         
         <div className="create-modal-body">
           <div className="form-group">
-            <label htmlFor="teamName">Nom de l'équipe *</label>
+            <label htmlFor="teamName">Team Name *</label>
             <input
               id="teamName"
               type="text"
               value={teamName}
               onChange={(e) => setTeamName(e.target.value)}
               onKeyPress={handleKeyPress}
-              placeholder="Ex: Mon équipe PVP Arena"
+              placeholder="Example: My PVP Arena Team"
               className="team-name-input"
               autoFocus
               maxLength={50}
             />
             <div className="char-count">
-              {teamName.length}/50 caractères
+              {teamName.length}/50 characters
             </div>
           </div>
           
@@ -95,19 +90,19 @@ const CreateTeamModal = ({ onTeamCreated, onClose }) => {
                 checked={isPublic}
                 onChange={(e) => setIsPublic(e.target.checked)}
               />
-              <span>Rendre cette équipe publique</span>
-              <small>Visible par tout le monde dans la galerie</small>
+              <span>Make this team public</span>
+              <small>Visible to everyone in the gallery</small>
             </label>
           </div>
           
           {error && (
             <div className="error-message">
-              ⚠️ {error}
+              {error}
             </div>
           )}
           
           <div className="url-preview">
-            <span className="preview-label">Votre URL sera :</span>
+            <span className="preview-label">Your URL will be:</span>
             <div className="url-display">
               <span className="url-base">{window.location.origin}/team/</span>
               <span className="url-id">[id]/</span>
@@ -117,8 +112,8 @@ const CreateTeamModal = ({ onTeamCreated, onClose }) => {
             </div>
             <p className="url-info">
               <small>
-                Cette URL sera unique et pourra être partagée.
-                Les modifications seront sauvegardées automatiquement.
+                This URL will be unique and shareable.
+                Changes will be saved automatically.
               </small>
             </p>
           </div>
@@ -130,7 +125,7 @@ const CreateTeamModal = ({ onTeamCreated, onClose }) => {
             className="cancel-button"
             disabled={isCreating}
           >
-            Annuler
+            Cancel
           </button>
           <button
             onClick={handleCreateTeam}
@@ -140,10 +135,10 @@ const CreateTeamModal = ({ onTeamCreated, onClose }) => {
             {isCreating ? (
               <>
                 <span className="spinner"></span>
-                Création...
+                Creating...
               </>
             ) : (
-              'Créer l\'équipe'
+              "Create Team"
             )}
           </button>
         </div>
