@@ -77,7 +77,7 @@ const BannerSelectorModal = ({ data, onClose }) => {
         {visibleItems.map((item, index) => (
           <div
             key={`${item.type}-${item.value ?? "default"}-${index}`}
-            className="banner-item"
+            className="banner-image"
             onClick={() => {
               if (onSelect) {
                 onSelect({
