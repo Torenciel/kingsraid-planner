@@ -34,7 +34,7 @@ const ProfileHeader = ({
   const bannerUrl =
     user.banner?.type === "hero"
       ? getHeroSplashUrl(user.banner.value)
-      : "/default-banner.png";
+      : "/kings-raid-pandemonium-desaturated.jpg";
 
   // ==============================
   // Handle Avatar Selection

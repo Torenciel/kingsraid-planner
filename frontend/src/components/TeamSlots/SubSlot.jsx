@@ -64,42 +64,97 @@ const SubSlot = ({
   };
 
   /* ===============================
-     IMAGE RESOLUTION
+     IMAGE RESOLUTION (BUILDER + VIEWER SAFE)
   =============================== */
 
-  const getItemImageUrl = () => {
-    if (!item || typeof item !== "object") return "";
-
-    switch (subSlotIndex) {
-      case 0: // UW
-        return `/kingsraid-data/assets/heroes/${heroName}/uw.png`;
-
-      case 1: // UT
-        return `/kingsraid-data/assets/heroes/${heroName}/ut/${item.choice || 1}.png`;
-
-      case 2: // Artifact
-        if (item.artifactInfo?.thumbnail) {
-          const filename = item.artifactInfo.thumbnail.split("/").pop();
-          const encodedFilename = filename.replace(/\s/g, "%20");
-          return `/kingsraid-data/assets/artifacts/${encodedFilename}`;
-        }
-        return "";
-
-      case 3: // GearSet
-        if (item.gearSetInfo?.thumbnail) {
-          const filename = item.gearSetInfo.thumbnail.split("/").pop();
-          const encodedFilename = filename.replace(/\s/g, "%20");
-          return `/kingsraid-data/assets/gearsets/${encodedFilename}`;
-        }
-        if (item.gearSetSlug) {
-          return `/kingsraid-data/assets/gearsets/${item.gearSetSlug}.png`;
-        }
-        return "";
-
-      default:
-        return "";
-    }
+  const formatSlugToFolder = (slug) => {
+    if (!slug) return "";
+    return slug
+      .split("-")
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(" ");
   };
+
+const getItemImageUrl = () => {
+  if (!item || typeof item !== "object") return "";
+
+  const formatSlugToFolder = (slug) => {
+    if (!slug) return "";
+    return slug
+      .split("-")
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(" ");
+  };
+
+  switch (subSlotIndex) {
+
+    /* ===============================
+       UW
+    =============================== */
+    case 0: {
+      if (!heroSlug) return "";
+      const folder = formatSlugToFolder(heroSlug);
+      return `/kingsraid-data/assets/heroes/${folder}/uw.png`;
+    }
+
+    /* ===============================
+       UT
+    =============================== */
+    case 1: {
+      if (!heroSlug) return "";
+      const folder = formatSlugToFolder(heroSlug);
+      return `/kingsraid-data/assets/heroes/${folder}/ut/${item.choice || 1}.png`;
+    }
+
+    /* ===============================
+   ARTIFACT
+=============================== */
+case 2: {
+
+  // Builder metadata version (already correct filename)
+  if (item.artifactInfo?.thumbnail) {
+    const filename = item.artifactInfo.thumbnail.split("/").pop();
+    return `/kingsraid-data/assets/artifacts/${encodeURIComponent(filename)}`;
+  }
+
+  // Viewer slug → convert kebab-case to real filename
+  if (item.artifactSlug) {
+    const filename =
+      item.artifactSlug
+        .split("-")
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(" ");
+
+    // IMPORTANT: manually restore apostrophe for common pattern
+    const fixed = filename.replace("Years", "Year's");
+
+    return `/kingsraid-data/assets/artifacts/${encodeURIComponent(fixed)}.png`;
+  }
+
+  return "";
+}
+
+
+
+    /* ===============================
+       GEARSET
+    =============================== */
+case 3: {
+  const slug = item.gearSetSlug || item.sets?.[0];
+  if (!slug) return "";
+
+  // convert dash to underscore
+  const filename = slug.replace(/-/g, "_");
+
+  return `/kingsraid-data/assets/gearsets/${filename}.png`;
+}
+
+
+    default:
+      return "";
+  }
+};
+
 
   /* ===============================
      GEAR SET RENDERING

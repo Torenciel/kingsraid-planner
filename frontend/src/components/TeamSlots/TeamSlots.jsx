@@ -1,27 +1,38 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useRef } from "react";
 import { useModal } from "../../contexts/ModalContext";
 import { useTeam } from "../../contexts/TeamContext";
 import TeamSlot from "./TeamSlot";
 import { sortTeamByPosition } from "../../utils/sortTeamByPosition";
 import "./TeamSlots.css";
 
-const TeamSlots = () => {
-  const {
-    team,
-    subSlots,
-    subStars,
-    advancements,
-    perks,
-    removeHeroFromTeam,
-  } = useTeam();
-
+const TeamSlots = ({
+  readOnly = false,
+  teamOverride = null,
+  subSlotsOverride = null,
+  subStarsOverride = null,
+  advancementsOverride = null,
+  perksOverride = null,
+}) => {
+  const context = useTeam();
   const { openModal } = useModal();
+
+  const team = teamOverride ?? context.team;
+  const subSlots = subSlotsOverride ?? context.subSlots;
+  const subStars = subStarsOverride ?? context.subStars;
+  const advancements = advancementsOverride ?? context.advancements;
+  const perks = perksOverride ?? context.perks;
+  const removeHeroFromTeam = context.removeHeroFromTeam;
 
   const [artifactsData, setArtifactsData] = useState([]);
   const [heroesData, setHeroesData] = useState({});
   const [gearSetsData, setGearSetsData] = useState([]);
+  const [imagesReady, setImagesReady] = useState(false);
 
-  // Load artifacts
+  const gridRef = useRef(null);
+
+  /* ===============================
+     LOAD ARTIFACTS
+  =============================== */
   useEffect(() => {
     const loadArtifactsData = async () => {
       try {
@@ -32,11 +43,12 @@ const TeamSlots = () => {
         setArtifactsData([]);
       }
     };
-
     loadArtifactsData();
   }, []);
 
-  // Load gear sets
+  /* ===============================
+     LOAD GEARSETS
+  =============================== */
   useEffect(() => {
     const loadGearSetsData = async () => {
       try {
@@ -47,146 +59,222 @@ const TeamSlots = () => {
         setGearSetsData([]);
       }
     };
-
     loadGearSetsData();
   }, []);
 
-  // Load hero metadata (for position)
+  /* ===============================
+     LOAD HERO METADATA
+  =============================== */
   useEffect(() => {
     const loadHeroesData = async () => {
-      const loadedHeroesData = {};
-      const validHeroes = team.filter((hero) => hero !== null);
+      const loaded = {};
+      const validHeroes = team.filter(Boolean);
 
       for (const hero of validHeroes) {
-        if (hero && !heroesData[hero.name]) {
-          try {
-            const heroSlug = hero.name.toLowerCase().replace(/\s+/g, "-");
-            const response = await fetch(
-              `http://localhost:3002/api/v2/heroes/${heroSlug}`
-            );
+        const heroSlug =
+          hero.slug ||
+          hero.name?.toLowerCase().replace(/\s+/g, "-");
 
-            if (response.ok) {
-              const data = await response.json();
-              loadedHeroesData[heroSlug] = data.hero;
-            }
-          } catch {
-            // silent
+        if (!heroSlug || heroesData[heroSlug]) continue;
+
+        try {
+          const response = await fetch(
+            `http://localhost:3002/api/v2/heroes/${heroSlug}`
+          );
+
+          if (response.ok) {
+            const data = await response.json();
+            loaded[heroSlug] = data.hero || data;
           }
-        }
+        } catch {}
       }
 
-      if (Object.keys(loadedHeroesData).length > 0) {
-        setHeroesData((prev) => ({
+      if (Object.keys(loaded).length > 0) {
+        setHeroesData(prev => ({
           ...prev,
-          ...loadedHeroesData,
+          ...loaded,
         }));
       }
     };
 
-    loadHeroesData();
+    if (team && team.length > 0) {
+      loadHeroesData();
+    }
   }, [team]);
 
-  // Build hero metadata map for sorting
-  const heroMap = useMemo(() => {
-    return heroesData;
-  }, [heroesData]);
+  const heroMap = useMemo(() => heroesData, [heroesData]);
 
-  // Build sortable array (DO NOT mutate team)
+  const isHeroMetaReady = useMemo(() => {
+    const validHeroes = team.filter(Boolean);
+    return validHeroes.every(hero => {
+      const heroSlug =
+        hero.slug ||
+        hero.name?.toLowerCase().replace(/\s+/g, "-");
+      return heroMap[heroSlug];
+    });
+  }, [team, heroMap]);
+
+  const hydratedTeam = useMemo(() => {
+    return team.map(hero => {
+      if (!hero) return null;
+
+      const heroSlug =
+        hero.slug ||
+        hero.name?.toLowerCase().replace(/\s+/g, "-");
+
+      const meta = heroMap[heroSlug];
+
+      return {
+        ...hero,
+        role:
+          meta?.infos?.class ||
+          meta?.class ||
+          hero?.role ||
+          null,
+      };
+    });
+  }, [team, heroMap]);
+
   const sortedIndexes = useMemo(() => {
-    const teamWithMeta = team
+    if (!isHeroMetaReady) {
+      return team.map((_, index) => index);
+    }
+
+    const teamWithMeta = hydratedTeam
       .map((hero, index) => {
         if (!hero) return null;
-
         return {
-          heroSlug: hero.slug || hero.name.toLowerCase().replace(/\s+/g, "-"),
+          heroSlug:
+            hero.slug ||
+            hero.name?.toLowerCase().replace(/\s+/g, "-"),
           slotPosition: index,
         };
       })
       .filter(Boolean);
 
     const sorted = sortTeamByPosition(teamWithMeta, heroMap);
+    return sorted.map(item => item.slotPosition);
+  }, [hydratedTeam, heroMap, team, isHeroMetaReady]);
 
-    return sorted.map((item) => item.slotPosition);
-  }, [team, heroMap]);
+  /* ===============================
+     IMAGE LOAD DETECTION
+  =============================== */
+  useEffect(() => {
+    if (!isHeroMetaReady) return;
 
-  const handleSubSlotClick = (teamSlotIndex, subSlotIndex) => {
-    const hero = team[teamSlotIndex];
-    if (!hero) {
-      alert("Please add a hero to this slot first.");
+    const grid = gridRef.current;
+    if (!grid) return;
+
+    const images = grid.querySelectorAll("img");
+
+    if (images.length === 0) {
+      setImagesReady(true);
       return;
     }
+
+    let loaded = 0;
+
+    const check = () => {
+      loaded++;
+      if (loaded === images.length) {
+        setImagesReady(true);
+      }
+    };
+
+    images.forEach(img => {
+      if (img.complete) {
+        check();
+      } else {
+        img.addEventListener("load", check);
+        img.addEventListener("error", check);
+      }
+    });
+
+  }, [isHeroMetaReady, sortedIndexes]);
+
+  /* ===============================
+     SUB SLOT CLICK (RESTORED)
+  =============================== */
+  const handleSubSlotClick = (teamSlotIndex, subSlotIndex) => {
+    if (readOnly || !isHeroMetaReady) return;
+
+    const hero = hydratedTeam[teamSlotIndex];
+    if (!hero) return;
+
+    const heroSlug =
+      hero.slug ||
+      hero.name?.toLowerCase().replace(/\s+/g, "-");
 
     const modalData = {
       teamSlotIndex,
       subSlotIndex,
       heroName: hero.name,
-      heroSlug: hero.name.toLowerCase().replace(/\s+/g, "-"),
+      heroSlug,
       currentItem: subSlots[teamSlotIndex]?.[subSlotIndex],
       currentStars: subStars[teamSlotIndex]?.[subSlotIndex] || 0,
       currentAdvancement: advancements[teamSlotIndex],
     };
 
     switch (subSlotIndex) {
-      case 0:
-        openModal("uw", modalData);
-        break;
-      case 1:
-        openModal("ut", modalData);
-        break;
-      case 2:
-        openModal("artifact", { ...modalData, artifacts: artifactsData });
-        break;
-      case 3:
-        openModal("gearset", { ...modalData, gearSets: gearSetsData });
-        break;
-      default:
-        break;
+      case 0: openModal("uw", modalData); break;
+      case 1: openModal("ut", modalData); break;
+      case 2: openModal("artifact", { ...modalData, artifacts: artifactsData }); break;
+      case 3: openModal("gearset", { ...modalData, gearSets: gearSetsData }); break;
+      default: break;
     }
   };
 
   const handlePerkClick = (teamSlotIndex) => {
-    const hero = team[teamSlotIndex];
-    if (!hero) {
-      alert("Please add a hero to this slot first.");
-      return;
-    }
+    if (readOnly || !isHeroMetaReady) return;
+
+    const hero = hydratedTeam[teamSlotIndex];
+    if (!hero || !hero.role) return;
+
+    const heroSlug =
+      hero.slug ||
+      hero.name?.toLowerCase().replace(/\s+/g, "-");
 
     openModal("perk", {
       teamSlotIndex,
       heroClass: hero.role,
       heroName: hero.name,
-      heroSlug: hero.name.toLowerCase().replace(/\s+/g, "-"),
+      heroSlug,
       currentPerks: perks[teamSlotIndex] || [],
     });
   };
 
-  if (!Array.isArray(team)) {
-    return (
-      <div className="team-slots-container">
-        <div className="text-red-500 p-4">
-          Error: Team data is not an array.
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="team-slots-container">
-      <div className="team-slots-grid" id="team-slots">
-        {sortedIndexes.map((originalIndex) => (
-          <TeamSlot
-            key={originalIndex}
-            hero={team[originalIndex]}
-            teamSlotIndex={originalIndex}
-            subSlots={subSlots[originalIndex]}
-            subStars={subStars[originalIndex]}
-            advancement={advancements[originalIndex] ?? null}
-            perks={perks[originalIndex] || []}
-            onRemoveHero={removeHeroFromTeam}
-            onSubSlotClick={handleSubSlotClick}
-            onPerkClick={handlePerkClick}
-          />
-        ))}
+      {!imagesReady && (
+        <div className="team-spinner-overlay">
+          <div className="team-spinner" />
+        </div>
+      )}
+
+      <div
+        ref={gridRef}
+        className={`team-slots-grid ${imagesReady ? "visible" : "hidden"}`}
+      >
+        {sortedIndexes.map(originalIndex => {
+          const hero = hydratedTeam[originalIndex];
+          if (!hero) return null;
+
+          return (
+            <TeamSlot
+              key={originalIndex}
+              hero={hero}
+              teamSlotIndex={originalIndex}
+              subSlots={subSlots[originalIndex]}
+              subStars={subStars[originalIndex]}
+              advancement={advancements[originalIndex] ?? null}
+              perks={hero.role ? perks[originalIndex] || [] : []}
+              readOnly={readOnly}
+              onRemoveHero={readOnly ? null : removeHeroFromTeam}
+              onSubSlotClick={handleSubSlotClick}
+              onPerkClick={handlePerkClick}
+            />
+          );
+        })}
       </div>
     </div>
   );

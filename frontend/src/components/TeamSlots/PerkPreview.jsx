@@ -1,9 +1,10 @@
 // frontend/src/components/TeamSlots/PerkPreview.jsx
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useOverlay } from "../../contexts/OverlayContext";
 import { api } from "../../services/api";
 import { perksToIndices } from "../../utils/perkConverter";
 import "./PerkPreview.css";
+
 
 const PerkPreview = ({
   selectedPerks,
@@ -15,9 +16,16 @@ const PerkPreview = ({
   const [perkData, setPerkData] = useState([]);
   const [heroSkills, setHeroSkills] = useState({});
   const [loading, setLoading] = useState(false);
-
-  const perkIndices = perksToIndices(selectedPerks, heroClass, heroName);
-
+  
+  
+const perkIndices = useMemo(() => {
+  return perksToIndices(selectedPerks);
+}, [selectedPerks]);
+  
+  // DEBUG T2
+  // console.log("PerkPreview ", "Hero:", heroName, "Class:", heroClass, "Perks:", selectedPerks);
+  // console.log("Computed perkIndices:", perkIndices);
+  
   const getSkillName = (skillNumber) => {
     if (!heroSkills || !heroSkills[skillNumber]) {
       return `Skill ${skillNumber}`;
@@ -242,9 +250,9 @@ const PerkPreview = ({
     showOverlay(overlayContent, position);
   };
 
-  if (!heroName || !selectedPerks || perkIndices.length === 0) {
-    return <div className={`perk-preview ${size}`}></div>;
-  }
+if (!heroName) {
+  return <div className={`perk-preview ${size}`}></div>;
+}
 
   const perkLayout = [5, 5, 4, 4, 2];
 

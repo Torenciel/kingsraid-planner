@@ -9,7 +9,7 @@ const CreateTeamModal = ({ onTeamCreated, onClose }) => {
   const navigate = useNavigate();
   
   const [teamName, setTeamName] = useState('');
-  const [isPublic, setIsPublic] = useState(false);
+  const { isPublic, setIsPublic } = useTeam();
   const [isCreating, setIsCreating] = useState(false);
   const [error, setError] = useState('');
   

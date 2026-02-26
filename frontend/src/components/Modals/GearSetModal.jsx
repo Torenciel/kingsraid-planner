@@ -143,12 +143,12 @@ const GearSetModal = ({ data, onClose }) => {
         <h4 className="hover-title">{gearSet.name}</h4>       
         <div className="hover-bonus-row">
           <span className="hover-bonus-label">2P : </span>
-          <span className="hover-bonus-text">{gearSet.bonus2P}</span>
+          <span className="subslot-text">{gearSet.bonus2P}</span>
         </div>
         
         <div className="hover-bonus-row">
           <span className="hover-bonus-label">4P : </span>
-          <span className={`hover-bonus-text ${pieces >= 4 ? "active" : "inactive"}`}>
+          <span className={`subslot-text ${pieces >= 4 ? "active" : "inactive"}`}>
             {gearSet.bonus4P}
           </span>
         </div>

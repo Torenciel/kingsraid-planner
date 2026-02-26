@@ -3,6 +3,7 @@ const convertTeamContextToDB = (
   teamName = "My Team",
   createdBy = "anonymous"
 ) => {
+  console.log("INSIDE CONVERTER teamContext.isPublic:", teamContext.isPublic);
   const {
     team = [],
     subSlots = [],
@@ -89,12 +90,12 @@ const convertTeamContextToDB = (
         };
       } else if (gearSetItem.gearSetSlug) {
         gearSetConfig = {
-          gearSetSlug: gearSetItem.gearSetSlug,
-          pieces: gearSetItem.pieces || 0,
           isMultiSet: false,
-          sets: []
+          sets: [gearSetItem.gearSetSlug],
+          pieces: gearSetItem.pieces || 0
         };
-      }
+}
+
     }
 
     let perksConfig = {
@@ -261,15 +262,31 @@ const convertTeamContextToDB = (
     ) {
       swAdvancement = null;
     }
+    // Create a uwConfig before calling it in HeroConfig
+    const uwItem = subSlots[slotIndex]?.[0];
 
+    let uwConfig = null;
+
+    if (uwItem !== null && uwItem !== undefined) {
+      uwConfig = {
+        stars: Math.max(0, Math.min(5, uwStars))
+      };
+    }
+
+    // Create a utConfig before calling it in HeroConfig
+    let utConfig = null;
+
+    if (utItem && utItem.choice !== undefined && utItem.choice !== null) {
+      utConfig = {
+        choice: Math.max(0, Math.min(4, parseInt(utItem.choice))),
+        stars: Math.max(0, Math.min(5, utStarsValue))
+      };
+    }
     const heroConfig = {
       heroSlug,
       slotPosition: slotIndex,
-      uw: { stars: Math.max(0, Math.min(5, uwStars)) },
-      ut: {
-        choice: Math.max(0, Math.min(4, utChoice)),
-        stars: Math.max(0, Math.min(5, utStarsValue))
-      },
+      uw: uwConfig,
+      ut: utConfig,
       sw: { advancement: swAdvancement },
       artifact: artifactItem
         ? {
@@ -290,7 +307,7 @@ const convertTeamContextToDB = (
     description: "",
     teamSize,
     heroes: dbHeroes,
-    isPublic: false,
+    isPublic: teamContext.isPublic,
     createdBy,
     views: 0,
     upvotes: 0,

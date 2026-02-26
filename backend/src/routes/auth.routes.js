@@ -288,6 +288,39 @@ router.post("/login", async (req, res) => {
   }
 });
 
+// ================= REFRESH JWT ================= POST /api/v2/auth/refresh
+router.post("/refresh", async (req, res) => {
+  try {
+    const refreshToken = req.cookies?.refreshToken;
+
+    if (!refreshToken) {
+      return res.status(401).json({ success: false });
+    }
+
+    const payload = verifyRefreshToken(refreshToken);
+
+    const user = await User.findById(payload.sub);
+
+    if (!user) {
+      return res.status(401).json({ success: false });
+    }
+
+    const newAccessToken = signAccessToken(user);
+
+    res.cookie("accessToken", newAccessToken, {
+      httpOnly: true,
+      sameSite: "lax",
+      secure: false,
+      maxAge: 10 * 1000, // 1h (matches your jwt setting)
+    });
+
+    return res.json({ success: true });
+
+  } catch (error) {
+    return res.status(401).json({ success: false });
+  }
+});
+
 // ==================== ME ==================== GET /api/v2/auth/me
 router.get("/me", requireAuth, async (req, res) => {
   try {

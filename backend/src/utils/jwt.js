@@ -5,8 +5,8 @@ const ACCESS_TOKEN_SECRET =
 const REFRESH_TOKEN_SECRET =
   process.env.REFRESH_TOKEN_SECRET || "dev-refresh-secret-change-me";
 
-const ACCESS_TOKEN_EXPIRES_IN = "60m";
-const REFRESH_TOKEN_EXPIRES_IN = "7d";
+const ACCESS_TOKEN_EXPIRES_IN = "10s";
+const REFRESH_TOKEN_EXPIRES_IN = "2m";
 
 function signAccessToken(user) {
   return jwt.sign(

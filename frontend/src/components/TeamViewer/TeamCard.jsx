@@ -1,76 +1,86 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import { FaBookmark, FaRegBookmark, FaArrowUp } from "react-icons/fa";
+import { sortTeamByPosition } from "../../utils/sortTeamByPosition";
+import "./TeamCard.css";
 
-const getHeroImage = (slug) => `/assets/heroes/${slug}.webp`;
+const getHeroImagePath = (slug) => {
+  if (!slug) return "";
 
-export default function TeamCard({ team, onUpvote, onBookmark }) {
-  const [upvotes, setUpvotes] = useState(team.upvotes);
-  const [bookmarked, setBookmarked] = useState(false); // later connect to user
+  const folderName = slug
+    .split("-")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+
+  return `/kingsraid-data/assets/heroes/${folderName}/ico.png`;
+};
+
+export default function TeamCard({
+  team,
+  heroMetadataMap,
+  onUpvote,
+  onBookmark,
+  onOpen,
+}) {
+  const navigate = useNavigate();
+  
+  const [upvotes, setUpvotes] = useState(team?.upvotes || 0);
+  const [bookmarked, setBookmarked] = useState(false);
+
+  const sortedHeroes = useMemo(() => {
+    if (!team?.heroes || !heroMetadataMap) return [];
+    return sortTeamByPosition(team.heroes, heroMetadataMap);
+  }, [team, heroMetadataMap]);
 
   const handleUpvote = (e) => {
     e.stopPropagation();
-    setUpvotes((prev) => prev + 1); // optimistic UI
-    onUpvote?.(team._id);
+    setUpvotes((prev) => prev + 1);
+    onUpvote?.(team.id);
   };
 
   const handleBookmark = (e) => {
     e.stopPropagation();
-    setBookmarked(!bookmarked);
-    onBookmark?.(team._id);
+    setBookmarked((prev) => !prev);
+    onBookmark?.(team.id);
   };
 
-  return (
-    <div className="team-card">
-      {/* TEAM NAME */}
-      <h3 className="team-name">{team.name}</h3>
+  if (!team) return null;
 
-      {/* HERO IMAGES */}
-      <div className="team-heroes">
-        {team.heroes
-          .sort((a, b) => a.slotPosition - b.slotPosition)
-          .map((hero) => (
-            <img
-              key={hero._id}
-              src={getHeroImage(hero.heroSlug)}
-              alt={hero.heroSlug}
-              className="hero-avatar"
-            />
+  return (
+    <div className="team-card clickable" onClick={() => navigate(`/team/${team.slug}`)}>
+      <div className="team-left">
+        <h3 className="team-name">{team.name}</h3>
+
+        <div className="team-heroes">
+          {sortedHeroes.map((hero) => (
+            <div key={hero.heroSlug} className="hero-wrapper">
+              <img
+                src={getHeroImagePath(hero.heroSlug)}
+                alt={hero.heroSlug}
+                className="hero-image"
+              />
+            </div>
           ))}
+        </div>
       </div>
 
-      {/* TAGS */}
-      {team.tags.length > 0 && (
-        <div className="team-tags">
-          {team.tags.map((tag, index) => (
-            <span key={index} className="tag">
-              {tag}
-            </span>
-          ))}
-        </div>
-      )}
-
-      {/* FOOTER */}
       <div className="team-footer">
-        <div className="left">
-          <button onClick={handleUpvote} className="icon-btn">
-            <FaArrowUp />
-            <span>{upvotes}</span>
-          </button>
-        </div>
+        <button onClick={handleUpvote} className="icon-btn">
+          <FaArrowUp />
+          <span>{upvotes}</span>
+        </button>
 
-        <div className="right">
-          <button onClick={handleBookmark} className="icon-btn">
-            {bookmarked ? <FaBookmark /> : <FaRegBookmark />}
-          </button>
+        <button onClick={handleBookmark} className="icon-btn">
+          {bookmarked ? <FaBookmark /> : <FaRegBookmark />}
+        </button>
 
-          <span className="bookmark-count">
-            {team.bookmarks}
-          </span>
+        <span className="bookmark-count">
+          {team.bookmarks || 0}
+        </span>
 
-          <span className="created-by">
-            by {team.createdBy}
-          </span>
-        </div>
+        <span className="created-by">
+          by {team.createdBy || "Unknown"}
+        </span>
       </div>
     </div>
   );

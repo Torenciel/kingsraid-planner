@@ -93,18 +93,24 @@ export function useApi(endpoint, options = {}) {
       }
 
       // Timeout
-      const timeoutId = setTimeout(() => {
-        if (abortControllerRef.current) {
-          abortControllerRef.current.abort();
-          setError(new Error('Request timeout'));
-          setLoading(false);
-        }
-      }, mergedOptions.timeout);
+let timeoutId;
 
-      console.log(`🌐 API Request: ${API_V2_BASE}${endpoint}`);
+if (mergedOptions.timeout) {
+  timeoutId = setTimeout(() => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+      setError(new Error('Request timeout'));
+      setLoading(false);
+    }
+  }, mergedOptions.timeout);
+}
+
+
+      console.log(`API Request: ${API_V2_BASE}${endpoint}`);
       const response = await fetch(`${API_V2_BASE}${endpoint}`, mergedOptions);
       
-      clearTimeout(timeoutId);
+      if (timeoutId) clearTimeout(timeoutId);
+
 
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);

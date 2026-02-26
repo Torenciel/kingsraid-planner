@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useState } from "react";
+import api from "../services/api";
 
 const AuthContext = createContext(null);
 
@@ -9,22 +10,14 @@ export const AuthProvider = ({ children }) => {
 
   const fetchMe = async () => {
     try {
-      const response = await fetch(
-        "http://localhost:3002/api/v2/auth/me",
-        {
-          method: "GET",
-          credentials: "include",
-        }
-      );
+      const data = await api.request("/v2/auth/me");
 
-      const data = await response.json();
-
-      if (response.ok && data.authenticated) {
-      setUser({
-        ...data.user,
-        avatarVersion: Date.now(),
-        bannerVersion: Date.now(),
-      });
+      if (data.authenticated) {
+        setUser({
+          ...data.user,
+          avatarVersion: Date.now(),
+          bannerVersion: Date.now(),
+        });
         setIsAuthenticated(true);
       } else {
         setUser(null);
@@ -37,15 +30,18 @@ export const AuthProvider = ({ children }) => {
       setLoading(false);
     }
   };
-  
-  const logout = async () => {
-    await fetch("http://localhost:3002/api/v2/auth/logout", {
-      method: "POST",
-      credentials: "include",
-    });
 
-    setUser(null);
-    setIsAuthenticated(false);
+  const logout = async () => {
+    try {
+      await api.request("/v2/auth/logout", {
+        method: "POST",
+      });
+    } catch (error) {
+      // Even if logout request fails, clear local state
+    } finally {
+      setUser(null);
+      setIsAuthenticated(false);
+    }
   };
 
   useEffect(() => {
@@ -78,8 +74,10 @@ export const AuthProvider = ({ children }) => {
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
+
   if (!context) {
     throw new Error("useAuth must be used within an AuthProvider");
   }
+
   return context;
 };

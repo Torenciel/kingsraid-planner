@@ -8,7 +8,7 @@ export const TeamProvider = ({ children }) => {
   const [teamSize, setTeamSize] = useState(4);
   const [team, setTeam] = useState(Array(teamSize).fill(null));
   const [teamName, setTeamName] = useState('New Team');
-  const [isPublic, setIsPublic] = useState(false);
+  const [isPublic, setIsPublic] = useState(null);
   const [gameMode, setGameMode] = useState('pve');
   
   // State of Gear
@@ -66,7 +66,6 @@ export const TeamProvider = ({ children }) => {
   const saveTeam = async (teamName = 'My Team') => {
     try {
       setLoading(true);
-      
       console.log('=== TEAMCONTEXT - saveTeam ===');
       console.log('Advancement before:', advancements);
       console.log('Type:', advancements.map(a => typeof a));
@@ -175,132 +174,150 @@ const response = await fetch(`${API_BASE_URL}/api/v2/teams`, {
   };
 
   // Convert data from backend to frontend
-  const convertDBToTeamContext = (dbTeam) => {
-    if (!dbTeam) return null;
-    
-    const frontendTeam = Array(dbTeam.teamSize).fill(null);
-    const frontendSubSlots = Array(dbTeam.teamSize).fill(null).map(() => Array(4).fill(null));
-    const frontendSubStars = Array(dbTeam.teamSize).fill(null).map(() => Array(4).fill(0));
-    const frontendPerks = Array(dbTeam.teamSize).fill(null);
-    const frontendAdvancements = Array(dbTeam.teamSize).fill(null);
-    
-    console.log('=== convertDBToTeamContext ===');
-    console.log('Heros number:', dbTeam.heroes?.length);
-    
-    // Traiter chaque héros
-    dbTeam.heroes?.forEach(heroConfig => {
-      const slotIndex = heroConfig.slotPosition;
-      
-      console.log(`\n👤 Héros ${slotIndex} (${heroConfig.heroSlug}):`);
-      
-      // Héros principal
-      if (heroConfig.heroInfo) {
-        frontendTeam[slotIndex] = {
-          id: heroConfig.heroSlug,
-          slug: heroConfig.heroSlug,
-          name: heroConfig.heroInfo.name,
-          role: heroConfig.heroInfo.class,
-          image: heroConfig.heroInfo.thumbnail,
-          infos: heroConfig.heroInfo
-        };
-      }
-      
-      // UW (slot 0)
-      if (heroConfig.uw) {
-        frontendSubStars[slotIndex][0] = heroConfig.uw.stars || 0;
-      }
-      
-      
-      // SW
-      if (heroConfig.sw) {
-        let advancementValue = heroConfig.sw.advancement;
-        // console.log('  SW advancement from DB:', {
-        //   value: advancementValue,
-        //   type: typeof advancementValue
-        // });
-        
-        // If it's an object, set null
-        if (advancementValue && typeof advancementValue === 'object') {
-          advancementValue = null;
-        }
-        
-        // Convert string into number if needed
-        if (typeof advancementValue === 'string') {
-          if (advancementValue === "null" || advancementValue === "none") {
-            advancementValue = null;
-          } else if (["0", "1", "2"].includes(advancementValue)) {
-            advancementValue = parseInt(advancementValue);
-          }
-        }
-        
-        // Validate final value
-        if (![null, 0, 1, 2].includes(advancementValue)) {
-          advancementValue = null;
-        }
-        
-        frontendAdvancements[slotIndex] = advancementValue;
-      }
-      
-      // UT (slot 1)
-      if (heroConfig.ut) {
-        frontendSubSlots[slotIndex][1] = {
-          choice: heroConfig.ut.choice || 0
-        };
-        frontendSubStars[slotIndex][1] = heroConfig.ut.stars || 0;
-      }
+const convertDBToTeamContext = (dbTeam) => {
+  if (!dbTeam) return null;
 
-      // Artifact (slot 3)
-      if (heroConfig.artifact?.artifactSlug) {
-        frontendSubSlots[slotIndex][2] = {
-          artifactSlug: heroConfig.artifact.artifactSlug,
-          ...heroConfig.artifact.artifactInfo
-        };
-        frontendSubStars[slotIndex][2] = heroConfig.artifact.stars || 0;
-      }
-      
-      // Gear Set (slot 4)
-      if (heroConfig.gearSet) {
-        if (heroConfig.gearSet.isMultiSet && heroConfig.gearSet.sets) {
-          frontendSubSlots[slotIndex][3] = {
-            sets: heroConfig.gearSet.sets,
-            isMultiSet: true,
-            gearSetSlug: heroConfig.gearSet.sets[0],
-            gearSetInfo: heroConfig.gearSet.gearSetInfo,
-            set1Info: heroConfig.gearSet.set1Info,
-            set2Info: heroConfig.gearSet.set2Info,
-            pieces: 2
-          };
-        } else {
-          frontendSubSlots[slotIndex][3] = {
-            gearSetSlug: heroConfig.gearSet.gearSetSlug,
-            gearSetInfo: heroConfig.gearSet.gearSetInfo,
-            pieces: heroConfig.gearSet.pieces || 0
-          };
-        }
-      }
-      
-      // Perks
-      if (heroConfig.perks) {
-        frontendPerks[slotIndex] = heroConfig.perks;
-      }
-    });
-    
-    console.log('Advancement converted:', frontendAdvancements);
-    
-    return {
-      id: dbTeam._id?.toString() || dbTeam.id,
-      name: dbTeam.name,
-      teamSize: dbTeam.teamSize,
-      team: frontendTeam,
-      subSlots: frontendSubSlots,
-      subStars: frontendSubStars,
-      perks: frontendPerks,
-      advancements: frontendAdvancements,
-      isPublic: dbTeam.isPublic,
-      gameMode: dbTeam.gameMode,
-      createdAt: dbTeam.createdAt
+  const size = dbTeam.teamSize || 4;
+
+  const frontendTeam = Array(size).fill(null);
+  const frontendSubSlots = Array(size).fill(null).map(() => Array(4).fill(null));
+  const frontendSubStars = Array(size).fill(null).map(() => Array(4).fill(0));
+  const frontendPerks = Array(size).fill(null);
+  const frontendAdvancements = Array(size).fill(null);
+
+  dbTeam.heroes?.forEach(heroConfig => {
+    const slotIndex = heroConfig.slotPosition;
+    if (typeof slotIndex !== "number") return;
+
+    /* ===============================
+       HERO
+    =============================== */
+
+    frontendTeam[slotIndex] = {
+      id: heroConfig.heroSlug,
+      slug: heroConfig.heroSlug,
+      name: heroConfig.heroSlug
+        .split("-")
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(" "),
+      role: null,
+      image: null,
+      infos: {}
     };
+
+    /* ===============================
+       UW (slot 0)
+    =============================== */
+
+    if (heroConfig.uw) {
+      frontendSubSlots[slotIndex][0] = {
+        stars: heroConfig.uw.stars ?? 0
+      };
+      frontendSubStars[slotIndex][0] = heroConfig.uw.stars ?? 0;
+    } else {
+      frontendSubSlots[slotIndex][0] = null;
+      frontendSubStars[slotIndex][0] = 0;
+    }
+
+    /* ===============================
+       SW / ADVANCEMENT
+    =============================== */
+
+    let adv = heroConfig.sw?.advancement;
+
+    if (![null, 0, 1, 2].includes(adv)) {
+      adv = null;
+    }
+
+    frontendAdvancements[slotIndex] = adv;
+
+    /* ===============================
+       UT (slot 1)
+    =============================== */
+
+    if (
+      heroConfig.ut &&
+      heroConfig.ut.choice !== null &&
+      heroConfig.ut.choice !== undefined
+    ) {
+      frontendSubSlots[slotIndex][1] = {
+        choice: heroConfig.ut.choice
+      };
+      frontendSubStars[slotIndex][1] =
+        heroConfig.ut.stars ?? 0;
+    } else {
+      frontendSubSlots[slotIndex][1] = null;
+      frontendSubStars[slotIndex][1] = 0;
+    }
+
+    /* ===============================
+       ARTIFACT (slot 2)
+    =============================== */
+
+    if (heroConfig.artifact?.artifactSlug) {
+      frontendSubSlots[slotIndex][2] = {
+        artifactSlug: heroConfig.artifact.artifactSlug
+      };
+      frontendSubStars[slotIndex][2] = heroConfig.artifact.stars || 0;
+    }
+
+    /* ===============================
+       GEARSET (slot 3)
+    =============================== */
+
+    if (heroConfig.gearSet?.sets?.length > 0) {
+      frontendSubSlots[slotIndex][3] = {
+        gearSetSlug: heroConfig.gearSet.sets[0],
+        sets: heroConfig.gearSet.sets,
+        pieces: heroConfig.gearSet.pieces || 0
+      };
+    }
+
+    /* ===============================
+       PERKS
+    =============================== */
+    if (heroConfig.perks) {
+  frontendPerks[slotIndex] = {
+    t1: {
+      selected: heroConfig.perks.t1?.selected || []
+    },
+    t2: {
+      selected: heroConfig.perks.t2?.selected || []
+    },
+    t3: {
+      s1: heroConfig.perks.t3?.s1 || null,
+      s2: heroConfig.perks.t3?.s2 || null,
+      s3: heroConfig.perks.t3?.s3 || null,
+      s4: heroConfig.perks.t3?.s4 || null
+    },
+    t5: heroConfig.perks.t5 || null
   };
+} else {
+  frontendPerks[slotIndex] = {
+    t1: { selected: [] },
+    t2: { selected: [] },
+    t3: { s1: null, s2: null, s3: null, s4: null },
+    t5: null
+  };
+}
+
+  });
+
+  return {
+    id: dbTeam._id?.toString() || dbTeam.id,
+    name: dbTeam.name,
+    teamSize: size,
+    team: frontendTeam,
+    subSlots: frontendSubSlots,
+    subStars: frontendSubStars,
+    perks: frontendPerks,
+    advancements: frontendAdvancements,
+    isPublic: dbTeam.isPublic,
+    gameMode: dbTeam.gameMode,
+    createdAt: dbTeam.createdAt
+  };
+};
+
 
   // Add Hero to the team
   const addHeroToTeam = (hero) => {
@@ -457,6 +474,32 @@ const response = await fetch(`${API_BASE_URL}/api/v2/teams`, {
     loadTeams();
   }, []);
 
+  // Load User preference to check defaultTeamVisibility is set to public or private
+  useEffect(() => {
+  const loadUserPreference = async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/v2/auth/me`, {
+        credentials: 'include'
+      });
+
+      if (!response.ok) return;
+
+      const result = await response.json();
+
+      const defaultVisibility =
+        result.user?.preferences?.defaultTeamVisibility;
+
+      setIsPublic(defaultVisibility === "public");
+
+    } catch (err) {
+      console.error("Failed to load user preferences", err);
+      setIsPublic(false);
+    }
+  };
+
+  loadUserPreference();
+}, []);
+
   // Value
   const value = {
     // State
@@ -489,7 +532,9 @@ const response = await fetch(`${API_BASE_URL}/api/v2/teams`, {
     loadTeam,
     resetTeam,
     loadTeams,
-    
+    applyTeamData,
+    convertDBToTeamContext,
+
     // Utils
     getAdvancementDisplay,
     

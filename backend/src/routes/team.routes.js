@@ -13,6 +13,7 @@ try {
 
 // Create team (authenticated)
 router.post('/', requireAuth, async (req, res) => {
+  
   try {
     const { teamData } = req.body;
 
@@ -28,6 +29,7 @@ router.post('/', requireAuth, async (req, res) => {
       teamData.teamTitle || 'My Team',
       req.user.displayName
     );
+console.log("dbTeamData.isPublic AFTER CONVERT:", dbTeamData.isPublic);
 
     dbTeamData.author = req.user.id;
     dbTeamData.createdBy = req.user.displayName;
@@ -61,10 +63,20 @@ router.post('/', requireAuth, async (req, res) => {
   }
 });
 
-// Get team by ID
-router.get('/:id', async (req, res) => {
+// Get team by id or slug
+router.get('/:identifier', async (req, res) => {
   try {
-    const team = await Team.findById(req.params.id);
+    const { identifier } = req.params;
+
+    let team;
+
+    // If it looks like Mongo ObjectId → search by id
+    if (identifier.match(/^[0-9a-fA-F]{24}$/)) {
+      team = await Team.findById(identifier);
+    } else {
+      // Otherwise treat as slug
+      team = await Team.findOne({ slug: identifier });
+    }
 
     if (!team) {
       return res.status(404).json({
@@ -72,6 +84,10 @@ router.get('/:id', async (req, res) => {
         error: 'Team not found'
       });
     }
+
+    // Increment views only when accessed publicly
+    team.views += 1;
+    await team.save();
 
     res.json({
       success: true,
@@ -86,6 +102,7 @@ router.get('/:id', async (req, res) => {
   }
 });
 
+
 // List latest public teams
 router.get('/', async (req, res) => {
   try {
@@ -94,17 +111,24 @@ router.get('/', async (req, res) => {
       .limit(20)
       .lean();
 
-    res.json({
-      success: true,
-      count: teams.length,
-      teams: teams.map(t => ({
-        id: t._id,
-        name: t.name,
-        teamSize: t.teamSize,
-        createdAt: t.createdAt,
-        heroesCount: t.heroes?.length || 0
-      }))
-    });
+res.json({
+  success: true,
+  count: teams.length,
+  teams: teams.map(t => ({
+    id: t._id,
+    name: t.name,
+    slug: t.slug,
+    teamSize: t.teamSize,
+    heroes: t.heroes || [],
+    tags: t.tags || [],
+    upvotes: t.upvotes || 0,
+    bookmarks: t.bookmarks || 0,
+    createdBy: t.createdBy,
+    createdAt: t.createdAt
+  }))
+});
+
+
 
   } catch (error) {
     res.status(500).json({
@@ -136,48 +160,6 @@ router.get('/test/connection', async (req, res) => {
     res.status(500).json({
       success: false,
       error: error.message
-    });
-  }
-});
-
-// Test SW simple (authenticated because author required)
-router.post('/test/sw-simple', requireAuth, async (req, res) => {
-  try {
-    const testTeam = {
-      name: 'Test SW Simple',
-      teamSize: 4,
-      heroes: [{
-        heroSlug: 'test-hero',
-        slotPosition: 0,
-        uw: { stars: 0 },
-        ut: { choice: 0, stars: 0 },
-        sw: { advancement: 1 },
-        artifact: { artifactSlug: null, stars: 0 },
-        gearSet: { gearSetSlug: null, pieces: 0, isMultiSet: false, sets: [] },
-        perks: { t3: { s1: null, s2: null, s3: null, s4: null }, t5: null },
-        updatedAt: new Date()
-      }],
-      isPublic: false,
-      createdBy: req.user.displayName,
-      author: req.user.id,
-      formatVersion: 3
-    };
-
-    const team = new Team(testTeam);
-    await team.validate();
-    const savedTeam = await team.save();
-
-    res.json({
-      success: true,
-      teamId: savedTeam._id,
-      swAdvancement: savedTeam.heroes[0].sw.advancement
-    });
-
-  } catch (error) {
-    res.status(400).json({
-      success: false,
-      error: error.message,
-      validation: error.errors
     });
   }
 });

@@ -2,6 +2,7 @@
 import {
   BrowserRouter,
   Navigate,
+  Router,
   Route,
   Routes,
   useLocation,
@@ -15,6 +16,7 @@ import Profile from "./Routes/Profile";
 import NotFound from "./Routes/NotFound";
 import Register from "./Routes/Register";
 import TeamEdit from "./Routes/TeamEdit";
+import TeamViewer from "./Routes/TeamViewer";
 import Teams from "./Routes/Teams";
 import ChangeUsername from "./Routes/Account/ChangeUsername";
 import ChangePassword from "./Routes/Account/ChangePassword";
@@ -53,6 +55,7 @@ function AppRoutes() {
       <Route path="/about" element={<About />} />
       <Route path="/teams/:tab" element={<Teams key={location.key} />} />
       <Route path="/teams" element={<Navigate to="/teams/public" replace />} />
+      <Route path="/team/:slug" element={<TeamViewer />} />
       <Route path="/verify-pending" element={<VerifyPending />} />
       <Route path="/verify-email" element={<VerifyEmail />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />

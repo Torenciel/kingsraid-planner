@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { FaStarOfLife, FaSearch, FaTrash } from "react-icons/fa";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
+import TeamList from "../components/TeamViewer/TeamList";
 import "./Teams.css";
 
 const Teams = () => {
@@ -588,7 +589,9 @@ const Teams = () => {
           </>
         )}
       </div>
+    <TeamList />
     </div>
+    
   );
 };
 

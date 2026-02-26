@@ -1,6 +1,32 @@
 import "./CharacterSlot.css";
 
-const CharacterSlot = ({ hero, onRemove }) => {
+const getHeroSlug = (hero) => {
+  if (!hero) return null;
+
+  if (hero.slug) return hero.slug;
+
+  if (hero.id && typeof hero.id === "string") return hero.id;
+
+  if (hero.name) {
+    return hero.name.toLowerCase().replace(/\s+/g, "-");
+  }
+
+  return null;
+};
+
+const getHeroImagePath = (hero) => {
+  const slug = getHeroSlug(hero);
+  if (!slug) return "";
+
+  const folderName = slug
+    .split("-")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+
+  return `/kingsraid-data/assets/heroes/${folderName}/ico.png`;
+};
+
+const CharacterSlot = ({ hero, onRemove, readOnly = false }) => {
   const getClassIconPath = (className) => {
     const classMap = {
       Knight: "/kingsraid-data/assets/classes_hd/knight.png",
@@ -22,27 +48,40 @@ const CharacterSlot = ({ hero, onRemove }) => {
     );
   }
 
-  const classIconPath = getClassIconPath(hero.role);
+  const classIconPath = getClassIconPath(hero?.role);
 
   return (
     <div className="character-slot">
-      <img src={hero.image} alt={hero.name} className="character-slot-image" />
-      <div className="team-hero-name">{hero.name}</div>
+      <img
+        src={getHeroImagePath(hero)}
+        alt={hero?.name}
+        className="character-slot-image"
+      />
+
+      <div className="team-hero-name">{hero?.name}</div>
+
       {classIconPath && (
-        <img src={classIconPath} alt={hero.role} className="team-class-icon" />
+        <img
+          src={classIconPath}
+          alt={hero?.role}
+          className="team-class-icon"
+        />
       )}
-      <div className="team-remove-btn" onClick={onRemove}>
-        <svg
-          width="12"
-          height="12"
-          viewBox="0 0 12 12"
-          fill="none"
-          stroke="white"
-          strokeWidth="2"
-        >
-          <path d="M3 3L9 9M9 3L3 9" />
-        </svg>
-      </div>
+
+      {!readOnly && (
+        <div className="team-remove-btn" onClick={onRemove}>
+          <svg
+            width="12"
+            height="12"
+            viewBox="0 0 12 12"
+            fill="none"
+            stroke="white"
+            strokeWidth="2"
+          >
+            <path d="M3 3L9 9M9 3L3 9" />
+          </svg>
+        </div>
+      )}
     </div>
   );
 };

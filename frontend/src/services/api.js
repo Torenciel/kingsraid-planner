@@ -10,31 +10,44 @@ class ApiService {
     this.baseURL = `${API_BASE_URL}${API_BASE}`;
   }
 
-  async request(endpoint, options = {}) {
-    const url = `${this.baseURL}${endpoint}`;
-    
-    try {
-      const response = await fetch(url, {
-        ...options,
-        headers: {
-          'Content-Type': 'application/json',
-          ...options.headers,
-        },
-      });
+async request(endpoint, options = {}, retry = true) {
+  const url = `${this.baseURL}${endpoint}`;
 
-      if (!response.ok) {
-        const error = await response.json().catch(() => ({
-          error: `HTTP ${response.status}`,
-          message: response.statusText
-        }));
-        throw new Error(error.message || `HTTP ${response.status}`);
+  const response = await fetch(url, {
+    ...options,
+    credentials: "include",
+    headers: {
+      'Content-Type': 'application/json',
+      ...options.headers,
+    },
+  });
+
+  // If unauthorized, try refresh once
+  if (response.status === 401 && retry) {
+    const refreshResponse = await fetch(
+      `${this.baseURL}/v2/auth/refresh`,
+      {
+        method: "POST",
+        credentials: "include",
       }
+    );
 
-      return await response.json();
-    } catch (error) {
-      throw error;
+    if (refreshResponse.ok) {
+      // Retry original request once
+      return this.request(endpoint, options, false);
     }
   }
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({
+      error: `HTTP ${response.status}`,
+      message: response.statusText
+    }));
+    throw new Error(error.message || `HTTP ${response.status}`);
+  }
+
+  return await response.json();
+}
 
   // ============ HEROES ============
 

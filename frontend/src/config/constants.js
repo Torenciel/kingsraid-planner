@@ -1,4 +1,4 @@
-// Configuration partagée
+// Shared config
 export const CONFIG = {
   API: {
     BASE_URL: process.env.REACT_APP_API_URL || 'http://localhost:3002',
@@ -17,6 +17,6 @@ export const CONFIG = {
   }
 };
 
-// Helper pour construire les URLs
+// Helper to buld url
 export const buildUrl = (endpoint) => `${CONFIG.API.BASE_URL}${endpoint}`;
 export const buildAssetUrl = (assetPath) => `${CONFIG.API.ASSETS_URL}${assetPath}`;
