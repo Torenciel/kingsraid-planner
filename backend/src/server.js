@@ -43,14 +43,19 @@ app.use(cookieParser());
 |--------------------------------------------------------------------------
 */
 
-const MONGODB_URI =
-  process.env.MONGODB_URI || 'mongodb://localhost:27017/kingsraid-planner';
+// Fallback connection local
+const MONGODB_URI = process.env.MONGODB_URI;
+
+if (!MONGODB_URI) {
+  throw new Error("MONGODB_URI is not defined");
+}
 
 mongoose
   .connect(MONGODB_URI)
   .then(() => {
     console.log('MongoDB connected');
     console.log(`Database: ${mongoose.connection.db.databaseName}`);
+    console.log(`Host: ${mongoose.connection.host}`);
   })
   .catch((err) => {
     console.error('MongoDB connection error:', err);
