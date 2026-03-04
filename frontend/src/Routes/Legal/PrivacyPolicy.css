@@ -1,0 +1,12 @@
+.main-text{
+    text-align: start;
+}
+
+.main-text h2 {
+    margin-top: 20px;
+    font-weight: 600;
+}
+
+.main-text p {
+    margin-top: 10px;
+}

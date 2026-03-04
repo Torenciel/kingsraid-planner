@@ -1,12 +1,18 @@
 const jwt = require("jsonwebtoken");
 
-const ACCESS_TOKEN_SECRET =
-  process.env.ACCESS_TOKEN_SECRET || "dev-access-secret-change-me";
-const REFRESH_TOKEN_SECRET =
-  process.env.REFRESH_TOKEN_SECRET || "dev-refresh-secret-change-me";
+if (!process.env.ACCESS_TOKEN_SECRET) {
+  throw new Error("ACCESS_TOKEN_SECRET is not defined");
+}
 
-const ACCESS_TOKEN_EXPIRES_IN = "10s";
-const REFRESH_TOKEN_EXPIRES_IN = "2m";
+if (!process.env.REFRESH_TOKEN_SECRET) {
+  throw new Error("REFRESH_TOKEN_SECRET is not defined");
+}
+
+const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET;
+const REFRESH_TOKEN_SECRET = process.env.REFRESH_TOKEN_SECRET;
+
+const ACCESS_TOKEN_EXPIRES_IN = "1h";
+const REFRESH_TOKEN_EXPIRES_IN = "7d";
 
 function signAccessToken(user) {
   return jwt.sign(

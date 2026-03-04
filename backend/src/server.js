@@ -27,9 +27,22 @@ const KINGSRAID_DATA_PATH = path.join(PUBLIC_PATH, 'kingsraid-data');
 |--------------------------------------------------------------------------
 */
 
+const allowedOrigins = [
+  "http://localhost:3000",
+  "https://kingsraid-planner.com"
+];
+
 app.use(
   cors({
-    origin: 'http://localhost:3000',
+    origin: function (origin, callback) {
+      if (!origin) return callback(null, true);
+
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+
+      return callback(new Error("Not allowed by CORS"));
+    },
     credentials: true,
   })
 );

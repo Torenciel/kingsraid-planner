@@ -1,4 +1,4 @@
-import { FaDiscord, FaYoutube, FaTwitch } from "react-icons/fa";
+import { FaDiscord, FaYoutube, FaTwitch, FaPen } from "react-icons/fa";
 import "./ProfileHeader.css";
 
 import { getHeroSplashUrl } from "../../utils/heroAssetResolver";
@@ -107,8 +107,8 @@ const ProfileHeader = ({
 
 
           {editable && (
-            <div className="profile-avatar-overlay">
-              Change avatar
+            <div className="profile-avatar-overlay icon">
+              <FaPen />
             </div>
           )}
         </div>

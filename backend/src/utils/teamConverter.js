@@ -4,6 +4,7 @@ const convertTeamContextToDB = (
   createdBy = "anonymous"
 ) => {
   console.log("INSIDE CONVERTER teamContext.isPublic:", teamContext.isPublic);
+
   const {
     team = [],
     subSlots = [],
@@ -25,7 +26,7 @@ const convertTeamContextToDB = (
       hero.id ||
       hero.name?.toLowerCase().replace(/\s+/g, "-");
 
-    const heroClass = hero.class || "General";
+    const heroClass = hero.class || hero.role || "General";
 
     const uwStars = subStars[slotIndex]?.[0] || 0;
 
@@ -94,8 +95,7 @@ const convertTeamContextToDB = (
           sets: [gearSetItem.gearSetSlug],
           pieces: gearSetItem.pieces || 0
         };
-}
-
+      }
     }
 
     let perksConfig = {
@@ -108,7 +108,63 @@ const convertTeamContextToDB = (
     const heroPerks = perks[slotIndex];
 
     if (heroPerks) {
+
+      const T2_MAPPING = {
+        Knight: [
+          "experienced-fighter",
+          "excellent-strategy",
+          "battle-cry",
+          "shield-of-protection",
+          "swift-move"
+        ],
+        Warrior: [
+          "opportune-strike",
+          "warlike",
+          "offensive-guard",
+          "tactical-foresight",
+          "blood-wrath"
+        ],
+        Assassin: [
+          "target-weakness",
+          "swift-and-nimble",
+          "tactical-foresight",
+          "opportune-strike",
+          "vital-detection"
+        ],
+        Mechanic: [
+          "target-weakness",
+          "ready-cannons",
+          "pressure-point",
+          "special-bullet",
+          "amplified-gunpowder"
+        ],
+        Archer: [
+          "precision-shot",
+          "eagle-eye",
+          "mortal-wound",
+          "opportune-strike",
+          "concentration"
+        ],
+        Wizard: [
+          "deception",
+          "moral-rise",
+          "blessing-of-mana",
+          "circuit-burst",
+          "destruction"
+        ],
+        Priest: [
+          "vengeful-curse",
+          "goddess-blessing",
+          "inner-peace",
+          "blessing-of-mana",
+          "swiftness"
+        ]
+      };
+
+      const classMapping = T2_MAPPING[heroClass] || [];
+
       if (Array.isArray(heroPerks)) {
+
         const t1Slugs = [
           "atk-up",
           "hp-up",
@@ -126,73 +182,15 @@ const convertTeamContextToDB = (
           }
         });
 
-        if (heroClass) {
-          const T2_MAPPING = {
-            Knight: [
-              "experienced-fighter",
-              "excellent-strategy",
-              "battle-cry",
-              "shield-of-protection",
-              "swift-move"
-            ],
-            Warrior: [
-              "opportune-strike",
-              "warlike",
-              "offensive-guard",
-              "tactical-foresight",
-              "blood-wrath"
-            ],
-            Assassin: [
-              "target-weakness",
-              "swift-and-nimble",
-              "tactical-foresight",
-              "opportune-strike",
-              "vital-detection"
-            ],
-            Mechanic: [
-              "target-weakness",
-              "ready-cannons",
-              "pressure-point",
-              "special-bullet",
-              "amplified-gunpowder"
-            ],
-            Archer: [
-              "precision-shot",
-              "eagle-eye",
-              "mortal-wound",
-              "opportune-strike",
-              "concentration"
-            ],
-            Wizard: [
-              "deception",
-              "moral-rise",
-              "blessing-of-mana",
-              "circuit-burst",
-              "destruction"
-            ],
-            Priest: [
-              "vengeful-curse",
-              "goddess-blessing",
-              "inner-peace",
-              "blessing-of-mana",
-              "swiftness"
-            ]
-          };
-
-          const classMapping = T2_MAPPING[heroClass] || [];
-
-          heroPerks.forEach(index => {
-            if (index >= 10 && index < 15) {
-              const colIndex = index - 10;
-              if (classMapping[colIndex]) {
-                const slug = classMapping[colIndex];
-                if (!perksConfig.t2.selected.includes(slug)) {
-                  perksConfig.t2.selected.push(slug);
-                }
-              }
+        heroPerks.forEach(index => {
+          if (index >= 10 && index < 15) {
+            const colIndex = index - 10;
+            const slug = classMapping[colIndex];
+            if (slug && !perksConfig.t2.selected.includes(slug)) {
+              perksConfig.t2.selected.push(slug);
             }
-          });
-        }
+          }
+        });
 
         const t3Map = {
           20: { skill: "s1", type: "light" },
@@ -214,9 +212,11 @@ const convertTeamContextToDB = (
 
         heroPerks.forEach(index => {
           if (index === 40) perksConfig.t5 = "light";
-          else if (index === 41) perksConfig.t5 = "dark";
+          if (index === 41) perksConfig.t5 = "dark";
         });
+
       } else if (typeof heroPerks === "object") {
+
         if (heroPerks.t1) {
           perksConfig.t1.selected = Array.isArray(heroPerks.t1)
             ? heroPerks.t1
@@ -224,9 +224,29 @@ const convertTeamContextToDB = (
         }
 
         if (heroPerks.t2) {
-          perksConfig.t2.selected = Array.isArray(heroPerks.t2)
-            ? heroPerks.t2
-            : heroPerks.t2.selected || [];
+
+          const selectedColumns =
+            Array.isArray(heroPerks.t2)
+              ? heroPerks.t2
+              : heroPerks.t2.selected || [];
+
+          selectedColumns.forEach(col => {
+
+            let columnIndex = col;
+
+            if (typeof columnIndex === "number") {
+
+              if (columnIndex >= 10) columnIndex -= 10;
+
+              const slug = classMapping[columnIndex];
+
+              if (slug && !perksConfig.t2.selected.includes(slug)) {
+                perksConfig.t2.selected.push(slug);
+              }
+
+            }
+
+          });
         }
 
         if (heroPerks.t3) {
@@ -262,7 +282,7 @@ const convertTeamContextToDB = (
     ) {
       swAdvancement = null;
     }
-    // Create a uwConfig before calling it in HeroConfig
+
     const uwItem = subSlots[slotIndex]?.[0];
 
     let uwConfig = null;
@@ -273,7 +293,6 @@ const convertTeamContextToDB = (
       };
     }
 
-    // Create a utConfig before calling it in HeroConfig
     let utConfig = null;
 
     if (utItem && utItem.choice !== undefined && utItem.choice !== null) {
@@ -282,8 +301,10 @@ const convertTeamContextToDB = (
         stars: Math.max(0, Math.min(5, utStarsValue))
       };
     }
+
     const heroConfig = {
       heroSlug,
+      heroClass,
       slotPosition: slotIndex,
       uw: uwConfig,
       ut: utConfig,

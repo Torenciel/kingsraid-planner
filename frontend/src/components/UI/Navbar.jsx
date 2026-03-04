@@ -253,7 +253,6 @@ const Navbar = () => {
                   src={avatarUrl}
                   className="navbar-profile-avatar"
                 />
-
               </Link>
 
               {activeDropdown === "profile" && (

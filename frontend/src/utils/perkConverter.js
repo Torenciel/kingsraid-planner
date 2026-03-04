@@ -3,10 +3,10 @@
 /**
  * Convert structured perks (object) into indices (array)
  * Structured -> indices for rendering
- * indices -> structured for sacing from modal
- * It only uses column position (0–4) for T2.
+ * indices -> structured for saving from modal
+ * It uses column position (0–4) for T2.
  */
-export const perksToIndices = (perksObj) => {
+export const perksToIndices = (perksObj, heroClass) => {
   if (!perksObj) return [];
 
   // If already array of indices
@@ -37,15 +37,12 @@ export const perksToIndices = (perksObj) => {
 
   /* ===============================
      T2 (10–14)
-     IMPORTANT:
-     We no longer map slug → class.
-     We assume order inside selected array
-     matches the 0–4 column structure.
+     Stored as column indices
   =============================== */
 
-  perksObj.t2?.selected?.forEach((slug, i) => {
-    if (i >= 0 && i < 5) {
-      indices.push(10 + i);
+  perksObj.t2?.selected?.forEach(colIndex => {
+    if (typeof colIndex === "number") {
+      indices.push(10 + colIndex);
     }
   });
 
@@ -79,7 +76,6 @@ export const perksToIndices = (perksObj) => {
 
 /**
  * Convert indices into structured perks
- * Also no class-based slug mapping.
  */
 export const indicesToPerks = (indices) => {
   if (!Array.isArray(indices)) {
@@ -113,6 +109,7 @@ export const indicesToPerks = (indices) => {
     /* ===============================
        T1
     =============================== */
+
     if (rowIndex === 0 && colIndex < 5) {
       const slug = t1Slugs[colIndex];
       if (slug) {
@@ -122,16 +119,17 @@ export const indicesToPerks = (indices) => {
 
     /* ===============================
        T2
-       We store placeholder column-based slugs.
-       Real class-specific rendering is handled in UI.
+       Store column index directly
     =============================== */
+
     else if (rowIndex === 1 && colIndex < 5) {
-      perksObj.t2.selected.push(`column-${colIndex}`);
+      perksObj.t2.selected.push(colIndex);
     }
 
     /* ===============================
        T3
     =============================== */
+
     else if (rowIndex === 2 || rowIndex === 3) {
       const t3ReverseMap = {
         20: { skill: "s1", type: "light" },
@@ -153,6 +151,7 @@ export const indicesToPerks = (indices) => {
     /* ===============================
        T5
     =============================== */
+
     else if (rowIndex === 4) {
       if (index === 40) perksObj.t5 = "light";
       if (index === 41) perksObj.t5 = "dark";

@@ -20,12 +20,11 @@ const PerkModal = ({ data, onClose }) => {
   useEffect(() => {
     const heroPerks = perks[teamSlotIndex];
     
-    console.log("PerkModal - perks reçues:", heroPerks);
+    // console.log("PerkModal - perks received:", heroPerks);
     
     if (heroPerks) {
       // Convert in clues
       const indices = perksToIndices(heroPerks, heroClass, heroName);
-      console.log("PerkModal - indices calculés:", indices);
       setSelectedIndices(indices);
     } else {
       setSelectedIndices([]);
@@ -146,11 +145,8 @@ const PerkModal = ({ data, onClose }) => {
   };
 
   const handleConfirm = () => {
-    console.log("PerkModal - Indices sélectionnés:", selectedIndices);
     
-    // Convertir les indices en structure organisée
-    const perksData = indicesToPerks(selectedIndices, heroClass, heroName);
-    console.log("PerkModal - Structure à sauvegarder:", perksData);
+    const perksData = indicesToPerks(selectedIndices, heroClass, heroName)
     
     updatePerks(teamSlotIndex, perksData);
     onClose();
@@ -402,13 +398,13 @@ const PerkModal = ({ data, onClose }) => {
     );
   }
 
-  console.log("🔍 DEBUG PerkModal - État final:", {
-    selectedIndices,
-    length: selectedIndices.length,
-    usedPoints,
-    heroClass,
-    heroName
-  });
+  // console.log(" DEBUG PerkModal - final state:", {
+  //   selectedIndices,
+  //   length: selectedIndices.length,
+  //   usedPoints,
+  //   heroClass,
+  //   heroName
+  // });
 
   return (
     <div>

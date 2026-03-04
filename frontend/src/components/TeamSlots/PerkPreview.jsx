@@ -19,8 +19,8 @@ const PerkPreview = ({
   
   
 const perkIndices = useMemo(() => {
-  return perksToIndices(selectedPerks);
-}, [selectedPerks]);
+  return perksToIndices(selectedPerks, heroClass);
+}, [selectedPerks, heroClass]);
   
   // DEBUG T2
   // console.log("PerkPreview ", "Hero:", heroName, "Class:", heroClass, "Perks:", selectedPerks);

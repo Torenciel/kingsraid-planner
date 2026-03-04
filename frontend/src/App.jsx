@@ -8,6 +8,7 @@ import {
   useLocation,
 } from "react-router-dom";
 import Navbar from "./components/UI/Navbar";
+import CookieBanner from "./components/CookieConsent/CookieBanner";
 
 import About from "./Routes/About";
 import Home from "./Routes/Home";
@@ -25,6 +26,8 @@ import VerifyPending from "./Routes/Account/VerifyPending";
 import VerifyEmail from "./Routes/Account/VerifyEmail";
 import ForgotPassword from "./Routes/Account/ForgotPassword";
 import ResetPassword from "./Routes/Account/ResetPassword";
+import PrivacyPolicy from "./Routes/Legal/PrivacyPolicy";
+
 
 import ProtectedRoute from "./components/Guards/ProtectedRoute";
 
@@ -60,6 +63,7 @@ function AppRoutes() {
       <Route path="/verify-email" element={<VerifyEmail />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/reset-password/:token" element={<ResetPassword />} />
+      <Route path="/privacy-policy" element={<PrivacyPolicy />} />
 
 
       {/* Auth required routes (Require Loging-in)*/}
@@ -85,6 +89,7 @@ function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
+        <CookieBanner/>
       {/* PROVIDERS HIERARCHY (logical order) */}
       {/* 
         Ordre logique :

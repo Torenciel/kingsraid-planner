@@ -34,6 +34,19 @@
   margin: 0;
 }
 
+.website-description{
+  margin-top: 40px;
+  /* background-color: rgb(255, 185, 32);
+  color: black ; */
+}
+.feedback-link{
+  color: var(--color-secondary-default);
+}
+.feedback-link:hover{
+text-decoration: underline;
+text-underline-offset: 2px;
+}
+
 /* ===== IMAGE ===== */
 
 .main-image-container {

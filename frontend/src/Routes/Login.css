@@ -68,6 +68,16 @@ margin-bottom: 20px;
     color: var(--color-secondary-default);
 }
 
+.form-link-label:hover{
+text-decoration: underline;
+text-underline-offset: 2px;
+}
+
+.form-link-text:hover{
+text-decoration: underline;
+text-underline-offset: 2px;
+}
+
 
 /* === Remove autofill default style === */
 

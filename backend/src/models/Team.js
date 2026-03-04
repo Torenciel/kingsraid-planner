@@ -104,6 +104,11 @@ const HeroConfigSchema = new mongoose.Schema({
     ref: 'Hero'
   },
 
+  heroClass: {
+    type: String,
+    required: false
+  },
+
   slotPosition: {
     type: Number,
     required: true,

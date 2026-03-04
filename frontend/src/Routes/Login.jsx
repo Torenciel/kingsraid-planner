@@ -97,7 +97,7 @@ const Login = () => {
         Don't have an account? <Link className="form-link-label" to="/register">Register</Link>
       </p>
       <p className="form-link">
-        <Link to="/forgot-password">Forgot your password?</Link>
+        <Link className="form-link-text" to="/forgot-password">Forgot your password?</Link>
       </p>
     </div>
   );

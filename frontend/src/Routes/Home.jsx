@@ -1,5 +1,5 @@
 import "./Home.css";
-
+import { Link } from "react-router-dom";
 const BASE_PATH = process.env.PUBLIC_URL || "";
 
 const Home = () => {
@@ -113,6 +113,7 @@ const Home = () => {
   <div className="home-text">
     <p className="main-title">King's Raid Planner</p>
     <p className="main-subtitle">Build, Save and Share your teams.</p>
+    <p className="website-description">This website is in test phase, if you have some idea to improve it or find any bug, feel free to tell us on the <Link className="feedback-link" to="/feedback">feedback</Link> page.</p>
   </div>
 
       <div className="main-image-container">

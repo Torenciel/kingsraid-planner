@@ -200,7 +200,7 @@ const convertDBToTeamContext = (dbTeam) => {
         .split("-")
         .map(word => word.charAt(0).toUpperCase() + word.slice(1))
         .join(" "),
-      role: null,
+      role: heroConfig.heroClass || null,
       image: null,
       infos: {}
     };
@@ -281,9 +281,72 @@ const convertDBToTeamContext = (dbTeam) => {
     t1: {
       selected: heroConfig.perks.t1?.selected || []
     },
-    t2: {
-      selected: heroConfig.perks.t2?.selected || []
-    },
+t2: {
+  selected: (() => {
+
+    const T2_MAPPING = {
+      Knight: [
+        "experienced-fighter",
+        "excellent-strategy",
+        "battle-cry",
+        "shield-of-protection",
+        "swift-move"
+      ],
+      Warrior: [
+        "opportune-strike",
+        "warlike",
+        "offensive-guard",
+        "tactical-foresight",
+        "blood-wrath"
+      ],
+      Assassin: [
+        "target-weakness",
+        "swift-and-nimble",
+        "tactical-foresight",
+        "opportune-strike",
+        "vital-detection"
+      ],
+      Mechanic: [
+        "target-weakness",
+        "ready-cannons",
+        "pressure-point",
+        "special-bullet",
+        "amplified-gunpowder"
+      ],
+      Archer: [
+        "precision-shot",
+        "eagle-eye",
+        "mortal-wound",
+        "opportune-strike",
+        "concentration"
+      ],
+      Wizard: [
+        "deception",
+        "moral-rise",
+        "blessing-of-mana",
+        "circuit-burst",
+        "destruction"
+      ],
+      Priest: [
+        "vengeful-curse",
+        "goddess-blessing",
+        "inner-peace",
+        "blessing-of-mana",
+        "swiftness"
+      ]
+    };
+
+    const heroClass = heroConfig.heroClass || "General";
+    const classMapping = T2_MAPPING[heroClass] || [];
+
+    const slugs = heroConfig.perks.t2?.selected || [];
+
+    return slugs
+      .map(slug => classMapping.indexOf(slug))
+      .filter(index => index !== -1);
+
+  })()
+},
     t3: {
       s1: heroConfig.perks.t3?.s1 || null,
       s2: heroConfig.perks.t3?.s2 || null,
