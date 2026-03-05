@@ -15,7 +15,7 @@
   flex-direction: column;
   text-align: center;
   gap: 0px;
-  max-width: 480px;
+  max-width: 550px;
 }
 
 .main-title {
@@ -39,10 +39,10 @@
   /* background-color: rgb(255, 185, 32);
   color: black ; */
 }
-.feedback-link{
+.page-link{
   color: var(--color-secondary-default);
 }
-.feedback-link:hover{
+.page-link:hover{
 text-decoration: underline;
 text-underline-offset: 2px;
 }

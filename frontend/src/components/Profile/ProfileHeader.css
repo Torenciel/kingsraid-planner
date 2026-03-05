@@ -48,7 +48,7 @@
 
 .profile-header-center {
   position: relative;
-  margin-top: -55px; /* pulls avatar into banner */
+  margin-top: -40px; /* pulls avatar into banner */
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -59,8 +59,8 @@
 /* Wrapper around avatar */
 .profile-avatar-wrapper {
   position: relative;
-  width: 110px;
-  height: 110px;
+  width: 80px;
+  height: 80px;
   cursor: pointer;
   pointer-events: auto;
 }
@@ -149,7 +149,7 @@
 ================================= */
 
 .profile-middle-bar {
-  margin-top: -100px;
+  margin-top: -85px;
   background-color: var(--color-primary-default);
   border-radius: 0 0 6px 6px;
   padding: 25px 0px;

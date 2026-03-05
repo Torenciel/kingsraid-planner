@@ -1,0 +1,28 @@
+.main-text{
+    text-align: start;
+}
+
+.main-text h2 {
+    margin-top: 20px;
+    font-weight: 600;
+    
+}
+
+.main-text p, li {
+    margin-top: 10px;
+    color: var(--color-text-muted);
+}
+
+.main-text li {
+list-style: inside;
+}
+
+.legal-link {
+text-decoration: underline;
+text-underline-offset: 2px;
+}
+
+.legal-link:hover {
+color: var(--color-text-default);
+}
+

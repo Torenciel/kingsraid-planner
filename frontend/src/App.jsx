@@ -8,9 +8,10 @@ import {
   useLocation,
 } from "react-router-dom";
 import Navbar from "./components/UI/Navbar";
+import Footer from "./components/UI/Footer";
 import CookieBanner from "./components/CookieConsent/CookieBanner";
 
-import About from "./Routes/About";
+import About from "./Routes/Project/About";
 import Home from "./Routes/Home";
 import Login from "./Routes/Login";
 import Profile from "./Routes/Profile";
@@ -27,6 +28,8 @@ import VerifyEmail from "./Routes/Account/VerifyEmail";
 import ForgotPassword from "./Routes/Account/ForgotPassword";
 import ResetPassword from "./Routes/Account/ResetPassword";
 import PrivacyPolicy from "./Routes/Legal/PrivacyPolicy";
+import CookiePolicy from "./Routes/Legal/CookiePolicy";
+import LegalNotice from "./Routes/Legal/LegalNotice";
 
 
 import ProtectedRoute from "./components/Guards/ProtectedRoute";
@@ -64,6 +67,8 @@ function AppRoutes() {
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/reset-password/:token" element={<ResetPassword />} />
       <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+      <Route path="/cookie-policy" element={<CookiePolicy />} />
+      <Route path="/legal-notice" element={<LegalNotice />} />
 
 
       {/* Auth required routes (Require Loging-in)*/}
@@ -113,6 +118,7 @@ function App() {
                         <main className="main-content">
                           <AppRoutes />
                         </main>
+                        <Footer />
                       </div>
                       <ModalManager/>
                     </TeamProvider>
