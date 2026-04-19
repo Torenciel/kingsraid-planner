@@ -46,7 +46,7 @@ const Contact = () => {
         <p>Looking for something specific?</p>
         <div className="contact-support-btns">
           <Link to="/feedback">Send Feedback</Link>
-          <Link to="/bug-report">Report a Bug</Link>
+          <Link to="/bug-report">Bug Report</Link>
         </div>
       </div>
     </div>

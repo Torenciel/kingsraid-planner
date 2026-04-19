@@ -14,6 +14,7 @@ import ChangeEmail from "./Routes/Account/ChangeEmail";
 import ChangePassword from "./Routes/Account/ChangePassword";
 import ChangeUsername from "./Routes/Account/ChangeUsername";
 import ForgotPassword from "./Routes/Account/ForgotPassword";
+import GoogleOAuthCallback from "./Routes/Account/GoogleOAuthCallback";
 import ResetPassword from "./Routes/Account/ResetPassword";
 import VerifyEmail from "./Routes/Account/VerifyEmail";
 import VerifyPending from "./Routes/Account/VerifyPending";
@@ -65,6 +66,7 @@ function AppRoutes() {
       <Route path="/verify-email" element={<VerifyEmail />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/reset-password/:token" element={<ResetPassword />} />
+      <Route path="/oauth/google/callback" element={<GoogleOAuthCallback />} />
       <Route path="/privacy-policy" element={<PrivacyPolicy />} />
       <Route path="/cookie-policy" element={<CookiePolicy />} />
       <Route path="/legal-notice" element={<LegalNotice />} />

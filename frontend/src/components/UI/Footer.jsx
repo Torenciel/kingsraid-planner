@@ -23,7 +23,7 @@ const Footer = () => {
         <div className="footer-column">
           <h4>Support</h4>
           <Link to="/feedback">Feedback</Link>
-          <Link to="/bug-report">Report a Bug</Link>
+          <Link to="/bug-report">Bug Report</Link>
           <Link to="/contact">Contact</Link>
         </div>
 

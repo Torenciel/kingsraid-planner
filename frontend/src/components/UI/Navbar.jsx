@@ -1,12 +1,11 @@
 import { useEffect, useRef, useState } from "react";
-import { Link } from "react-router-dom";
-import { useAuth } from "../../contexts/AuthContext";
-import { useArtifacts } from "../../contexts/ArtifactContext";
-import { resolveAvatarUrl } from "../../utils/avatarResolver";
 import { BiTime } from "react-icons/bi";
 import { FaUserGroup } from "react-icons/fa6";
+import { Link } from "react-router-dom";
+import { useArtifacts } from "../../contexts/ArtifactContext";
+import { useAuth } from "../../contexts/AuthContext";
+import { resolveAvatarUrl } from "../../utils/avatarResolver";
 import SmartAvatarImage from "../UI/SmartAvatarImage";
-
 
 import "./Navbar.css";
 
@@ -63,13 +62,13 @@ const Navbar = () => {
   const dropdownItems = {
     tools: [
       { to: "/tier-list", label: "Tier list" },
-      { to: "/tool-2", label: "Tool 2" },
-      { to: "/tool-3", label: "Tool 3" },
+      // { to: "/tool-2", label: "Tool 2" },
+      // { to: "/tool-3", label: "Tool 3" },
     ],
     more: [
       { to: "/feedback", label: "Feedback" },
+      { to: "/bug-report", label: "Bug Report" },
       { to: "/discord", label: "Discord" },
-      { to: "/github", label: "Github" },
       { to: "/about", label: "About us" },
     ],
   };
@@ -130,18 +129,14 @@ const Navbar = () => {
                       className="team-main-button"
                       onClick={handleItemClick}
                     >
-                      <div className="team-button-title">
-                        Create a Team
-                      </div>
+                      <div className="team-button-title">Create a Team</div>
                     </Link>
                   </div>
 
                   <div className="recent-teams-section">
                     <div className="section-header">
                       <BiTime size={18} className="section-icon" />
-                      <h4 className="section-title">
-                        Recently edited
-                      </h4>
+                      <h4 className="section-title">Recently edited</h4>
                     </div>
 
                     <div className="recent-teams-list">
@@ -155,9 +150,7 @@ const Navbar = () => {
                           <div className="recent-team-fallback">
                             {team.name.charAt(0)}
                           </div>
-                          <div className="recent-team-name">
-                            {team.name}
-                          </div>
+                          <div className="recent-team-name">{team.name}</div>
                         </div>
                       ))}
                     </div>
@@ -179,10 +172,7 @@ const Navbar = () => {
           </button>
 
           {activeDropdown === "tools" && (
-            <div
-              className="navbar-dropdown-menu"
-              onMouseEnter={cancelClose}
-            >
+            <div className="navbar-dropdown-menu" onMouseEnter={cancelClose}>
               {dropdownItems.tools.map((item) => (
                 <Link
                   key={item.to}
@@ -208,10 +198,7 @@ const Navbar = () => {
           </button>
 
           {activeDropdown === "more" && (
-            <div
-              className="navbar-dropdown-menu"
-              onMouseEnter={cancelClose}
-            >
+            <div className="navbar-dropdown-menu" onMouseEnter={cancelClose}>
               {dropdownItems.more.map((item) => (
                 <Link
                   key={item.to}

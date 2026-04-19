@@ -19,6 +19,7 @@ const Login = () => {
 
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
 
   const handleChange = (e) => {
   setError(null);
@@ -27,6 +28,23 @@ const Login = () => {
     [e.target.name]: e.target.value,
   }));
 };
+
+  const handleGoogleLogin = async () => {
+    try {
+      setGoogleLoading(true);
+      const res = await fetch("http://localhost:3002/api/v2/oauth/google/url");
+      const data = await res.json();
+      if (data.success && data.url) {
+        window.location.href = data.url;
+      } else {
+        setError("Failed to start Google login");
+      }
+    } catch (err) {
+      setError("Network error");
+    } finally {
+      setGoogleLoading(false);
+    }
+  };
 
 
   const handleSubmit = async (e) => {
@@ -71,7 +89,6 @@ const Login = () => {
         <input
           type="email"
           name="email"
-          // placeholder="Email"
           value={formData.email}
           onChange={handleChange}
           required
@@ -80,7 +97,6 @@ const Login = () => {
         <input
           type="password"
           name="password"
-          // placeholder="Password"
           value={formData.password}
           onChange={handleChange}
           required
@@ -92,6 +108,31 @@ const Login = () => {
           {loading ? "Logging in..." : "Log in"}
         </button>
       </form>
+
+      <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", margin: "1.5rem 0" }}>
+        <div style={{ flex: 1, height: "1px", background: "var(--color-border-default)" }}></div>
+        <span style={{ fontSize: "12px", color: "var(--color-text-muted)" }}>or</span>
+        <div style={{ flex: 1, height: "1px", background: "var(--color-border-default)" }}></div>
+      </div>
+
+      <button
+        type="button"
+        onClick={handleGoogleLogin}
+        disabled={googleLoading}
+        style={{
+          width: "100%",
+          padding: "0.75rem",
+          background: "var(--color-primary-default)",
+          color: "var(--color-text-default)",
+          border: "1px solid var(--color-border-default)",
+          borderRadius: "4px",
+          cursor: googleLoading ? "not-allowed" : "pointer",
+          fontSize: "1rem",
+          opacity: googleLoading ? 0.6 : 1,
+        }}
+      >
+        {googleLoading ? "Redirecting..." : "Login with Google"}
+      </button>
 
       <p className="form-link">
         Don't have an account? <Link className="form-link-label" to="/register">Register</Link>

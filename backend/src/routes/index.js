@@ -11,6 +11,7 @@ const teamRoutes = require('./team.routes');
 const authRoutes = require('./auth.routes');
 const userRoutes = require('./user.routes');
 const supportRoutes = require('./support.routes');
+const oauthRoutes = require('./oauth.routes');
 
 // Mount all routes under API v2 prefix
 router.use('/api/v2/heroes', heroRoutes);
@@ -21,6 +22,7 @@ router.use('/api/v2/teams', teamRoutes);
 router.use('/api/v2/auth', authRoutes);
 router.use('/api/v2/users', userRoutes);
 router.use('/api/v2/support', supportRoutes);
+router.use('/api/v2/oauth', oauthRoutes);
 
 // Health and status route
 router.get('/api/v2/health', (req, res) => {

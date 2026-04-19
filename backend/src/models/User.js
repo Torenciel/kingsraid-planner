@@ -45,6 +45,16 @@ const UserSchema = new mongoose.Schema(
       type: Date,
     },
 
+    // === OAUTH ===
+    googleId: {
+      type: String,
+      sparse: true,
+    },
+    oauthProvider: {
+      type: String,
+      enum: ["google"],
+    },
+
     // === PUBLIC PROFILE ===
     displayName: {
       type: String,
