@@ -83,7 +83,6 @@ mongoose
 */
 
 app.use('/kingsraid-data', express.static(KINGSRAID_DATA_PATH));
-app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
 
 /*
 |--------------------------------------------------------------------------

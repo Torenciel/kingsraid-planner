@@ -82,6 +82,16 @@
   margin: 0;
 }
 
+.app {
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100vh - 60px);
+}
+
+.main-content {
+  flex: 1;
+}
+
 body { /* to avoid content being hidden under navbar */
   padding-top: 60px;
   background-color: var(--color-background-default);

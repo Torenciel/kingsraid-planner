@@ -1,8 +1,5 @@
 const express = require("express");
 const bcrypt = require("bcrypt");
-const path = require("path");
-const fs = require("fs");
-const multer = require("multer");
 
 const User = require("../models/User");
 const { requireAuth } = require("../middlewares/auth.middleware");
@@ -10,70 +7,7 @@ const { requireAuth } = require("../middlewares/auth.middleware");
 const router = express.Router();
 
 /* ======================================================
-   DIRECTORIES SETUP
-====================================================== */
-
-const AVATARS_DIR = path.join(__dirname, "..", "..", "uploads", "avatars");
-const BANNERS_DIR = path.join(__dirname, "..", "..", "uploads", "banners");
-
-if (!fs.existsSync(AVATARS_DIR)) {
-  fs.mkdirSync(AVATARS_DIR, { recursive: true });
-}
-
-if (!fs.existsSync(BANNERS_DIR)) {
-  fs.mkdirSync(BANNERS_DIR, { recursive: true });
-}
-
-/* ======================================================
-   MULTER CONFIG
-====================================================== */
-
-const fileFilter = (req, file, cb) => {
-  const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
-  if (!allowedTypes.includes(file.mimetype)) {
-    return cb(new Error("Invalid file type"), false);
-  }
-  cb(null, true);
-};
-
-/* ---------------- AVATAR STORAGE ---------------- */
-
-const avatarStorage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, AVATARS_DIR);
-  },
-  filename: (req, file, cb) => {
-    const ext = path.extname(file.originalname).toLowerCase();
-    cb(null, `user_${req.user.id}${ext}`);
-  },
-});
-
-const uploadAvatar = multer({
-  storage: avatarStorage,
-  fileFilter,
-  limits: { fileSize: 2 * 1024 * 1024 }, // 2MB
-});
-
-/* ---------------- BANNER STORAGE ---------------- */
-
-const bannerStorage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, BANNERS_DIR);
-  },
-  filename: (req, file, cb) => {
-    const ext = path.extname(file.originalname).toLowerCase();
-    cb(null, `banner_${req.user.id}${ext}`);
-  },
-});
-
-const uploadBanner = multer({
-  storage: bannerStorage,
-  fileFilter,
-  limits: { fileSize: 4 * 1024 * 1024 }, // 4MB
-});
-
-/* ======================================================
-   UPLOAD AVATAR
+   UPDATE AVATAR
 ====================================================== */
 router.patch("/me/avatar", requireAuth, async (req, res) => {
   try {
