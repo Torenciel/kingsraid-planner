@@ -1,3 +1,4 @@
+import { useState } from "react";
 import "./CharacterSlot.css";
 
 const getHeroSlug = (hero) => {
@@ -27,6 +28,24 @@ const getHeroImagePath = (hero) => {
 };
 
 const CharacterSlot = ({ hero, onRemove, readOnly = false }) => {
+  const [confirming, setConfirming] = useState(false);
+
+  const handleRemoveClick = (e) => {
+    e.stopPropagation();
+    setConfirming(true);
+  };
+
+  const handleConfirm = (e) => {
+    e.stopPropagation();
+    setConfirming(false);
+    onRemove?.();
+  };
+
+  const handleCancel = (e) => {
+    e.stopPropagation();
+    setConfirming(false);
+  };
+
   const getClassIconPath = (className) => {
     const classMap = {
       Knight: "/kingsraid-data/assets/classes_hd/knight.png",
@@ -61,15 +80,23 @@ const CharacterSlot = ({ hero, onRemove, readOnly = false }) => {
       <div className="team-hero-name">{hero?.name}</div>
 
       {classIconPath && (
-        <img
-          src={classIconPath}
-          alt={hero?.role}
-          className="team-class-icon"
-        />
+        <img src={classIconPath} alt={hero?.role} className="team-class-icon" />
       )}
 
-      {!readOnly && (
-        <div className="team-remove-btn" onClick={onRemove}>
+      {!readOnly && confirming && (
+        <div className="team-remove-confirm">
+          <span>Remove ?</span>
+          <button className="team-remove-confirm-yes" onClick={handleConfirm}>
+            Yes
+          </button>
+          <button className="team-remove-confirm-no" onClick={handleCancel}>
+            No
+          </button>
+        </div>
+      )}
+
+      {!readOnly && !confirming && (
+        <div className="team-remove-btn" onClick={handleRemoveClick}>
           <svg
             width="12"
             height="12"

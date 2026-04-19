@@ -94,6 +94,11 @@ const UTModal = ({ data, onClose }) => {
     return `/kingsraid-data/assets/heroes/${heroName}/ut/${utNumber}.png`;
   };
 
+  const handleRemove = () => {
+    updateSubSlot(teamSlotIndex, subSlotIndex, null, 0);
+    onClose();
+  };
+
   const handleConfirm = () => {
     const utObject =
       selectedUT === 0
@@ -217,17 +222,6 @@ const UTModal = ({ data, onClose }) => {
             })}
           </div>
 
-          <div className="ut-empty-container">
-            <div
-              className={`ut-option empty ${
-                selectedUT === 0 ? "selected" : ""
-              }`}
-              onClick={() => setSelectedUT(0)}
-            >
-              <div className="empty-slot-label">Empty</div>
-            </div>
-          </div>
-
           {selectedUT > 0 && (
             <div className="ut-stars-section">
               <StarRating
@@ -240,18 +234,11 @@ const UTModal = ({ data, onClose }) => {
           )}
 
           <div className="btn-modal">
-            <button
-              onClick={onClose}
-              className="btn-modal-cancel"
-            >
-              Cancel
-            </button>
-            <button
-              onClick={handleConfirm}
-              className="btn-modal-confirm"
-            >
-              Confirm
-            </button>
+            {currentItem && currentItem.choice > 0 && (
+              <button onClick={handleRemove} className="btn-modal-remove">Remove</button>
+            )}
+            <button onClick={onClose} className="btn-modal-cancel">Cancel</button>
+            <button onClick={handleConfirm} className="btn-modal-confirm">Confirm</button>
           </div>
         </>
       )}

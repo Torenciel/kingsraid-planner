@@ -119,6 +119,11 @@ const ArtifactModal = ({ data, onClose }) => {
     };
   };
 
+  const handleRemove = () => {
+    updateSubSlot(teamSlotIndex, subSlotIndex, null, 0);
+    onClose();
+  };
+
   const handleConfirm = () => {
     if (!selectedArtifact) {
       updateSubSlot(teamSlotIndex, subSlotIndex, null, 0);
@@ -193,18 +198,6 @@ const ArtifactModal = ({ data, onClose }) => {
       ) : (
         <>
           <div className="artifact-grid">
-            <div
-              className={`artifact-option empty ${
-                !selectedArtifact ? "selected" : ""
-              }`}
-              onClick={() => {
-                setSelectedArtifact(null);
-                setSelectedStars(0);
-              }}
-            >
-              <div className="empty-slot-label">Empty</div>
-            </div>
-
             {displayArtifacts.map((artifact) => {
               const isSelected = isArtifactSelected(artifact);
               const imageUrl = getArtifactPublicUrl(artifact);
@@ -258,18 +251,11 @@ const ArtifactModal = ({ data, onClose }) => {
       )}
 
       <div className="btn-modal">
-        <button 
-          onClick={onClose} 
-          className="btn-modal-cancel"
-        >
-          Cancel
-        </button>
-        <button 
-          onClick={handleConfirm} 
-          className="btn-modal-confirm"
-        >
-          Confirm
-        </button>
+        {currentItem && (
+          <button onClick={handleRemove} className="btn-modal-remove">Remove</button>
+        )}
+        <button onClick={onClose} className="btn-modal-cancel">Cancel</button>
+        <button onClick={handleConfirm} className="btn-modal-confirm">Confirm</button>
       </div>
     </div>
   );

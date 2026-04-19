@@ -44,6 +44,13 @@ const TeamViewer = () => {
       <h1>{teamData.name}</h1>
       <p>By {teamData.createdBy}</p>
 
+{/* 
+      {team.author === auth.user._id && (
+        <button onClick={() => navigate(`/team/edit/${team.slug}`)}>
+          Edit Team
+        </button>
+      )} */}
+
       <TeamSlots
         readOnly={true}
         teamOverride={teamData.team}

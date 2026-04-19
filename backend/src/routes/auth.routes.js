@@ -108,9 +108,7 @@ router.get("/verify-email", async (req, res) => {
     });
 
     if (!user) {
-      return res.redirect(
-        "http://localhost:3000/verify-email?status=error"
-      );
+      return res.redirect(`${FRONTEND_URL}/verify-email?status=error`);
     }
 
     user.emailVerified = true;
@@ -119,15 +117,11 @@ router.get("/verify-email", async (req, res) => {
 
     await user.save();
 
-    return res.redirect(
-      "http://localhost:3000/verify-email?status=success"
-    );
+    return res.redirect(`${FRONTEND_URL}/verify-email?status=success`);
 
   } catch (error) {
     console.error("Verify email error:", error);
-    return res.redirect(
-      "http://localhost:3000/verify-email?status=error"
-    );
+    return res.redirect(`${FRONTEND_URL}/verify-email?status=error`);
   }
 });
 
@@ -178,7 +172,7 @@ router.post("/resend-verification", async (req, res) => {
 
     await user.save();
 
-    const verificationLink = `http://localhost:3000/verify-email?token=${verificationToken}`;
+    const verificationLink = `${FRONTEND_URL}/verify-email?token=${verificationToken}`;
 
     await sendEmail({
       to: user.email,
@@ -311,7 +305,7 @@ router.post("/refresh", async (req, res) => {
       httpOnly: true,
       sameSite: "lax",
       secure: false,
-      maxAge: 10 * 1000, // 1h (matches your jwt setting)
+      maxAge: 60 * 60 * 1000, // 1h (matches your jwt setting)
     });
 
     return res.json({ success: true });
@@ -386,7 +380,7 @@ router.post("/forgot-password", async (req, res) => {
     user.passwordResetExpires = Date.now() + 15 * 60 * 1000; // 15 minutes
     await user.save();
 
-    const resetURL = `http://localhost:3000/reset-password/${resetToken}`;
+    const resetURL = `${FRONTEND_URL}/reset-password/${resetToken}`;
 
     await sendEmail({
       to: user.email,

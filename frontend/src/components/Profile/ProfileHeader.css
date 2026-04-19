@@ -93,6 +93,7 @@
   z-index: 2;
 
   outline: 10px solid var(--color-primary-default);
+  background: var(--color-background-default);
 }
 
 

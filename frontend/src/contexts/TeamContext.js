@@ -66,10 +66,10 @@ export const TeamProvider = ({ children }) => {
   const saveTeam = async (teamName = 'My Team') => {
     try {
       setLoading(true);
-      console.log('=== TEAMCONTEXT - saveTeam ===');
-      console.log('Advancement before:', advancements);
-      console.log('Type:', advancements.map(a => typeof a));
-      console.log('Value:', advancements);
+      // console.log('=== TEAMCONTEXT - saveTeam ===');
+      // console.log('Advancement before:', advancements);
+      // console.log('Type:', advancements.map(a => typeof a));
+      // console.log('Value:', advancements);
       
       const teamData = {
         teamTitle: teamName,
@@ -85,16 +85,24 @@ export const TeamProvider = ({ children }) => {
       
       console.log('Complete data sent:', teamData);
       
-const response = await fetch(`${API_BASE_URL}/api/v2/teams`, {
-  method: 'POST',
-  credentials: 'include',   // THIS IS REQUIRED
-  headers: {
-    'Content-Type': 'application/json',
-  },
-  body: JSON.stringify({
-    teamData
-  })
-});
+      const isEditing = !!currentTeamId;
+
+      const url = isEditing
+        ? `${API_BASE_URL}/api/v2/teams/${currentTeamId}`
+        : `${API_BASE_URL}/api/v2/teams`;
+
+      const method = isEditing ? "PATCH" : "POST";
+
+      const response = await fetch(url, {
+        method,
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          teamData
+        })
+      });
 
       
       console.log('Response status:', response.status);
@@ -138,7 +146,7 @@ const response = await fetch(`${API_BASE_URL}/api/v2/teams`, {
         if (result.success && result.team) {
           const teamContextData = convertDBToTeamContext(result.team);
           applyTeamData(teamContextData);
-          setCurrentTeamId(teamId);
+          setCurrentTeamId(data.team.slug);
           return true;
         }
       }
@@ -368,6 +376,7 @@ t2: {
 
   return {
     id: dbTeam._id?.toString() || dbTeam.id,
+    slug: dbTeam.slug,
     name: dbTeam.name,
     teamSize: size,
     team: frontendTeam,
@@ -396,6 +405,11 @@ t2: {
       rawData: hero
     };
     
+    const isDuplicate = team.some(
+      (slot) => slot && (slot.id === normalizedHero.id || slot.slug === normalizedHero.id)
+    );
+    if (isDuplicate) return;
+
     const emptySlotIndex = team.findIndex((slot) => slot === null);
     if (emptySlotIndex === -1) {
       alert("No empty slots available! Remove a hero first.");
@@ -583,6 +597,7 @@ t2: {
     setTeamName,
     setIsPublic,
     setGameMode,
+    setCurrentTeamId,
     
     // Actions
     addHeroToTeam,

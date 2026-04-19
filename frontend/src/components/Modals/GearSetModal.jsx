@@ -104,6 +104,11 @@ const GearSetModal = ({ data, onClose }) => {
     }
   };
 
+  const handleRemove = () => {
+    updateSubSlot(teamSlotIndex, subSlotIndex, null, 0);
+    onClose();
+  };
+
   const handleConfirm = () => {
     if (selectedSets.length === 0) {
       updateSubSlot(teamSlotIndex, subSlotIndex, null, 0);
@@ -166,10 +171,7 @@ const GearSetModal = ({ data, onClose }) => {
     (a, b) => (a.sortOrder || 999) - (b.sortOrder || 999)
   );
 
-  const allOptions = [
-    { id: "empty", slug: "empty", name: "Empty", isEmpty: true },
-    ...sortedGearSets,
-  ];
+  const allOptions = [...sortedGearSets];
 
   if (loading) {
     return (
@@ -292,12 +294,11 @@ const GearSetModal = ({ data, onClose }) => {
       </div>
 
       <div className="btn-modal">
-        <button onClick={onClose} className="btn-modal-cancel">
-          Cancel
-        </button>
-        <button onClick={handleConfirm} className="btn-modal-confirm">
-          Confirm
-        </button>
+        {currentItem && (
+          <button onClick={handleRemove} className="btn-modal-remove">Remove</button>
+        )}
+        <button onClick={onClose} className="btn-modal-cancel">Cancel</button>
+        <button onClick={handleConfirm} className="btn-modal-confirm">Confirm</button>
       </div>
     </div>
   );

@@ -17,7 +17,7 @@ const HeroGrid = () => {
   } = useHeroContext();
 
   const isHeroInTeam = (heroId) => {
-    return team.some((slot) => slot && slot.id === heroId);
+    return team.some((slot) => slot && (slot.id === heroId || slot.slug === heroId));
   };
 
   if (loading) {
@@ -109,7 +109,7 @@ const HeroGrid = () => {
             <HeroCard
               key={hero.id}
               hero={hero}
-              isInTeam={isHeroInTeam(hero.id)}
+              isInTeam={isHeroInTeam(hero.slug || hero.id)}
             />
           ))
         )}

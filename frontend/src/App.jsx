@@ -75,6 +75,7 @@ function AppRoutes() {
       <Route path="/profile" element={<ProtectedRoute><Profile/></ProtectedRoute>} />
       <Route path="/teams/private" element={<ProtectedRoute><Teams/></ProtectedRoute>} />
       <Route path="/team/edit" element={<ProtectedRoute><TeamEdit /></ProtectedRoute>} />
+      <Route path="/team/edit/:slug" element={<ProtectedRoute><TeamEdit /></ProtectedRoute>} />
       <Route path="/account/username" element={<ProtectedRoute><ChangeUsername /></ProtectedRoute>} />
       <Route path="/account/email" element={<ProtectedRoute><ChangeEmail /></ProtectedRoute>} />
       <Route path="/account/password" element={<ProtectedRoute><ChangePassword /></ProtectedRoute>} />

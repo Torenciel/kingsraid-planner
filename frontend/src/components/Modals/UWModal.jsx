@@ -121,6 +121,12 @@ const UWModal = ({ data, onClose }) => {
     return path;
   };
 
+  const handleRemove = () => {
+    updateSubSlot(teamSlotIndex, subSlotIndex, null, 0);
+    updateAdvancement(teamSlotIndex, null);
+    onClose();
+  };
+
   const handleConfirm = (e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -296,13 +302,6 @@ const UWModal = ({ data, onClose }) => {
 
       <div className="uw-options-container">
         <div
-          className={`uw-option empty ${selectedOption === "empty" ? "selected" : ""}`}
-          onClick={() => setSelectedOption("empty")}
-        >
-          <div className="empty-slot-label">Empty</div>
-        </div>
-
-        <div
           ref={uwItemRef}
           className={`uw-option ${selectedOption === "uw" ? "selected" : ""}`}
           onClick={() => setSelectedOption("uw")}
@@ -342,12 +341,11 @@ const UWModal = ({ data, onClose }) => {
       )}
 
       <div className="btn-modal">
-        <button onClick={onClose} className="btn-modal-cancel">
-          Cancel
-        </button>
-        <button onClick={handleConfirm} className="btn-modal-confirm">
-          Confirm
-        </button>
+        {currentItem && (
+          <button onClick={handleRemove} className="btn-modal-remove">Remove</button>
+        )}
+        <button onClick={onClose} className="btn-modal-cancel">Cancel</button>
+        <button onClick={handleConfirm} className="btn-modal-confirm">Confirm</button>
       </div>
     </div>
   );

@@ -102,6 +102,68 @@ router.get('/:identifier', async (req, res) => {
   }
 });
 
+// Update team (author only)
+router.patch('/:slug', requireAuth, async (req, res) => {
+  try {
+    const { slug } = req.params;
+    const { teamData } = req.body;
+
+    if (!teamData) {
+      return res.status(400).json({
+        success: false,
+        error: 'teamData is required'
+      });
+    }
+
+    const team = await Team.findOne({ slug });
+
+    if (!team) {
+      return res.status(404).json({
+        success: false,
+        error: 'Team not found'
+      });
+    }
+
+    // Author check
+    if (team.author.toString() !== req.user.id) {
+      return res.status(403).json({
+        success: false,
+        error: 'You are not allowed to edit this team'
+      });
+    }
+
+    // Convert context data to DB format
+    const dbTeamData = teamConverter.convertTeamContextToDB(
+      teamData,
+      teamData.teamTitle || team.name,
+      req.user.displayName
+    );
+
+    // Update fields
+    team.name = dbTeamData.name;
+    team.description = dbTeamData.description;
+    team.teamSize = dbTeamData.teamSize;
+    team.heroes = dbTeamData.heroes;
+    team.tags = dbTeamData.tags;
+    team.authorNotes = dbTeamData.authorNotes;
+    team.isPublic = dbTeamData.isPublic;
+
+    await team.save();
+
+    res.json({
+      success: true,
+      message: 'Team updated successfully',
+      team: team.toAPIFormat()
+    });
+
+  } catch (error) {
+
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
 
 // List latest public teams
 router.get('/', async (req, res) => {
@@ -129,32 +191,6 @@ res.json({
 });
 
 
-
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      error: error.message
-    });
-  }
-});
-
-// Test connection
-router.get('/test/connection', async (req, res) => {
-  try {
-    const count = await Team.countDocuments();
-    const latestTeam = await Team.findOne().sort({ createdAt: -1 });
-
-    res.json({
-      success: true,
-      teamsCount: count,
-      latestTeam: latestTeam
-        ? {
-            name: latestTeam.name,
-            id: latestTeam._id,
-            createdAt: latestTeam.createdAt
-          }
-        : null
-    });
 
   } catch (error) {
     res.status(500).json({
