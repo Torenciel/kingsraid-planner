@@ -1,6 +1,7 @@
-import { useState, useMemo } from "react";
+import { useMemo, useState } from "react";
+import { FaArrowUp, FaBookmark, FaRegBookmark } from "react-icons/fa";
+import { MdLockOutline } from "react-icons/md";
 import { useNavigate } from "react-router-dom";
-import { FaBookmark, FaRegBookmark, FaArrowUp } from "react-icons/fa";
 import { sortTeamByPosition } from "../../utils/sortTeamByPosition";
 import "./TeamCard.css";
 
@@ -23,7 +24,7 @@ export default function TeamCard({
   onOpen,
 }) {
   const navigate = useNavigate();
-  
+
   const [upvotes, setUpvotes] = useState(team?.upvotes || 0);
   const [bookmarked, setBookmarked] = useState(false);
 
@@ -47,7 +48,10 @@ export default function TeamCard({
   if (!team) return null;
 
   return (
-    <div className="team-card clickable" onClick={() => navigate(`/team/${team.slug}`)}>
+    <div
+      className="team-card clickable"
+      onClick={() => navigate(`/team/${team.slug}`)}
+    >
       <div className="team-left">
         <h3 className="team-name">{team.name}</h3>
 
@@ -65,6 +69,10 @@ export default function TeamCard({
       </div>
 
       <div className="team-footer">
+        {!team.isPublic && (
+          <MdLockOutline className="lock-icon" title="Private team" />
+        )}
+
         <button onClick={handleUpvote} className="icon-btn">
           <FaArrowUp />
           <span>{upvotes}</span>
@@ -74,13 +82,9 @@ export default function TeamCard({
           {bookmarked ? <FaBookmark /> : <FaRegBookmark />}
         </button>
 
-        <span className="bookmark-count">
-          {team.bookmarks || 0}
-        </span>
+        <span className="bookmark-count">{team.bookmarks || 0}</span>
 
-        <span className="created-by">
-          by {team.createdBy || "Unknown"}
-        </span>
+        <span className="created-by">by {team.createdBy || "Unknown"}</span>
       </div>
     </div>
   );

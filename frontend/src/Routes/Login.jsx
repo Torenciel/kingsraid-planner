@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { Link, useNavigate, useLocation } from "react-router-dom";
-import { useAuth } from "../contexts/AuthContext";
 import { IoWarningOutline } from "react-icons/io5";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
 import "./Login.css";
 
 const Login = () => {
@@ -10,7 +10,6 @@ const Login = () => {
 
   const location = useLocation();
   const from = location.state?.from?.pathname || "/";
-
 
   const [formData, setFormData] = useState({
     email: "",
@@ -22,12 +21,12 @@ const Login = () => {
   const [googleLoading, setGoogleLoading] = useState(false);
 
   const handleChange = (e) => {
-  setError(null);
-  setFormData((prev) => ({
-    ...prev,
-    [e.target.name]: e.target.value,
-  }));
-};
+    setError(null);
+    setFormData((prev) => ({
+      ...prev,
+      [e.target.name]: e.target.value,
+    }));
+  };
 
   const handleGoogleLogin = async () => {
     try {
@@ -45,7 +44,6 @@ const Login = () => {
       setGoogleLoading(false);
     }
   };
-
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -102,17 +100,45 @@ const Login = () => {
           required
         />
 
-        {error && <p className="form-error"><span className="form-error-icon"><IoWarningOutline /></span> {error}</p>}
+        {error && (
+          <p className="form-error">
+            <span className="form-error-icon">
+              <IoWarningOutline />
+            </span>{" "}
+            {error}
+          </p>
+        )}
 
         <button type="submit" disabled={loading}>
           {loading ? "Logging in..." : "Log in"}
         </button>
       </form>
 
-      <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", margin: "1.5rem 0" }}>
-        <div style={{ flex: 1, height: "1px", background: "var(--color-border-default)" }}></div>
-        <span style={{ fontSize: "12px", color: "var(--color-text-muted)" }}>or</span>
-        <div style={{ flex: 1, height: "1px", background: "var(--color-border-default)" }}></div>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: "0.75rem",
+          margin: "1.5rem 0",
+        }}
+      >
+        <div
+          style={{
+            flex: 1,
+            height: "1px",
+            background: "var(--color-border-default)",
+          }}
+        ></div>
+        <span style={{ fontSize: "12px", color: "var(--color-text-muted)" }}>
+          or
+        </span>
+        <div
+          style={{
+            flex: 1,
+            height: "1px",
+            background: "var(--color-border-default)",
+          }}
+        ></div>
       </div>
 
       <button
@@ -135,10 +161,15 @@ const Login = () => {
       </button>
 
       <p className="form-link">
-        Don't have an account? <Link className="form-link-label" to="/register">Register</Link>
+        Don't have an account?{" "}
+        <Link className="form-link-label" to="/register">
+          Register
+        </Link>
       </p>
       <p className="form-link">
-        <Link className="form-link-text" to="/forgot-password">Forgot your password?</Link>
+        <Link className="form-link-text" to="/forgot-password">
+          Forgot your password?
+        </Link>
       </p>
     </div>
   );

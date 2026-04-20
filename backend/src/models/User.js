@@ -68,22 +68,21 @@ const UserSchema = new mongoose.Schema(
     avatar: {
       type: {
         type: String,
-        default: "default"
+        default: "default",
       },
       value: {
         type: String,
-        default: null
+        default: null,
       },
       index: {
         type: Number,
-        default: null
+        default: null,
       },
       variant: {
         type: Number,
-        default: null
-      }
+        default: null,
+      },
     },
-
 
     banner: {
       type: {
@@ -96,8 +95,6 @@ const UserSchema = new mongoose.Schema(
         default: null,
       },
     },
-
-
 
     // === SECURITY & STATUS ===
     role: {
@@ -166,7 +163,7 @@ const UserSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 module.exports = mongoose.model("User", UserSchema);

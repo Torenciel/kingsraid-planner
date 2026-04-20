@@ -1,11 +1,11 @@
-const express = require('express');
-const axios = require('axios');
-const jwt = require('jsonwebtoken');
-const bcrypt = require('bcrypt');
+const express = require("express");
+const axios = require("axios");
+const jwt = require("jsonwebtoken");
+const bcrypt = require("bcrypt");
 const router = express.Router();
 
-const User = require('../models/User');
-const { signAccessToken, signRefreshToken } = require('../utils/jwt');
+const User = require("../models/User");
+const { signAccessToken, signRefreshToken } = require("../utils/jwt");
 
 // In-memory state store (state -> timestamp)
 // In production, use Redis or session store
@@ -13,30 +13,35 @@ const stateStore = new Map();
 const STATE_TTL = 30 * 60 * 1000; // 30 minutes (longer for dev)
 
 // Clean up expired states periodically
-setInterval(() => {
-  const now = Date.now();
-  for (const [state, timestamp] of stateStore.entries()) {
-    if (now - timestamp > STATE_TTL) {
-      stateStore.delete(state);
+setInterval(
+  () => {
+    const now = Date.now();
+    for (const [state, timestamp] of stateStore.entries()) {
+      if (now - timestamp > STATE_TTL) {
+        stateStore.delete(state);
+      }
     }
-  }
-}, 5 * 60 * 1000); // Clean every 5 minutes
+  },
+  5 * 60 * 1000,
+); // Clean every 5 minutes
 
 /* ======================================================
    GET /api/v2/oauth/google/url
    Returns Google OAuth redirect URL
 ====================================================== */
-router.get('/google/url', (req, res) => {
+router.get("/google/url", (req, res) => {
   try {
     // Generate random state for CSRF protection
-    const state = require('crypto').randomBytes(32).toString('hex');
+    const state = require("crypto").randomBytes(32).toString("hex");
     stateStore.set(state, Date.now());
 
     const params = new URLSearchParams({
       client_id: process.env.GOOGLE_CLIENT_ID,
-      redirect_uri: process.env.GOOGLE_REDIRECT_URI || 'http://localhost:5173/oauth/google/callback',
-      response_type: 'code',
-      scope: 'openid email profile',
+      redirect_uri:
+        process.env.GOOGLE_REDIRECT_URI ||
+        "http://localhost:5173/oauth/google/callback",
+      response_type: "code",
+      scope: "openid email profile",
       state: state,
     });
 
@@ -44,8 +49,10 @@ router.get('/google/url', (req, res) => {
 
     res.json({ success: true, url });
   } catch (error) {
-    console.error('Error generating Google OAuth URL:', error);
-    res.status(500).json({ success: false, error: 'Failed to generate OAuth URL' });
+    console.error("Error generating Google OAuth URL:", error);
+    res
+      .status(500)
+      .json({ success: false, error: "Failed to generate OAuth URL" });
   }
 });
 
@@ -53,28 +60,37 @@ router.get('/google/url', (req, res) => {
    POST /api/v2/oauth/google/callback
    Exchanges code for user info and logs in
 ====================================================== */
-router.post('/google/callback', async (req, res) => {
+router.post("/google/callback", async (req, res) => {
   const { code, state } = req.body;
 
   if (!code || !state) {
-    return res.status(400).json({ success: false, error: 'Missing code or state' });
+    return res
+      .status(400)
+      .json({ success: false, error: "Missing code or state" });
   }
 
   // Verify state parameter (CSRF protection)
   if (!stateStore.has(state)) {
-    return res.status(403).json({ success: false, error: 'Invalid or expired state parameter' });
+    return res
+      .status(403)
+      .json({ success: false, error: "Invalid or expired state parameter" });
   }
   // Don't delete state yet - keep for potential replay checks
 
   try {
     // Exchange code for token
-    const tokenResponse = await axios.post('https://oauth2.googleapis.com/token', {
-      client_id: process.env.GOOGLE_CLIENT_ID,
-      client_secret: process.env.GOOGLE_CLIENT_SECRET,
-      code,
-      redirect_uri: process.env.GOOGLE_REDIRECT_URI || 'http://localhost:5173/oauth/google/callback',
-      grant_type: 'authorization_code',
-    });
+    const tokenResponse = await axios.post(
+      "https://oauth2.googleapis.com/token",
+      {
+        client_id: process.env.GOOGLE_CLIENT_ID,
+        client_secret: process.env.GOOGLE_CLIENT_SECRET,
+        code,
+        redirect_uri:
+          process.env.GOOGLE_REDIRECT_URI ||
+          "http://localhost:5173/oauth/google/callback",
+        grant_type: "authorization_code",
+      },
+    );
 
     const { id_token } = tokenResponse.data;
 
@@ -85,7 +101,9 @@ router.post('/google/callback', async (req, res) => {
     const { sub: googleId, email, name } = decoded;
 
     if (!email) {
-      return res.status(400).json({ success: false, error: 'No email from Google' });
+      return res
+        .status(400)
+        .json({ success: false, error: "No email from Google" });
     }
 
     // EMAIL-BASED LINKING LOGIC
@@ -98,19 +116,21 @@ router.post('/google/callback', async (req, res) => {
       if (user) {
         // Link existing account to Google
         user.googleId = googleId;
-        user.oauthProvider = 'google';
+        user.oauthProvider = "google";
         user.emailVerified = true;
         await user.save();
       } else {
         // 3. Create new user
-        const randomPassword = require('crypto').randomBytes(32).toString('hex');
+        const randomPassword = require("crypto")
+          .randomBytes(32)
+          .toString("hex");
         const passwordHash = await bcrypt.hash(randomPassword, 10);
 
         user = new User({
           email: email.toLowerCase(),
-          displayName: name || email.split('@')[0],
+          displayName: name || email.split("@")[0],
           googleId,
-          oauthProvider: 'google',
+          oauthProvider: "google",
           emailVerified: true,
           passwordHash,
         });
@@ -119,11 +139,15 @@ router.post('/google/callback', async (req, res) => {
     }
 
     // Check user status
-    if (user.status === 'banned') {
-      return res.status(403).json({ success: false, error: 'Account is banned' });
+    if (user.status === "banned") {
+      return res
+        .status(403)
+        .json({ success: false, error: "Account is banned" });
     }
-    if (user.status === 'inactive') {
-      return res.status(403).json({ success: false, error: 'Account is inactive' });
+    if (user.status === "inactive") {
+      return res
+        .status(403)
+        .json({ success: false, error: "Account is inactive" });
     }
 
     // Update lastLoginAt
@@ -135,17 +159,17 @@ router.post('/google/callback', async (req, res) => {
     const refreshToken = signRefreshToken(user);
 
     // Set cookies (same as password login)
-    res.cookie('accessToken', accessToken, {
+    res.cookie("accessToken", accessToken, {
       httpOnly: true,
-      sameSite: 'lax',
-      secure: process.env.NODE_ENV === 'production',
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
       maxAge: 60 * 60 * 1000, // 1 hour
     });
 
-    res.cookie('refreshToken', refreshToken, {
+    res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
-      sameSite: 'lax',
-      secure: process.env.NODE_ENV === 'production',
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     });
 
@@ -161,8 +185,13 @@ router.post('/google/callback', async (req, res) => {
       },
     });
   } catch (error) {
-    console.error('OAuth callback error:', error.message);
-    res.status(500).json({ success: false, error: error.message || 'Authentication failed' });
+    console.error("OAuth callback error:", error.message);
+    res
+      .status(500)
+      .json({
+        success: false,
+        error: error.message || "Authentication failed",
+      });
   }
 });
 

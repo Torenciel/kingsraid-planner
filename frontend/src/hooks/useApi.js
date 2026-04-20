@@ -1,5 +1,5 @@
 // frontend/src/hooks/useApi.js
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 
 // Configuration
 const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:3002';
@@ -61,16 +61,19 @@ export function useApi(endpoint, options = {}) {
   const cacheKey = useRef(`${endpoint}:${JSON.stringify(options)}`);
 
   const fetchData = useCallback(async (forceRefresh = false) => {
+    console.log(`fetchData called for ${endpoint}, forceRefresh=${forceRefresh}`);
+
     // Annuler la requête précédente si elle existe
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
     }
 
     abortControllerRef.current = new AbortController();
-    
+
     // Vérifier le cache
     if (options.useCache !== false && cache.has(cacheKey.current) && !forceRefresh) {
       const cached = cache.get(cacheKey.current);
+      console.log(`Using cache for ${endpoint}`);
       setData(cached.data);
       setRawResponse(cached.raw);
       setLoading(false);
@@ -80,6 +83,7 @@ export function useApi(endpoint, options = {}) {
     setLoading(true);
     setError(null);
 
+    let timeoutId = null;
     try {
       const mergedOptions = {
         ...DEFAULT_OPTIONS,
@@ -93,11 +97,10 @@ export function useApi(endpoint, options = {}) {
       }
 
       // Timeout
-let timeoutId;
-
 if (mergedOptions.timeout) {
   timeoutId = setTimeout(() => {
     if (abortControllerRef.current) {
+      console.warn(`Request timeout for ${endpoint}, aborting`);
       abortControllerRef.current.abort();
       setError(new Error('Request timeout'));
       setLoading(false);
@@ -108,21 +111,22 @@ if (mergedOptions.timeout) {
 
       console.log(`API Request: ${API_V2_BASE}${endpoint}`);
       const response = await fetch(`${API_V2_BASE}${endpoint}`, mergedOptions);
-      
+
       if (timeoutId) clearTimeout(timeoutId);
 
+      console.log(`Received response for ${endpoint}: ${response.status}`);
 
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
 
       const result = await response.json();
-      
-      console.log(`📦 API Response for ${endpoint}:`, result);
-      
+
+      console.log(`API Response for ${endpoint}:`, result);
+
       // Extraire les données du format standard
       const extractedData = extractData(result, endpoint);
-      
+
       // Mettre en cache si GET
       if (mergedOptions.method === 'GET' && options.useCache !== false) {
         cache.set(cacheKey.current, {
@@ -130,15 +134,18 @@ if (mergedOptions.timeout) {
           raw: result
         });
       }
-      
+
       setData(extractedData);
       setRawResponse(result);
       setError(null);
-      
+
     } catch (err) {
+      if (timeoutId) clearTimeout(timeoutId);
       if (err.name !== 'AbortError') {
+        console.error(`API Error (${endpoint}):`, err);
         setError(err.message);
-        console.error(`❌ API Error (${endpoint}):`, err);
+      } else {
+        console.log(`Request aborted for ${endpoint}`);
       }
     } finally {
       setLoading(false);
@@ -146,18 +153,20 @@ if (mergedOptions.timeout) {
   }, [endpoint, options]);
 
   useEffect(() => {
+    console.log(`useApi effect running for ${endpoint}, refresh=${options.refresh}`);
     if (endpoint) {
       fetchData(options.refresh);
     } else {
       setLoading(false);
     }
-    
+
     return () => {
+      console.log(`useApi cleanup: aborting request for ${endpoint}`);
       if (abortControllerRef.current) {
         abortControllerRef.current.abort();
       }
     };
-  }, [fetchData, endpoint, options.refresh]);
+  }, [endpoint, options.refresh]);
 
   // Recharger manuellement
   const refetch = useCallback(() => {
@@ -183,31 +192,33 @@ if (mergedOptions.timeout) {
  */
 export function useHeroes(filters = {}) {
   const { class: className, name, position, search, ...otherFilters } = filters;
-  
+
   let endpoint = '/heroes';
   const params = new URLSearchParams();
-  
+
   if (className) params.append('class', className);
   if (name) params.append('name', name);
   if (position) params.append('position', position);
   if (search) params.append('search', search);
-  
+
   // Pagination
   if (filters.page) params.append('page', filters.page);
   if (filters.limit) params.append('limit', filters.limit);
-  
+
   Object.entries(otherFilters).forEach(([key, value]) => {
     if (value !== undefined && value !== null) {
       params.append(key, value);
     }
   });
-  
+
   const queryString = params.toString();
   if (queryString) {
     endpoint = `${endpoint}?${queryString}`;
   }
-  
-  return useApi(endpoint);
+
+  // Disable timeout for heroes endpoint
+  const options = useMemo(() => ({ timeout: 0 }), []);
+  return useApi(endpoint, options);
 }
 
 /**
@@ -388,27 +399,34 @@ export function useGearSetSearch(term) {
  * Hook pour les équipes
  */
 export function useTeams(filters = {}) {
-  const { isPublic, createdBy, gameMode, ...otherFilters } = filters;
-  
+  const isNull = filters === null;
+  const { isPublic, createdBy, author, gameMode, ...otherFilters } = isNull ? {} : filters;
+
   let endpoint = '/teams';
   const params = new URLSearchParams();
-  
-  if (isPublic !== undefined) params.append('isPublic', isPublic);
-  if (createdBy) params.append('createdBy', createdBy);
-  if (gameMode) params.append('gameMode', gameMode);
-  
-  Object.entries(otherFilters).forEach(([key, value]) => {
-    if (value !== undefined && value !== null) {
-      params.append(key, value);
+
+  if (!isNull) {
+    if (isPublic !== undefined) params.append('isPublic', isPublic);
+    if (createdBy && createdBy.trim()) params.append('createdBy', createdBy);
+    if (author) params.append('author', author);
+    if (gameMode) params.append('gameMode', gameMode);
+
+    Object.entries(otherFilters).forEach(([key, value]) => {
+      if (value !== undefined && value !== null) {
+        params.append(key, value);
+      }
+    });
+
+    const queryString = params.toString();
+    if (queryString) {
+      endpoint = `${endpoint}?${queryString}`;
     }
-  });
-  
-  const queryString = params.toString();
-  if (queryString) {
-    endpoint = `${endpoint}?${queryString}`;
   }
-  
-  return useApi(endpoint);
+
+  const options = useMemo(() => ({ useCache: false, timeout: 0 }), []);
+
+  console.log('useTeams endpoint:', isNull ? 'null (skipped)' : endpoint);
+  return useApi(isNull ? null : endpoint, options);
 }
 
 /**

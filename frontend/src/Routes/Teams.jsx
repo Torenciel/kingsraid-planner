@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { FaStarOfLife, FaSearch, FaTrash } from "react-icons/fa";
+import { FaSearch, FaStarOfLife, FaTrash } from "react-icons/fa";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import TeamList from "../components/TeamViewer/TeamList";
 import "./Teams.css";
@@ -16,6 +16,7 @@ const Teams = () => {
   const [selectedContent, setSelectedContent] = useState(initialContent);
   const [selectedSubFilters, setSelectedSubFilters] = useState({});
   const [searchQuery, setSearchQuery] = useState("");
+  const [teamCount, setTeamCount] = useState(0);
 
   // Main content types with their sub-filters
   const contentOptions = [
@@ -323,7 +324,6 @@ const Teams = () => {
 
       {/* ===== FILTERS GRID ===== */}
       <div className="filters-section">
-        
         {/* ===== LEFT COLUMN ===== */}
         <div className="filters-left">
           <div className="content-checkboxes">
@@ -344,17 +344,15 @@ const Teams = () => {
 
         {/* ===== CENTER COLUMN ===== */}
         <div className="filters-center">
-          
           {/* TOP BAR */}
           <div className="filters-top">
-
-            <button 
+            <button
               className="square-btn clear-filters-btn"
               onClick={handleClearFilters}
             >
               <FaStarOfLife />
             </button>
-            <button 
+            <button
               className="square-btn clear-filters-btn"
               onClick={handleClearFilters}
               title="Physical"
@@ -365,7 +363,7 @@ const Teams = () => {
                 className="btn-icon"
               />
             </button>
-            <button 
+            <button
               className="square-btn clear-filters-btn"
               onClick={handleClearFilters}
               title="Magical"
@@ -401,7 +399,7 @@ const Teams = () => {
               Select all
             </button>
 
-            <button 
+            <button
               className="square-btn clear-filters-btn"
               onClick={handleClearFilters}
               disabled={
@@ -417,67 +415,66 @@ const Teams = () => {
 
           {/* SUB FILTERS – SCROLL VERTICAL */}
           <div className="sub-filters-wrapper">
-          <div className="sub-filters-container">
+            <div className="sub-filters-container">
+              {selectedContent
+                .filter((contentId) => {
+                  const content = contentOptions.find(
+                    (c) => c.id === contentId,
+                  );
+                  return (
+                    content &&
+                    content.subFilters &&
+                    content.subFilters.length > 0
+                  );
+                })
+                .map((contentId) => {
+                  const content = contentOptions.find(
+                    (c) => c.id === contentId,
+                  );
+                  const selectedSubs = selectedSubFilters[contentId] || [];
 
-            {selectedContent
-              .filter((contentId) => {
-                const content = contentOptions.find((c) => c.id === contentId);
-                return (
-                  content &&
-                  content.subFilters &&
-                  content.subFilters.length > 0
-                );
-              })
-              .map((contentId) => {
-                const content = contentOptions.find(
-                  (c) => c.id === contentId
-                );
-                const selectedSubs = selectedSubFilters[contentId] || [];
+                  return (
+                    <div key={contentId} className="sub-filter-section">
+                      <div className="sub-filter-title">{content.name}</div>
 
-                return (
-                  <div key={contentId} className="sub-filter-section">
-                    <div className="sub-filter-title">{content.name}</div>
+                      <div className="sub-filter-items">
+                        {content.subFilters.map((subFilter) => {
+                          const isSelected = selectedSubs.includes(
+                            subFilter.id,
+                          );
+                          return (
+                            <button
+                              key={subFilter.id}
+                              className={`sub-filter-item ${isSelected ? "selected" : ""}`}
+                              onClick={() =>
+                                handleSubFilterChange(contentId, subFilter.id)
+                              }
+                            >
+                              {subFilter.image ? (
+                                <img
+                                  src={subFilter.image}
+                                  alt={subFilter.name}
+                                  className="sub-filter-image"
+                                  onError={handleImageError}
+                                />
+                              ) : (
+                                <div className="sub-filter-image-placeholder">
+                                  {subFilter.name.charAt(0)}
+                                </div>
+                              )}
 
-                    <div className="sub-filter-items">
-                      {content.subFilters.map((subFilter) => {
-                        const isSelected = selectedSubs.includes(
-                          subFilter.id
-                        );
-                        return (
-                          <button
-                            key={subFilter.id}
-                            className={`sub-filter-item ${isSelected ? "selected" : ""}`}
-                            onClick={() =>
-                              handleSubFilterChange(contentId, subFilter.id)
-                            }
-                          >
-                            {subFilter.image ? (
-                              <img
-                                src={subFilter.image}
-                                alt={subFilter.name}
-                                className="sub-filter-image"
-                                onError={handleImageError}
-                              />
-                            ) : (
-                              <div className="sub-filter-image-placeholder">
-                                {subFilter.name.charAt(0)}
+                              <div className="sub-filter-name-overlay">
+                                {subFilter.name}
                               </div>
-                            )}
-
-                            <div className="sub-filter-name-overlay">
-                              {subFilter.name}
-                            </div>
-                          </button>
-
-                        );
-                      })}
+                            </button>
+                          );
+                        })}
+                      </div>
                     </div>
-                  </div>
-                );
-              })}
-           
+                  );
+                })}
+            </div>
           </div>
-        </div>
         </div>
 
         {/* ===== RIGHT COLUMN ===== */}
@@ -487,18 +484,14 @@ const Teams = () => {
             <div className="filter-tags">
               {/* Main content filters */}
               {selectedContent.map((contentId) => {
-                const content = contentOptions.find(
-                  (c) => c.id === contentId
-                );
+                const content = contentOptions.find((c) => c.id === contentId);
                 return (
                   <button
                     key={contentId}
                     className="filter-tag"
                     onClick={() => handleFilterTagClick(contentId)}
                   >
-                    <span className="filter-tag-content">
-                      {content?.name}
-                    </span>
+                    <span className="filter-tag-content">{content?.name}</span>
                   </button>
                 );
               })}
@@ -507,11 +500,11 @@ const Teams = () => {
               {Object.entries(selectedSubFilters).map(
                 ([contentId, subFilterIds]) => {
                   const content = contentOptions.find(
-                    (c) => c.id === contentId
+                    (c) => c.id === contentId,
                   );
                   return subFilterIds.map((subFilterId) => {
                     const subFilter = content?.subFilters?.find(
-                      (s) => s.id === subFilterId
+                      (s) => s.id === subFilterId,
                     );
                     return subFilter ? (
                       <button
@@ -527,7 +520,7 @@ const Teams = () => {
                       </button>
                     ) : null;
                   });
-                }
+                },
               )}
             </div>
           </div>
@@ -535,7 +528,7 @@ const Teams = () => {
           <div className="content-type-header">
             <div className="teams-count-header">
               <h3 className="teams-count-header-text">
-                {Math.floor(Math.random() * 50) + 10}{" "}
+                {teamCount}{" "}
                 <span className="teams-count-header-span">teams</span>
               </h3>
             </div>
@@ -543,55 +536,8 @@ const Teams = () => {
         </div>
       </div>
 
-      {/* ===== TEAMS CONTENT ===== */}
-      <div className="tab-content">
-        {activeTab === "private" ? (
-          <>
-            <h2>My Teams</h2>
-            <p>
-              {selectedContent.length === 0
-                ? "Showing all my teams"
-                : `My private teams for: ${selectedContent
-                    .map(
-                      (id) => contentOptions.find((c) => c.id === id)?.name
-                    )
-                    .join(", ")}`}
-              {getAllSelectedSubFilters().length > 0 &&
-                ` (${getAllSelectedSubFilters().length} specific boss${
-                  getAllSelectedSubFilters().length > 1 ? "es" : ""
-                })`}
-              {searchQuery && ` matching "${searchQuery}"`}
-            </p>
-            <div className="teams-count">
-              Showing {Math.floor(Math.random() * 50) + 10} teams
-            </div>
-          </>
-        ) : (
-          <>
-            <h2>Public Teams</h2>
-            <p>
-              {selectedContent.length === 0
-                ? "Showing all public teams"
-                : `Showing teams for: ${selectedContent
-                    .map(
-                      (id) => contentOptions.find((c) => c.id === id)?.name
-                    )
-                    .join(", ")}`}
-              {getAllSelectedSubFilters().length > 0 &&
-                ` (${getAllSelectedSubFilters().length} specific boss${
-                  getAllSelectedSubFilters().length > 1 ? "es" : ""
-                })`}
-              {searchQuery && ` matching "${searchQuery}"`}
-            </p>
-            <div className="teams-count">
-              Showing {Math.floor(Math.random() * 50) + 10} teams
-            </div>
-          </>
-        )}
-      </div>
-    <TeamList />
+<TeamList tab={activeTab} searchQuery={searchQuery} onCountChange={setTeamCount} />
     </div>
-    
   );
 };
 

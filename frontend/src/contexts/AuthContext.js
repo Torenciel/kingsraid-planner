@@ -15,6 +15,7 @@ export const AuthProvider = ({ children }) => {
       if (data.authenticated) {
         setUser({
           ...data.user,
+          id: data.user._id || data.user.id,
           avatarVersion: Date.now(),
           bannerVersion: Date.now(),
         });

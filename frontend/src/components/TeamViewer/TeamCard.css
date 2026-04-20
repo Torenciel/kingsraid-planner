@@ -7,11 +7,10 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  
 
   padding: 14px 20px;
   background: var(--color-primary-default);
-  border: 1px solid var(--color-border-default);
+  border: 1px solid transparent;
   border-radius: 6px;
 
   transition: all 0.2s ease;
@@ -27,7 +26,6 @@
   border-color: var(--color-item-hover);
   background: rgba(255, 255, 255, 0.02);
 }
-
 
 /* ============================= */
 /* Left Section (Heroes + Name) */
@@ -48,7 +46,6 @@
   min-width: 180px;
 }
 
-
 /* ============================= */
 /* Heroes */
 /* ============================= */
@@ -63,7 +60,7 @@
 .hero-wrapper {
   width: 64px;
   height: 64px;
-  border-radius: 4px; 
+  border-radius: 4px;
   overflow: hidden;
   border: 1px solid var(--color-border-default);
   background: #111;
@@ -81,7 +78,6 @@
   object-fit: cover;
   display: block;
 }
-
 
 /* ============================= */
 /* Right Section (Footer Info) */
@@ -112,6 +108,12 @@
 .icon-btn:hover {
   color: var(--color-item-selected);
   background: rgba(255, 255, 255, 0.05);
+}
+
+.lock-icon {
+  font-size: 1.5em;
+  color: var(--color-text-default);
+  opacity: 0.7;
 }
 
 .bookmark-count {
