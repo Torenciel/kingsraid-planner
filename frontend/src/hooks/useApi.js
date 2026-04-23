@@ -138,17 +138,16 @@ if (mergedOptions.timeout) {
       setData(extractedData);
       setRawResponse(result);
       setError(null);
+      setLoading(false);
 
     } catch (err) {
       if (timeoutId) clearTimeout(timeoutId);
       if (err.name !== 'AbortError') {
         console.error(`API Error (${endpoint}):`, err);
         setError(err.message);
-      } else {
-        console.log(`Request aborted for ${endpoint}`);
+        setLoading(false);
       }
-    } finally {
-      setLoading(false);
+      // AbortError: don't touch loading state — a new request is already starting
     }
   }, [endpoint, options]);
 
