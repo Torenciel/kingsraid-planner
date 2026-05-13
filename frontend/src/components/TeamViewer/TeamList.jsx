@@ -130,6 +130,7 @@ const TeamList = ({ tab = "public", searchQuery = "", onCountChange, selectedCon
           key={team.id}
           team={team}
           heroMetadataMap={heroMetadataMap}
+          currentUserId={user?.id}
         />
       ))}
     </div>

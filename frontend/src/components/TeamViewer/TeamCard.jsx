@@ -22,8 +22,10 @@ export default function TeamCard({
   onUpvote,
   onBookmark,
   onOpen,
+  currentUserId,
 }) {
   const navigate = useNavigate();
+  const isOwner = currentUserId && team?.author && String(team.author) === String(currentUserId);
 
   const [upvotes, setUpvotes] = useState(team?.upvotes || 0);
   const [bookmarked, setBookmarked] = useState(false);
@@ -50,7 +52,7 @@ export default function TeamCard({
   return (
     <div
       className="team-card clickable"
-      onClick={() => navigate(`/team/${team.slug}`)}
+      onClick={() => navigate(isOwner ? `/team/edit/${team.slug}` : `/team/${team.slug}`)}
     >
       <div className="team-left">
         <div className="team-name-block">

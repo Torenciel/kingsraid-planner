@@ -207,6 +207,7 @@ router.get("/", async (req, res) => {
         tags: t.tags || [],
         upvotes: t.upvotes || 0,
         bookmarks: t.bookmarks || 0,
+        author: t.author,
         createdBy: t.createdBy,
         createdAt: t.createdAt,
         isPublic: t.isPublic,
