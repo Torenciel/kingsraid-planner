@@ -1,5 +1,5 @@
-import { useParams } from "react-router-dom";
-import { useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { useEffect, useRef } from "react";
 
 import ModalManager from "../components/Modals/ModalManager";
 import TeamBuilder from "../components/TeamBuilder/TeamBuilder";
@@ -20,7 +20,45 @@ import "../index.css";
 const TeamLoader = () => {
 
   const { slug } = useParams();
-  const { applyTeamData, convertDBToTeamContext, setCurrentTeamId } = useTeam();
+  const { applyTeamData, convertDBToTeamContext, setCurrentTeamId, team } = useTeam();
+  const navigate = useNavigate();
+  const hasHeroRef = useRef(false);
+  hasHeroRef.current = team.some((slot) => slot !== null);
+
+  // Block browser tab close / reload
+  useEffect(() => {
+    const handleBeforeUnload = (e) => {
+      if (hasHeroRef.current) e.preventDefault();
+    };
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, []);
+
+  // Block browser back/forward button
+  useEffect(() => {
+    const handlePopState = () => {
+      if (!hasHeroRef.current) return;
+      window.history.pushState(null, "", window.location.href);
+      if (window.confirm("Leave without saving the team?")) navigate(-1);
+    };
+    window.history.pushState(null, "", window.location.href);
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, [navigate]);
+
+  // Block in-app navigation (Navbar links, programmatic navigate calls)
+  useEffect(() => {
+    const originalPush = window.history.pushState.bind(window.history);
+    window.history.pushState = (state, title, url) => {
+      if (hasHeroRef.current && url && url !== window.location.pathname) {
+        if (!window.confirm("Leave without saving the team?")) return;
+      }
+      originalPush(state, title, url);
+    };
+    return () => {
+      window.history.pushState = originalPush;
+    };
+  }, []);
 
 useEffect(() => {
 

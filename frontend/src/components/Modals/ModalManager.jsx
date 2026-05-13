@@ -8,6 +8,7 @@ import UTModal from "./UTModal";
 import UWModal from "./UWModal";
 import AvatarSelectorModal from "./AvatarSelectorModal";
 import BannerSelectorModal from "./BannerSelectorModal";
+import ConfirmationModal from "./ConfirmationModal";
 
 
 const ModalManager = () => {
@@ -29,6 +30,8 @@ const ModalManager = () => {
         return <AvatarSelectorModal data={modalData} onClose={closeModal} />;
       case "banner":
         return <BannerSelectorModal data={modalData} onClose={closeModal} />;
+      case "confirmation":
+        return <ConfirmationModal data={modalData} onClose={closeModal} />;
 
       default:
         return null;
