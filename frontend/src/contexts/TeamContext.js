@@ -10,6 +10,7 @@ export const TeamProvider = ({ children }) => {
   const [teamName, setTeamName] = useState('New Team');
   const [isPublic, setIsPublic] = useState(null);
   const [gameMode, setGameMode] = useState('pve');
+  const [tags, setTags] = useState([]);
   
   // State of Gear
   const [subSlots, setSubSlots] = useState(
@@ -31,6 +32,7 @@ export const TeamProvider = ({ children }) => {
   const [savedTeams, setSavedTeams] = useState([]);
   const [currentTeamId, setCurrentTeamId] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [isDirty, setIsDirty] = useState(false);
 
   // SETUP API
   const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3002';
@@ -63,14 +65,10 @@ export const TeamProvider = ({ children }) => {
   };
 
   // Save Team
-  const saveTeam = async (teamName = 'My Team') => {
+  const saveTeam = async (teamName = 'My Team', overrides = {}) => {
     try {
       setLoading(true);
-      // console.log('=== TEAMCONTEXT - saveTeam ===');
-      // console.log('Advancement before:', advancements);
-      // console.log('Type:', advancements.map(a => typeof a));
-      // console.log('Value:', advancements);
-      
+
       const teamData = {
         teamTitle: teamName,
         teamSize: teamSize,
@@ -78,9 +76,11 @@ export const TeamProvider = ({ children }) => {
         subSlots: subSlots,
         subStars: subStars,
         perks: perks,
-        advancements: advancements,  // [null, 0, 1, 2]
+        advancements: advancements,
         isPublic: isPublic,
-        gameMode: gameMode
+        gameMode: gameMode,
+        tags: tags,
+        ...overrides,
       };
       
       console.log('Complete data sent:', teamData);
@@ -112,6 +112,7 @@ export const TeamProvider = ({ children }) => {
         
         if (result.success) {
           await loadTeams();
+          setIsDirty(false);
           return { success: true, teamId: result.teamId };
         } else {
           console.error('Backend error:', result.error);
@@ -162,9 +163,10 @@ export const TeamProvider = ({ children }) => {
   // Apply team data
   const applyTeamData = (teamData) => {
     if (!teamData) return;
-    
-    const { teamSize: newSize, team: newTeam, subSlots: newSubSlots, 
-            subStars: newSubStars, perks: newPerks, advancements: newAdvancements } = teamData;
+
+    const { teamSize: newSize, team: newTeam, subSlots: newSubSlots,
+            subStars: newSubStars, perks: newPerks, advancements: newAdvancements,
+            tags: newTags, isPublic: newIsPublic, gameMode: newGameMode, name: newName } = teamData;
     
     setTeamSize(newSize);
     setTeam(newTeam || Array(newSize).fill(null));
@@ -179,6 +181,11 @@ export const TeamProvider = ({ children }) => {
     });
     
     setAdvancements(validatedAdvancements);
+    if (newTags) setTags(newTags);
+    if (newIsPublic !== undefined) setIsPublic(newIsPublic);
+    if (newGameMode) setGameMode(newGameMode);
+    if (newName) setTeamName(newName);
+    setIsDirty(false);
   };
 
   // Convert data from backend to frontend
@@ -386,6 +393,7 @@ t2: {
     advancements: frontendAdvancements,
     isPublic: dbTeam.isPublic,
     gameMode: dbTeam.gameMode,
+    tags: dbTeam.tags || [],
     createdAt: dbTeam.createdAt
   };
 };
@@ -421,6 +429,7 @@ t2: {
       newTeam[emptySlotIndex] = normalizedHero;
       return newTeam;
     });
+    setIsDirty(true);
   };
 
   // Remove a Hero
@@ -461,6 +470,7 @@ t2: {
       
       return newTeam;
     });
+    setIsDirty(true);
   };
 
   // Update a SubSlot
@@ -478,6 +488,7 @@ t2: {
       newSubStars[teamSlotIndex][subSlotIndex] = stars;
       return newSubStars;
     });
+    setIsDirty(true);
   };
 
   // Update Team size 
@@ -497,6 +508,7 @@ t2: {
       newPerks[slotIndex] = perkData;
       return newPerks;
     });
+    setIsDirty(true);
   };
 
   // Update Advancement
@@ -522,6 +534,7 @@ t2: {
       console.log('Advancement updated:', newAdvancements);
       return newAdvancements;
     });
+    setIsDirty(true);
   };
 
   // Reset Team
@@ -532,6 +545,7 @@ t2: {
     setPerks(Array(teamSize).fill(null));
     setAdvancements(Array(teamSize).fill(null));
     setTeamName('New Team');
+    setTags([]);
     setCurrentTeamId(null);
   };
 
@@ -590,13 +604,16 @@ t2: {
     savedTeams,
     currentTeamId,
     loading,
+    isDirty,
     isPublic,
     gameMode,
-    
+    tags,
+
     // Setters
     setTeamName,
     setIsPublic,
     setGameMode,
+    setTags,
     setCurrentTeamId,
     
     // Actions

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { FaSearch, FaStarOfLife, FaTrash } from "react-icons/fa";
+import { FaSearch, FaTrash } from "react-icons/fa";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import TeamList from "../components/TeamViewer/TeamList";
 import "./Teams.css";
@@ -346,35 +346,6 @@ const Teams = () => {
         <div className="filters-center">
           {/* TOP BAR */}
           <div className="filters-top">
-            <button
-              className="square-btn clear-filters-btn"
-              onClick={handleClearFilters}
-            >
-              <FaStarOfLife />
-            </button>
-            <button
-              className="square-btn clear-filters-btn"
-              onClick={handleClearFilters}
-              title="Physical"
-            >
-              <img
-                src="\icons\physical.png"
-                alt="Clear physical filters"
-                className="btn-icon"
-              />
-            </button>
-            <button
-              className="square-btn clear-filters-btn"
-              onClick={handleClearFilters}
-              title="Magical"
-            >
-              <img
-                src="\icons\magical.png"
-                alt="Clear physical filters"
-                className="btn-icon"
-              />
-            </button>
-
             <div className="search-container">
               <FaSearch className="search-icon" />
               <input
@@ -394,10 +365,6 @@ const Teams = () => {
                 </button>
               )}
             </div>
-
-            <button className="select-all-btn" onClick={handleSelectAll}>
-              Select all
-            </button>
 
             <button
               className="square-btn clear-filters-btn"
@@ -536,7 +503,14 @@ const Teams = () => {
         </div>
       </div>
 
-<TeamList tab={activeTab} searchQuery={searchQuery} onCountChange={setTeamCount} />
+<TeamList
+  tab={activeTab}
+  searchQuery={searchQuery}
+  onCountChange={setTeamCount}
+  selectedContent={selectedContent}
+  selectedSubFilters={selectedSubFilters}
+  contentOptions={contentOptions}
+/>
     </div>
   );
 };

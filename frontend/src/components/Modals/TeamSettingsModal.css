@@ -1,0 +1,149 @@
+.team-settings-modal {
+  width: 480px;
+  max-width: 100%;
+}
+
+/* Fields */
+.tsm-field {
+  margin-bottom: 1.25rem;
+}
+
+.tsm-label {
+  display: block;
+  font-weight: 600;
+  font-size: 0.875rem;
+  margin-bottom: 0.5rem;
+  color: var(--color-text-default);
+}
+
+.tsm-error {
+  display: block;
+  font-size: 0.8rem;
+  color: var(--color-error-default);
+  margin-top: 0.25rem;
+}
+
+/* Visibility toggle */
+.tsm-toggle-row {
+  display: flex;
+  gap: 8px;
+}
+
+.tsm-toggle-btn {
+  flex: 1;
+  padding: 0.4rem 0;
+  border-radius: 6px;
+  border: 1px solid var(--color-border-default);
+  background: transparent;
+  color: var(--color-text-default);
+  cursor: pointer;
+  font-size: 0.875rem;
+  transition: all 0.15s ease;
+  opacity: 0.5;
+}
+
+.tsm-toggle-btn.active {
+  border-color: var(--color-item-selected);
+  color: var(--color-item-selected);
+  opacity: 1;
+}
+
+/* Size buttons */
+.tsm-size-row {
+  display: flex;
+  gap: 8px;
+}
+
+.tsm-size-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 6px;
+  border: 1px solid var(--color-border-default);
+  background: transparent;
+  color: var(--color-text-default);
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 600;
+  transition: all 0.15s ease;
+  opacity: 0.5;
+}
+
+.tsm-size-btn.active {
+  border-color: var(--color-item-selected);
+  color: var(--color-item-selected);
+  opacity: 1;
+}
+
+/* Tag groups */
+.tsm-tag-groups {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  max-height: 260px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.tsm-tag-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.tsm-tag-group-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-text-default);
+  opacity: 0.5;
+}
+
+.tsm-tag-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.tsm-tag {
+  padding: 0.25rem 0.65rem;
+  border-radius: 999px;
+  border: 1px solid var(--color-border-default);
+  background: transparent;
+  color: var(--color-text-default);
+  cursor: pointer;
+  font-size: 0.8rem;
+  transition: all 0.15s ease;
+  opacity: 0.6;
+}
+
+.tsm-tag:hover {
+  opacity: 0.9;
+}
+
+.tsm-tag.active {
+  border-color: var(--color-item-selected);
+  background: var(--color-item-selected);
+  color: #fff;
+  opacity: 1;
+}
+
+/* Save message */
+.tsm-message {
+  font-size: 0.85rem;
+  margin-bottom: 0.75rem;
+  text-align: center;
+}
+
+.tsm-message.success {
+  color: var(--color-validation-default);
+}
+
+.tsm-message.error {
+  color: var(--color-error-default);
+}
+
+.btn-modal-confirm.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

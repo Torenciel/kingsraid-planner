@@ -20,15 +20,15 @@ import "../index.css";
 const TeamLoader = () => {
 
   const { slug } = useParams();
-  const { applyTeamData, convertDBToTeamContext, setCurrentTeamId, team } = useTeam();
+  const { applyTeamData, convertDBToTeamContext, setCurrentTeamId, isDirty } = useTeam();
   const navigate = useNavigate();
-  const hasHeroRef = useRef(false);
-  hasHeroRef.current = team.some((slot) => slot !== null);
+  const isDirtyRef = useRef(false);
+  isDirtyRef.current = isDirty;
 
   // Block browser tab close / reload
   useEffect(() => {
     const handleBeforeUnload = (e) => {
-      if (hasHeroRef.current) e.preventDefault();
+      if (isDirtyRef.current) e.preventDefault();
     };
     window.addEventListener("beforeunload", handleBeforeUnload);
     return () => window.removeEventListener("beforeunload", handleBeforeUnload);
@@ -37,7 +37,7 @@ const TeamLoader = () => {
   // Block browser back/forward button
   useEffect(() => {
     const handlePopState = () => {
-      if (!hasHeroRef.current) return;
+      if (!isDirtyRef.current) return;
       window.history.pushState(null, "", window.location.href);
       if (window.confirm("Leave without saving the team?")) navigate(-1);
     };
@@ -50,7 +50,7 @@ const TeamLoader = () => {
   useEffect(() => {
     const originalPush = window.history.pushState.bind(window.history);
     window.history.pushState = (state, title, url) => {
-      if (hasHeroRef.current && url && url !== window.location.pathname) {
+      if (isDirtyRef.current && url && url !== window.location.pathname) {
         if (!window.confirm("Leave without saving the team?")) return;
       }
       originalPush(state, title, url);

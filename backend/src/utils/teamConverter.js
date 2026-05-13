@@ -333,7 +333,27 @@ const convertTeamContextToDB = (
     views: 0,
     upvotes: 0,
     bookmarks: 0,
-    tags: [],
+    tags: (() => {
+      const rawTags = Array.isArray(teamContext.tags) ? teamContext.tags : [];
+      const parentMap = {
+        wb_mountain: "wb", wb_protianus: "wb", wb_xanadus: "wb",
+        raid_black: "raid", raid_fire: "raid", raid_frost: "raid", raid_poison: "raid",
+        gc_lakreil: "gc", gc_tyrfas: "gc", gc_velkazar: "gc",
+        gr_gushak: "gr", gr_lakreil: "gr", gr_manticore: "gr", gr_maviel: "gr",
+        gr_nordik: "gr", gr_nubis: "gr", gr_tyrfas: "gr", gr_Xakios: "gr",
+        trial_imet: "trial", trial_musama: "trial", trial_sekmaha: "trial",
+        devourer_shakmeh: "shakmeh", otherworldly_shakmeh: "shakmeh",
+        story_ch1: "story", story_ch2: "story", story_ch3: "story",
+        league_of_victory: "pvp", league_of_honor: "pvp",
+        other_farming: "other", other_event: "other",
+      };
+      const tagSet = new Set(rawTags);
+      rawTags.forEach((tag) => {
+        const parent = parentMap[tag];
+        if (parent) tagSet.add(parent);
+      });
+      return [...tagSet];
+    })(),
     authorNotes: "",
     formatVersion: 3
   };

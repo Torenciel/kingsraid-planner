@@ -9,6 +9,7 @@ import UWModal from "./UWModal";
 import AvatarSelectorModal from "./AvatarSelectorModal";
 import BannerSelectorModal from "./BannerSelectorModal";
 import ConfirmationModal from "./ConfirmationModal";
+import TeamSettingsModal from "./TeamSettingsModal";
 
 
 const ModalManager = () => {
@@ -32,6 +33,8 @@ const ModalManager = () => {
         return <BannerSelectorModal data={modalData} onClose={closeModal} />;
       case "confirmation":
         return <ConfirmationModal data={modalData} onClose={closeModal} />;
+      case "team-settings":
+        return <TeamSettingsModal data={modalData} onClose={closeModal} />;
 
       default:
         return null;

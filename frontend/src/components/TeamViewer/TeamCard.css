@@ -38,12 +38,17 @@
   flex: 1;
 }
 
+.team-name-block {
+  display: flex;
+  flex-direction: column;
+  min-width: 180px;
+}
+
 /* Team Name */
 .team-name {
   font-size: 1.1rem;
   font-weight: 600;
   color: var(--color-text-default);
-  min-width: 180px;
 }
 
 /* ============================= */
@@ -121,5 +126,6 @@
 }
 
 .created-by {
-  opacity: 0.6;
+  opacity: 0.5;
+  font-size: 0.8rem;
 }

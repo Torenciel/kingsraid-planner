@@ -1,15 +1,19 @@
+import { FaCog } from "react-icons/fa";
 import { useHeroContext } from "../../contexts/HeroContext";
 import { useTeam } from "../../contexts/TeamContext";
+import { useModal } from "../../contexts/ModalContext";
 import HeroGrid from "../HeroGrid/HeroGrid";
 import TeamSlots from "../TeamSlots/TeamSlots";
+import SaveTeamButton from "./SaveTeamButton";
 import "./TeamBuilder.css";
 import TeamSizeSelector from "./TeamSizeSelector";
-import SaveTeamButton from './SaveTeamButton';
-import { FaRegEdit } from "react-icons/fa";
 
 const TeamBuilder = () => {
-  const { teamTitle } = useTeam();
+  const { teamName } = useTeam();
   const { loading } = useHeroContext();
+  const { openModal } = useModal();
+
+  const openTeamSettings = () => openModal("team-settings", {});
 
   if (loading) {
     return (
@@ -25,9 +29,10 @@ const TeamBuilder = () => {
       <header className="team-builder-header">
         {/* Team Title */}
         <div className="team-title-container">
-          <h2 className="team-title">Placeholder title {teamTitle}</h2>
-          <button className="edit-team-button"><FaRegEdit /></button>
-          
+          <h2 className="team-title">{teamName || "New Team"}</h2>
+          <button className="edit-team-button" onClick={openTeamSettings}>
+            <FaCog />
+          </button>
         </div>
       </header>
 
@@ -36,7 +41,6 @@ const TeamBuilder = () => {
 
       {/* Team Slots */}
       <TeamSlots />
-
 
       <SaveTeamButton />
 

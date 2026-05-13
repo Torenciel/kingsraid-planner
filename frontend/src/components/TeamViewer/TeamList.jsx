@@ -3,7 +3,7 @@ import { useTeams, useHeroes } from "../../hooks/useApi";
 import { useAuth } from "../../contexts/AuthContext";
 import TeamCard from "./TeamCard";
 
-const TeamList = ({ tab = "public", searchQuery = "", onCountChange }) => {
+const TeamList = ({ tab = "public", searchQuery = "", onCountChange, selectedContent = [], selectedSubFilters = {}, contentOptions = [] }) => {
   const { user } = useAuth();
 
   console.log(`TeamList user object:`, user);
@@ -46,22 +46,59 @@ const TeamList = ({ tab = "public", searchQuery = "", onCountChange }) => {
     return map;
   }, [heroesMetadata]);
 
-  // Filter teams by search query
+  // Build the set of tag IDs a team must match given the current filter selection.
+  // Rules:
+  //   - No content selected → no tag filter (show all)
+  //   - Parent selected, no sub-filters chosen → match parent OR any of its children
+  //   - Parent selected, some sub-filters chosen → match only those sub-filters
+  const requiredTagSets = useMemo(() => {
+    if (selectedContent.length === 0) return null;
+
+    return selectedContent.map((contentId) => {
+      const option = contentOptions.find((c) => c.id === contentId);
+      if (!option) return new Set([contentId]);
+
+      const chosenSubs = selectedSubFilters[contentId] || [];
+      if (chosenSubs.length > 0) {
+        return new Set(chosenSubs);
+      }
+      // Parent + all children
+      return new Set([contentId, ...option.subFilters.map((s) => s.id)]);
+    });
+  }, [selectedContent, selectedSubFilters, contentOptions]);
+
+  // Filter teams by search query then by tags
   const filteredTeams = useMemo(() => {
     if (!teams) return [];
-    if (!searchQuery) return teams;
 
-    const query = searchQuery.toLowerCase();
-    return teams.filter(
-      (team) =>
-        team.teamTitle?.toLowerCase().includes(query) ||
-        team.name?.toLowerCase().includes(query) ||
-        team.createdBy?.toLowerCase().includes(query) ||
-        team.heroes?.some((hero) =>
-          hero.name?.toLowerCase().includes(query)
-        )
-    );
-  }, [teams, searchQuery]);
+    let result = teams;
+
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      result = result.filter((team) => {
+        if (team.name?.toLowerCase().includes(query)) return true;
+        if (team.createdBy?.toLowerCase().includes(query)) return true;
+        return team.heroes?.some((hero) => {
+          const slug = hero.heroSlug || hero.slug || "";
+          const meta = heroMetadataMap[slug];
+          const heroName = meta?.name || meta?.infos?.name || slug.replace(/-/g, " ");
+          return heroName.toLowerCase().includes(query);
+        });
+      });
+    }
+
+    if (requiredTagSets) {
+      // Team must match at least one tag from EACH selected content group
+      result = result.filter((team) => {
+        const teamTags = new Set(team.tags || []);
+        return requiredTagSets.every((tagSet) =>
+          [...tagSet].some((t) => teamTags.has(t))
+        );
+      });
+    }
+
+    return result;
+  }, [teams, searchQuery, requiredTagSets, heroMetadataMap]);
 
   // Notify parent of count changes (use filtered count so search is reflected)
   useEffect(() => {

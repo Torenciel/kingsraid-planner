@@ -53,7 +53,10 @@ export default function TeamCard({
       onClick={() => navigate(`/team/${team.slug}`)}
     >
       <div className="team-left">
-        <h3 className="team-name">{team.name}</h3>
+        <div className="team-name-block">
+          <h3 className="team-name">{team.name}</h3>
+          <span className="created-by">by {team.createdBy || "Unknown"}</span>
+        </div>
 
         <div className="team-heroes">
           {sortedHeroes.map((hero) => (
@@ -83,8 +86,6 @@ export default function TeamCard({
         </button>
 
         <span className="bookmark-count">{team.bookmarks || 0}</span>
-
-        <span className="created-by">by {team.createdBy || "Unknown"}</span>
       </div>
     </div>
   );

@@ -186,7 +186,7 @@ const TeamSchema = new mongoose.Schema({
 
   teamSize: {
     type: Number,
-    enum: [4, 6, 8],
+    enum: [4, 5, 6, 7, 8],
     default: 4
   },
 
