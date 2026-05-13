@@ -131,11 +131,21 @@
 }
 
 .team-remove-confirm-yes {
-  background: #ef4444;
+  background: var(--color-error-default);
   color: white;
+  transition: background-color 0.15s ease;
+}
+
+.team-remove-confirm-yes:hover {
+  background: var(--color-error-hover);
 }
 
 .team-remove-confirm-no {
-  background: #4b5563;
+  background: var(--color-cancel-default);
   color: white;
+  transition: background-color 0.15s ease;
+}
+
+.team-remove-confirm-no:hover {
+  background: var(--color-cancel-hover);
 }

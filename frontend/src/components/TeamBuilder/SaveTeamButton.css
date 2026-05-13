@@ -44,7 +44,6 @@
 
 /* Modal */
 
-
 .modal-icon {
   margin-right: 10px;
 }
@@ -73,11 +72,13 @@
 }
 
 .modal-input.valid {
-  background-color: var(--color-validation-default);
+  background-color: var(--color-validation-subtle);
+  border-color: var(--color-validation-default);
 }
 
 .modal-input.invalid {
-  background-color: var(--color-error-default);
+  background-color: var(--color-error-subtle);
+  border-color: var(--color-error-default);
 }
 
 .validation-error {
@@ -91,7 +92,6 @@
 .error-icon {
   margin-right: 5px;
 }
-
 
 /* Modal actions */
 .modal-actions {
@@ -134,21 +134,21 @@
     flex-direction: column;
     align-items: center;
   }
-  
+
   .modal-content {
     min-width: 90%;
     margin: 10px;
   }
-  
+
   .preview-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .equipment-details {
     flex-direction: column;
     gap: 5px;
   }
-  
+
   .stats-row {
     flex-direction: column;
     gap: 10px;

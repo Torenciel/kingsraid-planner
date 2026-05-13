@@ -43,8 +43,8 @@
 }
 
 .tsm-toggle-btn.active {
-  border-color: var(--color-item-selected);
-  color: var(--color-item-selected);
+  border-color: var(--color-secondary-default);
+  color: var(--color-secondary-default);
   opacity: 1;
 }
 
@@ -69,8 +69,8 @@
 }
 
 .tsm-size-btn.active {
-  border-color: var(--color-item-selected);
-  color: var(--color-item-selected);
+  border-color: var(--color-secondary-default);
+  color: var(--color-secondary-default);
   opacity: 1;
 }
 
@@ -82,6 +82,23 @@
   max-height: 260px;
   overflow-y: auto;
   padding-right: 4px;
+}
+
+.tsm-tag-groups::-webkit-scrollbar {
+  width: 6px;
+}
+
+.tsm-tag-groups::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.tsm-tag-groups::-webkit-scrollbar-thumb {
+  background: var(--color-scrollbar-thumb-default);
+  border-radius: 3px;
+}
+
+.tsm-tag-groups::-webkit-scrollbar-thumb:hover {
+  background: var(--color-scrollbar-thumb-hover);
 }
 
 .tsm-tag-group {
@@ -122,9 +139,9 @@
 }
 
 .tsm-tag.active {
-  border-color: var(--color-item-selected);
-  background: var(--color-item-selected);
-  color: #fff;
+  border-color: var(--color-secondary-default);
+  color: var(--color-secondary-default);
+  background: transparent;
   opacity: 1;
 }
 

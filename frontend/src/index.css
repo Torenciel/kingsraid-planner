@@ -35,8 +35,10 @@
 
   --color-validation-default: #28a745;
   --color-validation-hover: #21893a;
+  --color-validation-subtle: #1e3a17;
   --color-error-default: rgb(197, 50, 50);
-  --color-error-hover:rgb(213, 49, 49);
+  --color-error-hover: rgb(155, 35, 35);
+  --color-error-subtle: #3a1717;
   --color-cancel-default:#474747;
   --color-cancel-hover:#363636;
 
@@ -70,7 +72,9 @@
   --color-item-selected: #73CB5F;
 
   --color-validation-default: #28a745;
+  --color-validation-subtle: #1e3a17;
   --color-error-default: rgb(180, 40, 40);
+  --color-error-subtle: #2a0d0d;
 
   --color-scrollbar-thumb-default: #aaaaaa;
 }

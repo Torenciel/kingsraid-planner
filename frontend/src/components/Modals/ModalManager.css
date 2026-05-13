@@ -66,7 +66,7 @@
   border-radius: 8px;
   max-width: 550px;
   width: auto;
-  max-height: 80vh;
+  max-height: 90vh;
 }
 
 .modal-title {
@@ -118,7 +118,7 @@
 }
 
 .btn-modal-remove {
-  background-color: #ef4444;
+  background-color: var(--color-error-default);
   color: var(--color-text-white);
   padding: 0.5rem 1rem;
   border-radius: 0.375rem;
@@ -130,6 +130,5 @@
 }
 
 .btn-modal-remove:hover {
-  background-color: #dc2626;
+  background-color: var(--color-error-hover);
 }
-
