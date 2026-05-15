@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
-import { FaSearch, FaTrash } from "react-icons/fa";
+import { FaBookmark, FaSearch, FaTrash } from "react-icons/fa";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
 import TeamList from "../components/TeamViewer/TeamList";
 import "./Teams.css";
 
@@ -8,6 +9,7 @@ const Teams = () => {
   const { tab = "private", content = "" } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
+  const { user } = useAuth();
 
   // Parse content from URL for navbar links
   const initialContent = content ? content.split("+") : [];
@@ -17,6 +19,7 @@ const Teams = () => {
   const [selectedSubFilters, setSelectedSubFilters] = useState({});
   const [searchQuery, setSearchQuery] = useState("");
   const [teamCount, setTeamCount] = useState(0);
+  const [showBookmarks, setShowBookmarks] = useState(false);
 
   // Main content types with their sub-filters
   const contentOptions = [
@@ -266,6 +269,7 @@ const Teams = () => {
     setSelectedContent([]);
     setSelectedSubFilters({});
     setSearchQuery("");
+    setShowBookmarks(false);
   };
 
   // Make filter tags clickable to remove
@@ -278,9 +282,10 @@ const Teams = () => {
     handleSubFilterChange(contentId, subFilterId);
   };
 
-  // Clear search when tab changes
+  // Clear search and bookmark filter when tab changes
   useEffect(() => {
     setSearchQuery("");
+    setShowBookmarks(false);
   }, [activeTab]);
 
   // Select all content (does NOT deselect)
@@ -346,6 +351,15 @@ const Teams = () => {
         <div className="filters-center">
           {/* TOP BAR */}
           <div className="filters-top">
+            {activeTab === "public" && user && (
+              <button
+                className={`square-btn bookmark-filter-btn${showBookmarks ? " active" : ""}`}
+                onClick={() => setShowBookmarks((prev) => !prev)}
+                title={showBookmarks ? "Show all teams" : "Show bookmarked teams"}
+              >
+                <FaBookmark />
+              </button>
+            )}
             <div className="search-container">
               <FaSearch className="search-icon" />
               <input
@@ -382,6 +396,14 @@ const Teams = () => {
 
           {/* SUB FILTERS – SCROLL VERTICAL */}
           <div className="sub-filters-wrapper">
+            {selectedContent.filter((contentId) => {
+              const content = contentOptions.find((c) => c.id === contentId);
+              return content && content.subFilters && content.subFilters.length > 0;
+            }).length === 0 ? (
+              <div className="sub-filters-tutorial">
+                Here is a tutorial on how to use filters
+              </div>
+            ) : (
             <div className="sub-filters-container">
               {selectedContent
                 .filter((contentId) => {
@@ -441,6 +463,7 @@ const Teams = () => {
                   );
                 })}
             </div>
+            )}
           </div>
         </div>
 
@@ -510,6 +533,7 @@ const Teams = () => {
   selectedContent={selectedContent}
   selectedSubFilters={selectedSubFilters}
   contentOptions={contentOptions}
+  showBookmarks={showBookmarks}
 />
     </div>
   );

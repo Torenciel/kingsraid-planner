@@ -12,7 +12,7 @@ const SaveTeamButton = () => {
     <div className="save-team-container">
       <div className="save-team-buttons">
         <button
-          onClick={() => openModal("team-settings", {})}
+          onClick={() => openModal("team-settings", { isSaveMode: true })}
           disabled={!hasHeroes}
           className={`save-button-main ${!hasHeroes ? "disabled" : ""}`}
         >

@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { FaCog } from "react-icons/fa";
 import { useHeroContext } from "../../contexts/HeroContext";
 import { useTeam } from "../../contexts/TeamContext";
@@ -6,14 +7,17 @@ import HeroGrid from "../HeroGrid/HeroGrid";
 import TeamSlots from "../TeamSlots/TeamSlots";
 import SaveTeamButton from "./SaveTeamButton";
 import "./TeamBuilder.css";
-import TeamSizeSelector from "./TeamSizeSelector";
 
-const TeamBuilder = () => {
+const TeamBuilder = ({ autoOpenSettings = false }) => {
   const { teamName } = useTeam();
   const { loading } = useHeroContext();
   const { openModal } = useModal();
 
   const openTeamSettings = () => openModal("team-settings", {});
+
+  useEffect(() => {
+    if (autoOpenSettings) openModal("team-settings", { isNewTeam: true });
+  }, []);
 
   if (loading) {
     return (
@@ -35,9 +39,6 @@ const TeamBuilder = () => {
           </button>
         </div>
       </header>
-
-      {/* Team Size Selector */}
-      <TeamSizeSelector />
 
       {/* Team Slots */}
       <TeamSlots />

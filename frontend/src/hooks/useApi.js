@@ -585,6 +585,40 @@ export function useApiHealth() {
 }
 
 /**
+ * Toggle bookmark on a team (authenticated)
+ */
+export function useToggleBookmark() {
+  const toggleBookmark = useCallback(async (teamId) => {
+    const response = await fetch(`${API_V2_BASE}/teams/${teamId}/bookmark`, {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+    });
+    const data = await response.json();
+    if (!data.success) throw new Error(data.error || 'Failed to toggle bookmark');
+    return data;
+  }, []);
+  return { toggleBookmark };
+}
+
+/**
+ * Toggle upvote on a team (authenticated)
+ */
+export function useToggleUpvote() {
+  const toggleUpvote = useCallback(async (teamId) => {
+    const response = await fetch(`${API_V2_BASE}/teams/${teamId}/upvote`, {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+    });
+    const data = await response.json();
+    if (!data.success) throw new Error(data.error || 'Failed to toggle upvote');
+    return data;
+  }, []);
+  return { toggleUpvote };
+}
+
+/**
  * Nettoyer le cache
  */
 export function clearApiCache() {

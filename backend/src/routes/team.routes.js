@@ -3,10 +3,11 @@ const router = express.Router();
 
 const { requireAuth } = require("../middlewares/auth.middleware");
 
-let Team, teamConverter;
+let Team, teamConverter, User;
 try {
   Team = require("../../src/models/Team");
   teamConverter = require("../../src/utils/teamConverter");
+  User = require("../../src/models/User");
 } catch (error) {
   console.error("Modules not loaded:", error.message);
 }
@@ -162,14 +163,22 @@ router.patch("/:slug", requireAuth, async (req, res) => {
 // List teams with filtering
 router.get("/", async (req, res) => {
   try {
-    const { isPublic, createdBy, author } = req.query;
-    console.log("Teams query:", { isPublic, createdBy, author });
+    const { isPublic, createdBy, author, bookmarkedBy } = req.query;
+    console.log("Teams query:", { isPublic, createdBy, author, bookmarkedBy });
 
     // Build filter object
     const filter = {};
 
-    // If author ID is specified, show all teams by that user (both public and private)
-    if (author) {
+    if (bookmarkedBy) {
+      // Return only teams bookmarked by this user
+      const user = await User.findById(bookmarkedBy).select("bookmarkedTeams");
+      if (!user) {
+        return res.json({ success: true, count: 0, teams: [] });
+      }
+      const bookmarkedIds = user.bookmarkedTeams.map((b) => b.teamId);
+      filter._id = { $in: bookmarkedIds };
+    } else if (author) {
+      // If author ID is specified, show all teams by that user (both public and private)
       filter.author = author;
     } else if (createdBy) {
       // Fallback to createdBy for backwards compatibility
@@ -179,8 +188,8 @@ router.get("/", async (req, res) => {
       filter.isPublic = true;
     }
 
-    // If isPublic is explicitly provided and no author filter, apply it
-    if (isPublic !== undefined && !author && !createdBy) {
+    // If isPublic is explicitly provided and no author/bookmarkedBy filter, apply it
+    if (isPublic !== undefined && !author && !createdBy && !bookmarkedBy) {
       filter.isPublic = isPublic === "true";
     }
 
@@ -219,6 +228,65 @@ router.get("/", async (req, res) => {
       success: false,
       error: error.message,
     });
+  }
+});
+
+// Toggle bookmark (authenticated)
+router.post("/:id/bookmark", requireAuth, async (req, res) => {
+  try {
+    const team = await Team.findById(req.params.id);
+    if (!team) return res.status(404).json({ success: false, error: "Team not found" });
+
+    const user = await User.findById(req.user.id);
+    const alreadyBookmarked = user.bookmarkedTeams.some(
+      (b) => b.teamId.toString() === team._id.toString()
+    );
+
+    if (alreadyBookmarked) {
+      user.bookmarkedTeams = user.bookmarkedTeams.filter(
+        (b) => b.teamId.toString() !== team._id.toString()
+      );
+      team.bookmarks = Math.max(0, (team.bookmarks || 0) - 1);
+    } else {
+      user.bookmarkedTeams.push({ teamId: team._id });
+      team.bookmarks = (team.bookmarks || 0) + 1;
+    }
+
+    await Promise.all([user.save(), team.save()]);
+
+    res.json({ success: true, bookmarked: !alreadyBookmarked, bookmarks: team.bookmarks });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// Toggle upvote (authenticated)
+router.post("/:id/upvote", requireAuth, async (req, res) => {
+  try {
+    const team = await Team.findById(req.params.id);
+    if (!team) return res.status(404).json({ success: false, error: "Team not found" });
+
+    const user = await User.findById(req.user.id);
+    const alreadyUpvoted = user.upvotedTeams
+      ? user.upvotedTeams.some((id) => id.toString() === team._id.toString())
+      : false;
+
+    if (alreadyUpvoted) {
+      user.upvotedTeams = user.upvotedTeams.filter(
+        (id) => id.toString() !== team._id.toString()
+      );
+      team.upvotes = Math.max(0, (team.upvotes || 0) - 1);
+    } else {
+      if (!user.upvotedTeams) user.upvotedTeams = [];
+      user.upvotedTeams.push(team._id);
+      team.upvotes = (team.upvotes || 0) + 1;
+    }
+
+    await Promise.all([user.save(), team.save()]);
+
+    res.json({ success: true, upvoted: !alreadyUpvoted, upvotes: team.upvotes });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
   }
 });
 

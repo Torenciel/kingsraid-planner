@@ -147,6 +147,7 @@ const UserSchema = new mongoose.Schema(
     // bookmark limit is enforced outiside of the model
     bookmarkedTeams: [
       {
+        _id: false,
         teamId: {
           type: mongoose.Schema.Types.ObjectId,
           ref: "Team",
@@ -155,6 +156,13 @@ const UserSchema = new mongoose.Schema(
           type: Date,
           default: Date.now,
         },
+      },
+    ],
+
+    upvotedTeams: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Team",
       },
     ],
 

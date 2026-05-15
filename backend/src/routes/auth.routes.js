@@ -319,7 +319,7 @@ router.post("/refresh", async (req, res) => {
 router.get("/me", requireAuth, async (req, res) => {
   try {
     const user = await User.findById(req.user.id).select(
-      "_id email displayName role avatar banner preferences createdAt"
+      "_id email displayName role avatar banner preferences createdAt bookmarkedTeams upvotedTeams"
     );
 
     if (!user) {

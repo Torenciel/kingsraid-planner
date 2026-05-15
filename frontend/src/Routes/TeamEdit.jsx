@@ -95,7 +95,7 @@ useEffect(() => {
 
   return (
     <>
-      <TeamBuilder />
+      <TeamBuilder autoOpenSettings={!slug} />
       <ModalManager />
     </>
   );

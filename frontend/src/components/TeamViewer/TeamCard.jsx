@@ -2,6 +2,8 @@ import { useMemo, useState } from "react";
 import { FaArrowUp, FaBookmark, FaRegBookmark } from "react-icons/fa";
 import { MdLockOutline } from "react-icons/md";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../contexts/AuthContext";
+import { useToggleBookmark, useToggleUpvote } from "../../hooks/useApi";
 import { sortTeamByPosition } from "../../utils/sortTeamByPosition";
 import "./TeamCard.css";
 
@@ -19,32 +21,52 @@ const getHeroImagePath = (slug) => {
 export default function TeamCard({
   team,
   heroMetadataMap,
-  onUpvote,
-  onBookmark,
-  onOpen,
   currentUserId,
+  isBookmarked: initialBookmarked = false,
+  isUpvoted: initialUpvoted = false,
+  onBookmarkToggle,
 }) {
   const navigate = useNavigate();
   const isOwner = currentUserId && team?.author && String(team.author) === String(currentUserId);
 
   const [upvotes, setUpvotes] = useState(team?.upvotes || 0);
-  const [bookmarked, setBookmarked] = useState(false);
+  const [bookmarks, setBookmarks] = useState(team?.bookmarks || 0);
+  const [bookmarked, setBookmarked] = useState(initialBookmarked);
+  const [upvoted, setUpvoted] = useState(initialUpvoted);
+
+  const { refetchAuth } = useAuth();
+  const { toggleBookmark } = useToggleBookmark();
+  const { toggleUpvote } = useToggleUpvote();
 
   const sortedHeroes = useMemo(() => {
     if (!team?.heroes || !heroMetadataMap) return [];
     return sortTeamByPosition(team.heroes, heroMetadataMap);
   }, [team, heroMetadataMap]);
 
-  const handleUpvote = (e) => {
+  const handleUpvote = async (e) => {
     e.stopPropagation();
-    setUpvotes((prev) => prev + 1);
-    onUpvote?.(team.id);
+    if (!currentUserId) return;
+    try {
+      const data = await toggleUpvote(team.id);
+      setUpvoted(data.upvoted);
+      setUpvotes(data.upvotes);
+    } catch {
+      // silent fail
+    }
   };
 
-  const handleBookmark = (e) => {
+  const handleBookmark = async (e) => {
     e.stopPropagation();
-    setBookmarked((prev) => !prev);
-    onBookmark?.(team.id);
+    if (!currentUserId) return;
+    try {
+      const data = await toggleBookmark(team.id);
+      setBookmarked(data.bookmarked);
+      setBookmarks(data.bookmarks);
+      refetchAuth();
+      onBookmarkToggle?.(team.id, data.bookmarked);
+    } catch {
+      // silent fail
+    }
   };
 
   if (!team) return null;
@@ -78,16 +100,25 @@ export default function TeamCard({
           <MdLockOutline className="lock-icon" title="Private team" />
         )}
 
-        <button onClick={handleUpvote} className="icon-btn">
+        <button
+          onClick={handleUpvote}
+          className={`icon-btn${upvoted ? " upvoted" : ""}`}
+          disabled={isOwner}
+          title={isOwner ? "Can't upvote your own team" : currentUserId ? (upvoted ? "Remove upvote" : "Upvote") : "Login to upvote"}
+        >
           <FaArrowUp />
           <span>{upvotes}</span>
         </button>
 
-        <button onClick={handleBookmark} className="icon-btn">
+        <button
+          onClick={handleBookmark}
+          className={`icon-btn${bookmarked ? " bookmarked" : ""}`}
+          disabled={isOwner}
+          title={isOwner ? "Can't bookmark your own team" : currentUserId ? (bookmarked ? "Remove bookmark" : "Bookmark") : "Login to bookmark"}
+        >
           {bookmarked ? <FaBookmark /> : <FaRegBookmark />}
+          <span>{bookmarks}</span>
         </button>
-
-        <span className="bookmark-count">{team.bookmarks || 0}</span>
       </div>
     </div>
   );

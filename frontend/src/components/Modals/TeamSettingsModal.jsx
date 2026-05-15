@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useTeam } from "../../contexts/TeamContext";
 import "./TeamSettingsModal.css";
 
@@ -102,7 +103,8 @@ const TeamSettingsModal = ({ data, onClose }) => {
     saveTeam,
   } = useTeam();
 
-  const { onSaved } = data || {};
+  const navigate = useNavigate();
+  const { isNewTeam, isSaveMode } = data || {};
 
   const [localName, setLocalName] = useState(teamName || "New Team");
   const [localPublic, setLocalPublic] = useState(isPublic ?? false);
@@ -117,13 +119,22 @@ const TeamSettingsModal = ({ data, onClose }) => {
     );
   };
 
-  const handleSave = async () => {
-    if (!localName.trim()) return;
-
+  const applySettings = () => {
     setTeamName(localName.trim());
     setIsPublic(localPublic);
     setTags(localTags);
     if (localSize !== teamSize) changeTeamSize(localSize);
+  };
+
+  const handleConfirm = () => {
+    if (!localName.trim()) return;
+    applySettings();
+    onClose();
+  };
+
+  const handleSave = async () => {
+    if (!localName.trim()) return;
+    applySettings();
 
     setIsSaving(true);
     setSaveMessage("Saving...");
@@ -136,10 +147,7 @@ const TeamSettingsModal = ({ data, onClose }) => {
     setIsSaving(false);
     if (result.success) {
       setSaveMessage("Team saved!");
-      setTimeout(() => {
-        onClose();
-        if (onSaved) onSaved(result);
-      }, 1200);
+      setTimeout(() => onClose(), 1200);
     } else {
       setSaveMessage(`Error: ${result.error || "Save failed"}`);
     }
@@ -231,15 +239,18 @@ const TeamSettingsModal = ({ data, onClose }) => {
       )}
 
       <div className="btn-modal">
-        <button className="btn-modal-cancel" onClick={onClose}>
+        <button
+          className="btn-modal-cancel"
+          onClick={isNewTeam ? () => navigate("/") : onClose}
+        >
           Cancel
         </button>
         <button
           className={`btn-modal-confirm ${!canSave ? "disabled" : ""}`}
-          onClick={handleSave}
+          onClick={isSaveMode ? handleSave : handleConfirm}
           disabled={!canSave}
         >
-          {isSaving ? "Saving..." : "Save"}
+          {isSaveMode ? (isSaving ? "Saving..." : "Save") : "Confirm"}
         </button>
       </div>
     </div>

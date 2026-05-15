@@ -110,9 +110,35 @@
   transition: all 0.2s ease;
 }
 
-.icon-btn:hover {
+.icon-btn:hover:not(:disabled) {
   color: var(--color-item-selected);
   background: rgba(255, 255, 255, 0.05);
+}
+
+.icon-btn:disabled {
+  cursor: not-allowed;
+}
+
+.icon-btn.active {
+  color: var(--color-item-selected);
+}
+
+.icon-btn.bookmarked {
+  color: #4caf50;
+}
+
+.icon-btn.bookmarked:hover {
+  color: #e53935;
+  background: rgba(229, 57, 53, 0.08);
+}
+
+.icon-btn.upvoted {
+  color: #4caf50;
+}
+
+.icon-btn.upvoted:hover {
+  color: #e53935;
+  background: rgba(229, 57, 53, 0.08);
 }
 
 .lock-icon {

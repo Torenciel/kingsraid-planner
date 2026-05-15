@@ -43,9 +43,8 @@ const ModalManager = () => {
 
   if (!activeModal) return null;
 
-  // Close the modal when overlay is clicked
   const handleOverlayClick = (e) => {
-    if (e.target === e.currentTarget) {
+    if (e.target === e.currentTarget && !modalData?.isNewTeam) {
       closeModal();
     }
   };
