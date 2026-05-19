@@ -63,44 +63,27 @@ const TeamSlots = ({
   }, []);
 
   /* ===============================
-     LOAD HERO METADATA
+     LOAD HERO METADATA (all at once on mount)
   =============================== */
   useEffect(() => {
     const loadHeroesData = async () => {
-      const loaded = {};
-      const validHeroes = team.filter(Boolean);
-
-      for (const hero of validHeroes) {
-        const heroSlug =
-          hero.slug ||
-          hero.name?.toLowerCase().replace(/\s+/g, "-");
-
-        if (!heroSlug || heroesData[heroSlug]) continue;
-
-        try {
-          const response = await fetch(
-            `http://localhost:3002/api/v2/heroes/${heroSlug}`
-          );
-
-          if (response.ok) {
-            const data = await response.json();
-            loaded[heroSlug] = data.hero || data;
-          }
-        } catch {}
-      }
-
-      if (Object.keys(loaded).length > 0) {
-        setHeroesData(prev => ({
-          ...prev,
-          ...loaded,
-        }));
-      }
+      try {
+        const response = await fetch("http://localhost:3002/api/v2/heroes");
+        if (!response.ok) return;
+        const data = await response.json();
+        const heroes = data.heroes || data;
+        if (!Array.isArray(heroes)) return;
+        // Wrap into { infos: { position, class } } to match what sortTeamByPosition expects
+        const map = {};
+        heroes.forEach((hero) => {
+          const slug = hero.slug || hero.name?.toLowerCase().replace(/\s+/g, "-");
+          if (slug) map[slug] = { ...hero, infos: { position: hero.position, class: hero.class } };
+        });
+        setHeroesData(map);
+      } catch {}
     };
-
-    if (team && team.length > 0) {
-      loadHeroesData();
-    }
-  }, [team]);
+    loadHeroesData();
+  }, []);
 
   const heroMap = useMemo(() => heroesData, [heroesData]);
 
