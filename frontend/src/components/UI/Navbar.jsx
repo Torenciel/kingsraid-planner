@@ -1,17 +1,29 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { BiTime } from "react-icons/bi";
 import { FaUserGroup } from "react-icons/fa6";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useArtifacts } from "../../contexts/ArtifactContext";
 import { useAuth } from "../../contexts/AuthContext";
+import { useHeroes, useTeams } from "../../hooks/useApi";
 import { resolveAvatarUrl } from "../../utils/avatarResolver";
+import { sortTeamByPosition } from "../../utils/sortTeamByPosition";
 import SmartAvatarImage from "../UI/SmartAvatarImage";
 
 import "./Navbar.css";
 
+const getHeroImagePath = (slug) => {
+  if (!slug) return "";
+  const folderName = slug
+    .split("-")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+  return `/kingsraid-data/assets/heroes/${folderName}/ico.png`;
+};
+
 const Navbar = () => {
   const { user, isAuthenticated, loading, logout } = useAuth();
   const { allArtifacts } = useArtifacts();
+  const navigate = useNavigate();
 
   const [activeDropdown, setActiveDropdown] = useState(null);
   const timeoutRef = useRef(null);
@@ -19,6 +31,7 @@ const Navbar = () => {
   const handleMouseEnter = (dropdownName) => {
     clearTimeout(timeoutRef.current);
     setActiveDropdown(dropdownName);
+    if (dropdownName === "teams") refetchRecentTeams?.();
   };
 
   const handleMouseLeave = () => {
@@ -41,23 +54,24 @@ const Navbar = () => {
     };
   }, []);
 
-  const recentTeams = [
-    {
-      id: 1,
-      name: "WB Team 1",
-      image: "/kingsraid-data/assets/heroes/Aisha/ico.png",
-    },
-    {
-      id: 2,
-      name: "GC Team",
-      image: "/kingsraid-data/assets/heroes/Artemia/ico.png",
-    },
-    {
-      id: 3,
-      name: "Dragon Farm",
-      image: "/kingsraid-data/assets/heroes/Clause/ico.png",
-    },
-  ];
+  const recentFilters = useMemo(() => {
+    if (!isAuthenticated || !user?.id) return null;
+    return { author: user.id, sortBy: "updatedAt", limit: 3 }; // change this number to show more/fewer recent teams
+  }, [isAuthenticated, user?.id]);
+
+  const { data: recentTeamsData, refetch: refetchRecentTeams } =
+    useTeams(recentFilters);
+  const recentTeams = recentTeamsData ?? [];
+
+  const { data: heroesMetadata } = useHeroes();
+  const heroMetadataMap = useMemo(() => {
+    if (!heroesMetadata) return {};
+    const map = {};
+    heroesMetadata.forEach((hero) => {
+      map[hero.slug] = { ...hero, infos: { position: hero.position } };
+    });
+    return map;
+  }, [heroesMetadata]);
 
   const dropdownItems = {
     tools: [
@@ -125,6 +139,14 @@ const Navbar = () => {
                     </Link>
 
                     <Link
+                      to="/teams/public"
+                      className="team-main-button"
+                      onClick={handleItemClick}
+                    >
+                      <div className="team-button-title">Public Teams</div>
+                    </Link>
+
+                    <Link
                       to="/team/edit"
                       className="team-main-button"
                       onClick={handleItemClick}
@@ -140,19 +162,32 @@ const Navbar = () => {
                     </div>
 
                     <div className="recent-teams-list">
-                      {recentTeams.map((team) => (
-                        <div key={team.id} className="recent-team-item">
-                          <img
-                            src={team.image}
-                            alt={team.name}
-                            className="recent-team-image"
-                          />
-                          <div className="recent-team-fallback">
-                            {team.name.charAt(0)}
+                      {recentTeams.length === 0 ? (
+                        <div className="recent-team-empty">No teams yet</div>
+                      ) : (
+                        recentTeams.map((team) => (
+                          <div
+                            key={team.id}
+                            className="recent-team-item"
+                            onClick={() => {
+                              handleItemClick();
+                              navigate(`/team/edit/${team.slug}`);
+                            }}
+                          >
+                            <div className="recent-team-heroes">
+                              {sortTeamByPosition(team.heroes || [], heroMetadataMap).map((hero) => (
+                                <img
+                                  key={hero.heroSlug}
+                                  src={getHeroImagePath(hero.heroSlug)}
+                                  alt={hero.heroSlug}
+                                  className="recent-team-image"
+                                />
+                              ))}
+                            </div>
+                            <div className="recent-team-name">{team.name}</div>
                           </div>
-                          <div className="recent-team-name">{team.name}</div>
-                        </div>
-                      ))}
+                        ))
+                      )}
                     </div>
                   </div>
                 </div>

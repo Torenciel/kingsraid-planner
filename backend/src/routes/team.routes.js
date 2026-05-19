@@ -163,7 +163,7 @@ router.patch("/:slug", requireAuth, async (req, res) => {
 // List teams with filtering
 router.get("/", async (req, res) => {
   try {
-    const { isPublic, createdBy, author, bookmarkedBy } = req.query;
+    const { isPublic, createdBy, author, bookmarkedBy, limit: limitParam, sortBy } = req.query;
     console.log("Teams query:", { isPublic, createdBy, author, bookmarkedBy });
 
     // Build filter object
@@ -196,9 +196,12 @@ router.get("/", async (req, res) => {
     console.log("MongoDB filter:", filter);
     const startTime = Date.now();
 
+    const sortField = sortBy === "updatedAt" ? "updatedAt" : "createdAt";
+    const resultLimit = limitParam ? Math.min(parseInt(limitParam, 10), 50) : 50;
+
     const teams = await Team.find(filter)
-      .sort({ createdAt: -1 })
-      .limit(50)
+      .sort({ [sortField]: -1 })
+      .limit(resultLimit)
       .lean();
 
     const queryTime = Date.now() - startTime;
