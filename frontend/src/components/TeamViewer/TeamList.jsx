@@ -112,6 +112,10 @@ const TeamList = ({ tab = "public", searchQuery = "", onCountChange, selectedCon
     }
   }, [showBookmarks, refetch]);
 
+  const handleDeleteTeam = useCallback(() => {
+    refetch();
+  }, [refetch]);
+
   if (loading) return <div>Loading teams...</div>;
 
   if (error && shouldFetch) {
@@ -140,6 +144,7 @@ const TeamList = ({ tab = "public", searchQuery = "", onCountChange, selectedCon
           isBookmarked={bookmarkedIds.has(String(team.id))}
           isUpvoted={upvotedIds.has(String(team.id))}
           onBookmarkToggle={handleBookmarkToggle}
+          onDeleteTeam={handleDeleteTeam}
         />
       ))}
     </div>

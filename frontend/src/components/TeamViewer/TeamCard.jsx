@@ -1,9 +1,18 @@
 import { useMemo, useState } from "react";
-import { FaArrowUp, FaBookmark, FaRegBookmark } from "react-icons/fa";
+import {
+  FaArrowUp,
+  FaBookmark,
+  FaRegBookmark,
+  FaRegTrashAlt,
+} from "react-icons/fa";
 import { MdLockOutline } from "react-icons/md";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
-import { useToggleBookmark, useToggleUpvote } from "../../hooks/useApi";
+import {
+  useDeleteTeam,
+  useToggleBookmark,
+  useToggleUpvote,
+} from "../../hooks/useApi";
 import { sortTeamByPosition } from "../../utils/sortTeamByPosition";
 import "./TeamCard.css";
 
@@ -25,9 +34,13 @@ export default function TeamCard({
   isBookmarked: initialBookmarked = false,
   isUpvoted: initialUpvoted = false,
   onBookmarkToggle,
+  onDeleteTeam,
 }) {
   const navigate = useNavigate();
-  const isOwner = currentUserId && team?.author && String(team.author) === String(currentUserId);
+  const isOwner =
+    currentUserId &&
+    team?.author &&
+    String(team.author) === String(currentUserId);
 
   const [upvotes, setUpvotes] = useState(team?.upvotes || 0);
   const [bookmarks, setBookmarks] = useState(team?.bookmarks || 0);
@@ -37,6 +50,7 @@ export default function TeamCard({
   const { refetchAuth } = useAuth();
   const { toggleBookmark } = useToggleBookmark();
   const { toggleUpvote } = useToggleUpvote();
+  const { deleteTeam } = useDeleteTeam(team?.id);
 
   const sortedHeroes = useMemo(() => {
     if (!team?.heroes || !heroMetadataMap) return [];
@@ -50,6 +64,18 @@ export default function TeamCard({
       const data = await toggleUpvote(team.id);
       setUpvoted(data.upvoted);
       setUpvotes(data.upvotes);
+    } catch {
+      // silent fail
+    }
+  };
+
+  const handleDelete = async (e) => {
+    e.stopPropagation();
+    if (!window.confirm(`Delete "${team.name}"? This cannot be undone.`))
+      return;
+    try {
+      await deleteTeam();
+      onDeleteTeam?.(team.id);
     } catch {
       // silent fail
     }
@@ -74,7 +100,9 @@ export default function TeamCard({
   return (
     <div
       className="team-card clickable"
-      onClick={() => navigate(isOwner ? `/team/edit/${team.slug}` : `/team/${team.slug}`)}
+      onClick={() =>
+        navigate(isOwner ? `/team/edit/${team.slug}` : `/team/${team.slug}`)
+      }
     >
       <div className="team-left">
         <div className="team-name-block">
@@ -100,11 +128,29 @@ export default function TeamCard({
           <MdLockOutline className="lock-icon" title="Private team" />
         )}
 
+        {isOwner && (
+          <button
+            onClick={handleDelete}
+            className="icon-btn delete-btn"
+            title="Delete team"
+          >
+            <FaRegTrashAlt />
+          </button>
+        )}
+
         <button
           onClick={handleUpvote}
           className={`icon-btn${upvoted ? " upvoted" : ""}`}
           disabled={isOwner}
-          title={isOwner ? "Can't upvote your own team" : currentUserId ? (upvoted ? "Remove upvote" : "Upvote") : "Login to upvote"}
+          title={
+            isOwner
+              ? "Can't upvote your own team"
+              : currentUserId
+                ? upvoted
+                  ? "Remove upvote"
+                  : "Upvote"
+                : "Login to upvote"
+          }
         >
           <FaArrowUp />
           <span>{upvotes}</span>
@@ -114,7 +160,15 @@ export default function TeamCard({
           onClick={handleBookmark}
           className={`icon-btn${bookmarked ? " bookmarked" : ""}`}
           disabled={isOwner}
-          title={isOwner ? "Can't bookmark your own team" : currentUserId ? (bookmarked ? "Remove bookmark" : "Bookmark") : "Login to bookmark"}
+          title={
+            isOwner
+              ? "Can't bookmark your own team"
+              : currentUserId
+                ? bookmarked
+                  ? "Remove bookmark"
+                  : "Bookmark"
+                : "Login to bookmark"
+          }
         >
           {bookmarked ? <FaBookmark /> : <FaRegBookmark />}
           <span>{bookmarks}</span>

@@ -50,6 +50,8 @@
 
 /* Scrollbar */
 .avatar-grid::-webkit-scrollbar {
+  background: var(--color-primary-default);
+  border-radius: 4px;
   width: 6px;
 }
 

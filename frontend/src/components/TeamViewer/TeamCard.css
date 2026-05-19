@@ -147,6 +147,18 @@
   opacity: 0.7;
 }
 
+.icon-btn.delete-btn {
+  font-size: 1.2em;
+  color: var(--color-text-default);
+  opacity: 0.7;
+}
+
+.icon-btn.delete-btn:hover {
+  color: #e53935;
+  background: rgba(229, 57, 53, 0.08);
+  opacity: 1;
+}
+
 .bookmark-count {
   opacity: 0.8;
 }

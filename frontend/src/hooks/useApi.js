@@ -548,6 +548,7 @@ export function useDeleteTeam(id) {
     try {
       const response = await fetch(`${API_V2_BASE}/teams/${id}`, {
         method: 'DELETE',
+        credentials: 'include',
       });
 
       if (!response.ok) {

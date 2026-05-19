@@ -405,12 +405,13 @@
 
 /* Scrollbar */
 .sub-filters-container::-webkit-scrollbar {
+  background: var(--color-primary-default);
+  border-radius: 4px;
   width: 6px;
 }
 
 .sub-filters-container::-webkit-scrollbar-track {
   background: transparent;
-  margin: 2px 0;
 }
 
 .sub-filters-container::-webkit-scrollbar-thumb {
@@ -437,12 +438,12 @@
 }
 
 .filter-tags::-webkit-scrollbar {
+  background: var(--color-background-default);
   width: 6px;
 }
 
 .filter-tags::-webkit-scrollbar-track {
   background: transparent;
-  margin: 2px 0;
 }
 
 .filter-tags::-webkit-scrollbar-thumb {
@@ -530,6 +531,7 @@
 }
 
 .teams-count-header-text {
+  text-align: center;
   font-size: 24px;
   color: var(--color-secondary-default);
   margin: 0;

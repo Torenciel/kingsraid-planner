@@ -231,6 +231,24 @@ router.get("/", async (req, res) => {
   }
 });
 
+// Delete team (author only)
+router.delete("/:id", requireAuth, async (req, res) => {
+  try {
+    const team = await Team.findById(req.params.id);
+    if (!team) return res.status(404).json({ success: false, error: "Team not found" });
+
+    if (team.author.toString() !== req.user.id) {
+      return res.status(403).json({ success: false, error: "You are not allowed to delete this team" });
+    }
+
+    await Team.findByIdAndDelete(req.params.id);
+
+    res.json({ success: true, message: "Team deleted successfully" });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 // Toggle bookmark (authenticated)
 router.post("/:id/bookmark", requireAuth, async (req, res) => {
   try {
