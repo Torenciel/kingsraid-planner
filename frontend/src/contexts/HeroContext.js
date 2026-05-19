@@ -8,7 +8,7 @@ export const HeroProvider = ({ children }) => {
   const [allHeroes, setAllHeroes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState({
-    role: 'all',
+    roles: [], // empty = all roles
     sort: 'name',
     search: '',
     availability: 'all' // 'all' or 'available'
@@ -171,11 +171,11 @@ export const HeroProvider = ({ children }) => {
       result = result.filter(hero => hero.isAvailable === true);
     }
     
-    if (filters.role !== 'all') {
-      result = result.filter(hero => 
-        hero.role === filters.role || 
-        hero.class === filters.role ||
-        hero.infos?.class === filters.role
+    if (filters.roles.length > 0) {
+      result = result.filter(hero =>
+        filters.roles.includes(hero.role) ||
+        filters.roles.includes(hero.class) ||
+        filters.roles.includes(hero.infos?.class)
       );
     }
     
@@ -241,7 +241,7 @@ export const HeroProvider = ({ children }) => {
 
   const resetFilters = () => {
     setFilters({
-      role: 'all',
+      roles: [],
       sort: 'name',
       search: '',
       availability: 'all'

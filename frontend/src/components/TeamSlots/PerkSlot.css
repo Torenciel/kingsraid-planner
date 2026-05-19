@@ -6,11 +6,6 @@
   width: 100%;
 }
 
-.perk-slot-active {
-  background: var(--color-item-selected) !important;
-  color: #1f2937 !important;
-  font-weight: bold;
-}
 /* ========== Perk main slot ========== */
 .perk-main-slot {
   background: var(--color-primary-default);
@@ -25,26 +20,12 @@
   justify-content: center;
 }
 
-.perk-main-slot.empty:hover {
+.perk-main-slot:hover {
   background: var(--color-primary-accent);
-}
-
-.perk-main-slot.perk-slot-active {
-  background: var(--color-item-selected) !important;
-  color: #1f2937 !important;
-  font-weight: bold;
 }
 
 /* ========== Perk slot text ========== */
 .perk-slot-text {
   font-size: 0.75rem;
-}
-
-.perk-slot-text.active {
-  color: #1f2937;
-  font-weight: bold;
-}
-
-.perk-slot-text.inactive {
-  color: #9ca3af;
+  color: var(--color-text-muted);
 }
