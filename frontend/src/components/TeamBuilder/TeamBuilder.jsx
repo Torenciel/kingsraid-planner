@@ -4,6 +4,7 @@ import { useHeroContext } from "../../contexts/HeroContext";
 import { useTeam } from "../../contexts/TeamContext";
 import { useModal } from "../../contexts/ModalContext";
 import HeroGrid from "../HeroGrid/HeroGrid";
+import InlineSlotPanel from "../SlotPanel/InlineSlotPanel";
 import TeamSlots from "../TeamSlots/TeamSlots";
 import SaveTeamButton from "./SaveTeamButton";
 import "./TeamBuilder.css";
@@ -42,6 +43,9 @@ const TeamBuilder = ({ autoOpenSettings = false }) => {
 
       {/* Team Slots */}
       <TeamSlots />
+
+      {/* Inline slot editor — sits between team and save button */}
+      <InlineSlotPanel />
 
       <SaveTeamButton />
 

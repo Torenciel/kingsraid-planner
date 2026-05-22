@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { FaBookmark, FaSearch, FaTrash } from "react-icons/fa";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
-import { useAuth } from "../contexts/AuthContext";
 import TeamList from "../components/TeamViewer/TeamList";
+import { useAuth } from "../contexts/AuthContext";
 import "./Teams.css";
 
 const Teams = () => {
@@ -355,7 +355,9 @@ const Teams = () => {
               <button
                 className={`square-btn bookmark-filter-btn${showBookmarks ? " active" : ""}`}
                 onClick={() => setShowBookmarks((prev) => !prev)}
-                title={showBookmarks ? "Show all teams" : "Show bookmarked teams"}
+                title={
+                  showBookmarks ? "Show all teams" : "Show bookmarked teams"
+                }
               >
                 <FaBookmark />
               </button>
@@ -398,71 +400,73 @@ const Teams = () => {
           <div className="sub-filters-wrapper">
             {selectedContent.filter((contentId) => {
               const content = contentOptions.find((c) => c.id === contentId);
-              return content && content.subFilters && content.subFilters.length > 0;
+              return (
+                content && content.subFilters && content.subFilters.length > 0
+              );
             }).length === 0 ? (
               <div className="sub-filters-tutorial">
                 Here is a tutorial on how to use filters
               </div>
             ) : (
-            <div className="sub-filters-container">
-              {selectedContent
-                .filter((contentId) => {
-                  const content = contentOptions.find(
-                    (c) => c.id === contentId,
-                  );
-                  return (
-                    content &&
-                    content.subFilters &&
-                    content.subFilters.length > 0
-                  );
-                })
-                .map((contentId) => {
-                  const content = contentOptions.find(
-                    (c) => c.id === contentId,
-                  );
-                  const selectedSubs = selectedSubFilters[contentId] || [];
+              <div className="sub-filters-container">
+                {selectedContent
+                  .filter((contentId) => {
+                    const content = contentOptions.find(
+                      (c) => c.id === contentId,
+                    );
+                    return (
+                      content &&
+                      content.subFilters &&
+                      content.subFilters.length > 0
+                    );
+                  })
+                  .map((contentId) => {
+                    const content = contentOptions.find(
+                      (c) => c.id === contentId,
+                    );
+                    const selectedSubs = selectedSubFilters[contentId] || [];
 
-                  return (
-                    <div key={contentId} className="sub-filter-section">
-                      <div className="sub-filter-title">{content.name}</div>
+                    return (
+                      <div key={contentId} className="sub-filter-section">
+                        <div className="sub-filter-title">{content.name}</div>
 
-                      <div className="sub-filter-items">
-                        {content.subFilters.map((subFilter) => {
-                          const isSelected = selectedSubs.includes(
-                            subFilter.id,
-                          );
-                          return (
-                            <button
-                              key={subFilter.id}
-                              className={`sub-filter-item ${isSelected ? "selected" : ""}`}
-                              onClick={() =>
-                                handleSubFilterChange(contentId, subFilter.id)
-                              }
-                            >
-                              {subFilter.image ? (
-                                <img
-                                  src={subFilter.image}
-                                  alt={subFilter.name}
-                                  className="sub-filter-image"
-                                  onError={handleImageError}
-                                />
-                              ) : (
-                                <div className="sub-filter-image-placeholder">
-                                  {subFilter.name.charAt(0)}
+                        <div className="sub-filter-items">
+                          {content.subFilters.map((subFilter) => {
+                            const isSelected = selectedSubs.includes(
+                              subFilter.id,
+                            );
+                            return (
+                              <button
+                                key={subFilter.id}
+                                className={`sub-filter-item ${isSelected ? "selected" : ""}`}
+                                onClick={() =>
+                                  handleSubFilterChange(contentId, subFilter.id)
+                                }
+                              >
+                                {subFilter.image ? (
+                                  <img
+                                    src={subFilter.image}
+                                    alt={subFilter.name}
+                                    className="sub-filter-image"
+                                    onError={handleImageError}
+                                  />
+                                ) : (
+                                  <div className="sub-filter-image-placeholder">
+                                    {subFilter.name.charAt(0)}
+                                  </div>
+                                )}
+
+                                <div className="sub-filter-name-overlay">
+                                  {subFilter.name}
                                 </div>
-                              )}
-
-                              <div className="sub-filter-name-overlay">
-                                {subFilter.name}
-                              </div>
-                            </button>
-                          );
-                        })}
+                              </button>
+                            );
+                          })}
+                        </div>
                       </div>
-                    </div>
-                  );
-                })}
-            </div>
+                    );
+                  })}
+              </div>
             )}
           </div>
         </div>
@@ -526,15 +530,15 @@ const Teams = () => {
         </div>
       </div>
 
-<TeamList
-  tab={activeTab}
-  searchQuery={searchQuery}
-  onCountChange={setTeamCount}
-  selectedContent={selectedContent}
-  selectedSubFilters={selectedSubFilters}
-  contentOptions={contentOptions}
-  showBookmarks={showBookmarks}
-/>
+      <TeamList
+        tab={activeTab}
+        searchQuery={searchQuery}
+        onCountChange={setTeamCount}
+        selectedContent={selectedContent}
+        selectedSubFilters={selectedSubFilters}
+        contentOptions={contentOptions}
+        showBookmarks={showBookmarks}
+      />
     </div>
   );
 };

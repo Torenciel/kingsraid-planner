@@ -1,11 +1,7 @@
 // components/Modals/ModalManager.js
 import { useModal } from "../../contexts/ModalContext";
-import ArtifactModal from "./ArtifactModal";
-import GearSetModal from "./GearSetModal";
 import "./ModalManager.css";
-import PerkModal from "./PerkModal";
-import UTModal from "./UTModal";
-import UWModal from "./UWModal";
+import SubSlotModal from "./SubSlotModal";
 import AvatarSelectorModal from "./AvatarSelectorModal";
 import BannerSelectorModal from "./BannerSelectorModal";
 import ConfirmationModal from "./ConfirmationModal";
@@ -17,16 +13,8 @@ const ModalManager = () => {
 
   const renderModal = () => {
     switch (activeModal) {
-      case "uw":
-        return <UWModal data={modalData} onClose={closeModal} />;
-      case "ut":
-        return <UTModal data={modalData} onClose={closeModal} />;
-      case "artifact":
-        return <ArtifactModal data={modalData} onClose={closeModal} />;
-      case "perk":
-        return <PerkModal data={modalData} onClose={closeModal} />;
-      case "gearset":
-        return <GearSetModal data={modalData} onClose={closeModal} />;
+      case "subslot":
+        return <SubSlotModal data={modalData} onClose={closeModal} />;
       case "avatar":
         return <AvatarSelectorModal data={modalData} onClose={closeModal} />;
       case "banner":

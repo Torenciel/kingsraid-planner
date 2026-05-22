@@ -48,6 +48,16 @@
   transform: scale(1.05);
 }
 
+/* Blocked (at point limit, not a skill swap) */
+.perk-modal-option.perk-blocked {
+  cursor: not-allowed;
+}
+
+.perk-modal-option.perk-blocked:hover {
+  border-color: transparent;
+  transform: none;
+}
+
 /* Style sélectionné */
 .perk-modal-option.selected {
   border-color: var(--color-item-selected);

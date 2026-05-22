@@ -1,0 +1,112 @@
+/* InlineSlotPanel.css */
+
+/* ================================================================
+   COLLAPSED STATE
+================================================================ */
+.isp-collapsed {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 10px 16px;
+  margin-bottom: 1rem;
+  background: var(--color-primary-default);
+  border: 1px solid var(--color-border-default);
+  border-radius: 8px;
+  color: var(--color-text-muted);
+  font-size: 0.8rem;
+  user-select: none;
+}
+
+.isp-collapsed-icon {
+  font-size: 1rem;
+  opacity: 0.5;
+}
+
+.isp-collapsed-hint {
+  font-style: italic;
+}
+
+/* ================================================================
+   OPEN STATE
+================================================================ */
+.isp-open {
+  margin-bottom: 1rem;
+  background: var(--color-background-default);
+  border: 1px solid var(--color-border-default);
+  border-radius: 8px;
+  overflow: hidden;
+  animation: isp-expand 0.15s ease-out;
+}
+
+@keyframes isp-expand {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ================================================================
+   HEADER
+================================================================ */
+.isp-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 14px;
+  background: var(--color-primary-default);
+  border-bottom: 1px solid var(--color-border-default);
+}
+
+.isp-header-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-text-default);
+}
+
+.isp-close {
+  background: none;
+  border: none;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  font-size: 0.85rem;
+  padding: 2px 6px;
+  border-radius: 4px;
+  line-height: 1;
+  transition:
+    color 0.15s,
+    background 0.15s;
+}
+
+.isp-close:hover {
+  color: var(--color-text-default);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+/* ================================================================
+   BODY
+================================================================ */
+.isp-body {
+  padding: 14px 16px;
+  max-height: 360px;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.isp-body::-webkit-scrollbar {
+  width: 5px;
+}
+.isp-body::-webkit-scrollbar-track {
+  background: transparent;
+}
+.isp-body::-webkit-scrollbar-thumb {
+  background: var(--color-scrollbar-thumb-default);
+  border-radius: 4px;
+}
+.isp-body::-webkit-scrollbar-thumb:hover {
+  background: var(--color-scrollbar-thumb-hover);
+}

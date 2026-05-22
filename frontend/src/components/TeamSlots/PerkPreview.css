@@ -8,6 +8,18 @@
   margin-top: 0px;
   max-width: 250px;
   min-height: 18px;
+  border-radius: 4px;
+  border: 1px solid transparent;
+  transition: border-color 0.15s;
+}
+
+.perk-preview:hover {
+  border-color: var(--color-border-default);
+}
+
+.perk-preview.perk-preview-active {
+  border-color: var(--color-primary-accent);
+  box-shadow: 0 0 8px 2px rgba(255, 255, 255, 0.2);
 }
 
 /* ========== Perk row ========== */

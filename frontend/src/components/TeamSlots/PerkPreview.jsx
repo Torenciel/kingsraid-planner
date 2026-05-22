@@ -1,6 +1,7 @@
 // frontend/src/components/TeamSlots/PerkPreview.jsx
 import { useState, useEffect, useMemo } from "react";
 import { useOverlay } from "../../contexts/OverlayContext";
+import { useSlotPanel } from "../../contexts/SlotPanelContext";
 import { api } from "../../services/api";
 import { perksToIndices } from "../../utils/perkConverter";
 import "./PerkPreview.css";
@@ -10,8 +11,10 @@ const PerkPreview = ({
   selectedPerks,
   heroClass,
   heroName,
+  teamSlotIndex,
   size = "medium",
 }) => {
+  const { activeSlot, openSlotPanel } = useSlotPanel();
   const { showOverlay, hideOverlay } = useOverlay();
   const [perkData, setPerkData] = useState([]);
   const [heroSkills, setHeroSkills] = useState({});
@@ -256,8 +259,15 @@ if (!heroName) {
 
   const perkLayout = [5, 5, 4, 4, 2];
 
+  const isPerkActive = activeSlot?.teamSlotIndex === teamSlotIndex && activeSlot?.subSlotIndex === 4;
+
   return (
-    <div className={`perk-preview ${size}`}>
+    <div
+      className={`perk-preview ${size} ${isPerkActive ? "perk-preview-active" : ""}`}
+      onClick={() => openSlotPanel(teamSlotIndex, 4)}
+      style={{ cursor: "pointer" }}
+      title="Edit perks"
+    >
       {perkLayout.map((perkCount, rowIndex) => (
         <div key={rowIndex} className="perk-preview-row">
           {Array.from({ length: perkCount }, (_, i) => {

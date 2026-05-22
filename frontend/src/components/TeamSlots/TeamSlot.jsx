@@ -2,7 +2,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import CharacterSlot from "./CharacterSlot";
 import PerkPreview from "./PerkPreview";
-import PerkSlot from "./PerkSlot";
 import SubSlot from "./SubSlot";
 import SubSlotOverlay from "./SubSlotOverlay";
 import "./TeamSlot.css";
@@ -15,10 +14,8 @@ const TeamSlot = ({
   advancement,
   perks,
   onRemoveHero,
-  onSubSlotClick,
-  onPerkClick,
   readOnly = false,
-  onReady, // 👈 NEW
+  onReady,
 }) => {
 
   const slotRef = useRef(null);
@@ -132,7 +129,6 @@ const TeamSlot = ({
               stars={subStars?.[subIndex]}
               advancement={subIndex === 0 ? advancement : null}
               hasHero={!!hero}
-              onClick={readOnly ? undefined : onSubSlotClick}
               heroName={hero?.name}
               heroSlug={getHeroSlug()}
               slotRef={subSlotRefs.current[subIndex]}
@@ -141,26 +137,11 @@ const TeamSlot = ({
         ))}
       </div>
 
-      {!readOnly && (
-        <PerkSlot
-          teamSlotIndex={teamSlotIndex}
-          hasPerks={
-            perks &&
-            (
-              perks.t1?.selected?.length > 0 ||
-              perks.t2?.selected?.length > 0 ||
-              Object.values(perks.t3 || {}).some(Boolean) ||
-              perks.t5
-            )
-          }
-          onClick={onPerkClick}
-        />
-      )}
-
       <PerkPreview
         selectedPerks={perks || []}
         heroClass={hero?.role}
         heroName={hero?.name}
+        teamSlotIndex={teamSlotIndex}
       />
 
       {isOverlayVisible && hoveredSubSlot !== null && (

@@ -1,3 +1,4 @@
+import { useSlotPanel } from "../../contexts/SlotPanelContext";
 import "./SubSlot.css";
 
 const SubSlot = ({
@@ -12,6 +13,10 @@ const SubSlot = ({
   heroName,
   slotRef,
 }) => {
+  const { activeSlot, openSlotPanel } = useSlotPanel();
+  const isActive =
+    activeSlot?.teamSlotIndex === teamSlotIndex &&
+    activeSlot?.subSlotIndex === subSlotIndex;
   const subSlotNames = ["UW", "UT", "Artifact", "GearSet"];
 
   if (!hasHero) {
@@ -25,8 +30,8 @@ const SubSlot = ({
   if (!item) {
     return (
       <div
-        className="sub-slot empty"
-        onClick={() => onClick(teamSlotIndex, subSlotIndex)}
+        className={`sub-slot empty ${isActive ? "active-slot" : ""}`}
+        onClick={() => openSlotPanel(teamSlotIndex, subSlotIndex)}
       >
         <span className="sub-slot-plus">+</span>
       </div>
@@ -222,10 +227,8 @@ case 3: {
   return (
     <div ref={slotRef} className="relative">
       <div
-        className={`sub-slot ${getBorderClass()}`}
-        onClick={() =>
-          onClick(teamSlotIndex, subSlotIndex)
-        }
+        className={`sub-slot ${getBorderClass()} ${isActive ? "active-slot" : ""}`}
+        onClick={() => openSlotPanel(teamSlotIndex, subSlotIndex)}
       >
         {renderContent()}
       </div>

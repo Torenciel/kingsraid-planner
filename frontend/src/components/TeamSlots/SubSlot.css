@@ -89,6 +89,12 @@
   z-index: -1;
 }
 
+/* ========== Active slot glow ========== */
+.sub-slot.active-slot {
+  border-color: var(--color-primary-accent) !important;
+  box-shadow: 0 0 8px 2px rgba(255, 255, 255, 0.25) !important;
+}
+
 /* ========== Advancement border ========== */
 .sub-slot.uw-advancement-blue {
   border: 2px solid !important;

@@ -1,5 +1,4 @@
 import { useEffect, useState, useMemo, useRef } from "react";
-import { useModal } from "../../contexts/ModalContext";
 import { useTeam } from "../../contexts/TeamContext";
 import TeamSlot from "./TeamSlot";
 import { sortTeamByPosition } from "../../utils/sortTeamByPosition";
@@ -14,7 +13,6 @@ const TeamSlots = ({
   perksOverride = null,
 }) => {
   const context = useTeam();
-  const { openModal } = useModal();
 
   const team = teamOverride ?? context.team;
   const subSlots = subSlotsOverride ?? context.subSlots;
@@ -23,44 +21,10 @@ const TeamSlots = ({
   const perks = perksOverride ?? context.perks;
   const removeHeroFromTeam = context.removeHeroFromTeam;
 
-  const [artifactsData, setArtifactsData] = useState([]);
   const [heroesData, setHeroesData] = useState({});
-  const [gearSetsData, setGearSetsData] = useState([]);
   const [imagesReady, setImagesReady] = useState(false);
 
   const gridRef = useRef(null);
-
-  /* ===============================
-     LOAD ARTIFACTS
-  =============================== */
-  useEffect(() => {
-    const loadArtifactsData = async () => {
-      try {
-        const response = await fetch("http://localhost:3002/api/v2/artifacts");
-        const data = await response.json();
-        setArtifactsData(Array.isArray(data) ? data : []);
-      } catch {
-        setArtifactsData([]);
-      }
-    };
-    loadArtifactsData();
-  }, []);
-
-  /* ===============================
-     LOAD GEARSETS
-  =============================== */
-  useEffect(() => {
-    const loadGearSetsData = async () => {
-      try {
-        const response = await fetch("http://localhost:3002/api/v2/gearsets");
-        const data = await response.json();
-        setGearSetsData(Array.isArray(data) ? data : []);
-      } catch {
-        setGearSetsData([]);
-      }
-    };
-    loadGearSetsData();
-  }, []);
 
   /* ===============================
      LOAD HERO METADATA (all at once on mount)
@@ -175,57 +139,6 @@ const TeamSlots = ({
 
   }, [isHeroMetaReady, sortedIndexes]);
 
-  /* ===============================
-     SUB SLOT CLICK (RESTORED)
-  =============================== */
-  const handleSubSlotClick = (teamSlotIndex, subSlotIndex) => {
-    if (readOnly || !isHeroMetaReady) return;
-
-    const hero = hydratedTeam[teamSlotIndex];
-    if (!hero) return;
-
-    const heroSlug =
-      hero.slug ||
-      hero.name?.toLowerCase().replace(/\s+/g, "-");
-
-    const modalData = {
-      teamSlotIndex,
-      subSlotIndex,
-      heroName: hero.name,
-      heroSlug,
-      currentItem: subSlots[teamSlotIndex]?.[subSlotIndex],
-      currentStars: subStars[teamSlotIndex]?.[subSlotIndex] || 0,
-      currentAdvancement: advancements[teamSlotIndex],
-    };
-
-    switch (subSlotIndex) {
-      case 0: openModal("uw", modalData); break;
-      case 1: openModal("ut", modalData); break;
-      case 2: openModal("artifact", { ...modalData, artifacts: artifactsData }); break;
-      case 3: openModal("gearset", { ...modalData, gearSets: gearSetsData }); break;
-      default: break;
-    }
-  };
-
-  const handlePerkClick = (teamSlotIndex) => {
-    if (readOnly || !isHeroMetaReady) return;
-
-    const hero = hydratedTeam[teamSlotIndex];
-    if (!hero || !hero.role) return;
-
-    const heroSlug =
-      hero.slug ||
-      hero.name?.toLowerCase().replace(/\s+/g, "-");
-
-    openModal("perk", {
-      teamSlotIndex,
-      heroClass: hero.role,
-      heroName: hero.name,
-      heroSlug,
-      currentPerks: perks[teamSlotIndex] || [],
-    });
-  };
-
   return (
     <div className="team-slots-container">
       {!imagesReady && (
@@ -253,8 +166,6 @@ const TeamSlots = ({
               perks={hero.role ? perks[originalIndex] || [] : []}
               readOnly={readOnly}
               onRemoveHero={readOnly ? null : removeHeroFromTeam}
-              onSubSlotClick={handleSubSlotClick}
-              onPerkClick={handlePerkClick}
             />
           );
         })}

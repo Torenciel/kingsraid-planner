@@ -46,6 +46,7 @@ import { HeroProvider } from "./contexts/HeroContext";
 import { ModalProvider } from "./contexts/ModalContext";
 import { OverlayProvider } from "./contexts/OverlayContext";
 import { PerksProvider } from "./contexts/PerksContext";
+import { SlotPanelProvider } from "./contexts/SlotPanelContext";
 import { TeamProvider } from "./contexts/TeamContext";
 
 // Create a wrapper component to use useLocation
@@ -163,6 +164,7 @@ function App() {
                 <ModalProvider>
                   <OverlayProvider>
                     <TeamProvider>
+                      <SlotPanelProvider>
                       <div className="app">
                         <Navbar />
                         <main className="main-content">
@@ -171,6 +173,7 @@ function App() {
                         <Footer />
                       </div>
                       <ModalManager />
+                      </SlotPanelProvider>
                     </TeamProvider>
                   </OverlayProvider>
                 </ModalProvider>
