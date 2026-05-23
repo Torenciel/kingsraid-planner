@@ -1,7 +1,6 @@
 // components/Modals/ModalManager.js
 import { useModal } from "../../contexts/ModalContext";
 import "./ModalManager.css";
-import SubSlotModal from "./SubSlotModal";
 import AvatarSelectorModal from "./AvatarSelectorModal";
 import BannerSelectorModal from "./BannerSelectorModal";
 import ConfirmationModal from "./ConfirmationModal";
@@ -13,8 +12,6 @@ const ModalManager = () => {
 
   const renderModal = () => {
     switch (activeModal) {
-      case "subslot":
-        return <SubSlotModal data={modalData} onClose={closeModal} />;
       case "avatar":
         return <AvatarSelectorModal data={modalData} onClose={closeModal} />;
       case "banner":

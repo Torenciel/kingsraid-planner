@@ -233,3 +233,232 @@
 .sp-gearset-bonus-row.active {
   color: var(--color-text-default);
 }
+
+/* ================================================================
+   ARTIFACT SEARCH
+================================================================ */
+.artifact-search-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex: 1;
+  padding-bottom: 8px;
+}
+
+.artifact-search-icon {
+  position: absolute;
+  left: 12px;
+  color: var(--color-text-muted);
+  font-size: 16px;
+}
+
+.artifact-search-input {
+  background: var(--color-primary-default);
+  color: var(--color-text-default);
+  border-radius: 6px;
+  padding: 10px 40px;
+  width: 100%;
+  font-size: 14px;
+  transition: border-color 0.2s;
+  border: 1px solid var(--color-border-default);
+}
+
+.artifact-search-input:focus {
+  outline: none;
+  border-color: var(--color-primary-accent);
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.15);
+}
+
+/* ================================================================
+   UW ADVANCEMENT (SOUL WEAPON)
+================================================================ */
+.advancement-options {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+
+.advancement-option {
+  width: 60px;
+  height: 60px;
+  cursor: pointer;
+  border-radius: 4px;
+  background: transparent;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.2s;
+}
+
+.advancement-image-container {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.advancement-image {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 4px;
+  position: relative;
+  z-index: 1;
+}
+
+.advancement-border {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 2;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.advancement-border img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+/* ================================================================
+   PERKS
+================================================================ */
+.perk-modal-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px;
+  border-radius: 6px;
+  background: var(--color-primary-default);
+  border: 1px solid var(--color-border-default);
+}
+
+.perk-modal-row {
+  display: flex;
+  gap: 4px;
+  justify-content: flex-start;
+}
+
+.perk-modal-option {
+  width: 50px;
+  height: 50px;
+  cursor: pointer;
+  border-radius: 4px;
+  background: var(--color-primary-default);
+  border: 2px solid var(--color-border-default);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: bold;
+  color: #9ca3af;
+  transition: all 0.2s;
+  position: relative;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.perk-modal-option:hover {
+  border-color: var(--color-item-hover);
+  transform: scale(1.05);
+}
+
+.perk-modal-option.perk-blocked {
+  cursor: not-allowed;
+}
+
+.perk-modal-option.perk-blocked:hover {
+  border-color: var(--color-border-default);
+  transform: none;
+}
+
+.perk-modal-option.selected {
+  border-color: var(--color-item-selected);
+  background: var(--color-item-selected);
+  color: #1f2937;
+  transform: scale(1.05);
+}
+
+.perk-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 3px;
+  display: block;
+}
+
+.perk-modal-option.selected .perk-image {
+  opacity: 1;
+  filter: none;
+}
+
+.perk-fallback {
+  width: 100%;
+  height: 100%;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  color: #9ca3af;
+  font-size: 8px;
+  background: var(--color-primary-default);
+  border-radius: 3px;
+  padding: 2px;
+  overflow: hidden;
+  box-sizing: border-box;
+  font-weight: 500;
+}
+
+.perk-cost-fallback {
+  color: #9ca3af;
+  font-weight: bold;
+  font-size: 12px;
+}
+
+.perk-modal-option.selected .perk-cost-fallback {
+  color: #1f2937;
+}
+
+.perk-modal-points {
+  background: var(--color-primary-default);
+  border-radius: 6px;
+  padding: 10px;
+  margin-bottom: 12px;
+  text-align: center;
+  border: 1px solid var(--color-border-default);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.perk-modal-points.over-limit {
+  background: #7f1d1d;
+  border-color: #dc2626;
+  color: #fca5a5;
+}
+
+.perk-overlay {
+  max-width: 300px;
+}
+
+.perk-title {
+  color: var(--color-text-default);
+  font-weight: bold;
+  font-size: 14px;
+  text-align: center;
+}
+
+.perk-description {
+  color: var(--color-text-default);
+  font-size: 12px;
+  text-align: center;
+  word-break: break-word;
+  padding: 0 4px;
+}

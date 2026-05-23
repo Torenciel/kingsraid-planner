@@ -7,11 +7,8 @@ import { useGearSets } from "../../contexts/GearSetContext";
 import { useOverlay } from "../../contexts/OverlayContext";
 import { useTeam } from "../../contexts/TeamContext";
 import { indicesToPerks, perksToIndices } from "../../utils/perkConverter";
-import "../Modals/ArtifactModal.css";
 import ItemOverlay from "../Modals/ItemOverlay";
-import "../Modals/PerkModal.css";
 import StarRating from "../Modals/StarRating";
-import "../Modals/UWModal.css";
 import "./SlotPanels.css";
 
 /* ================================================================
