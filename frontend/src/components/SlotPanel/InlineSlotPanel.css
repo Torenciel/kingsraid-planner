@@ -94,7 +94,7 @@
   padding: 14px 16px;
   max-height: 360px;
   overflow-y: auto;
-  overflow-x: hidden;
+  overflow-x: visible;
 }
 
 .isp-body::-webkit-scrollbar {

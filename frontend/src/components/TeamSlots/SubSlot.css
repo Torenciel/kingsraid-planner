@@ -12,7 +12,7 @@
   width: 48px;
   height: 48px;
   background: var(--color-primary-default);
-  border: 2px solid var(--color-border-default); 
+  border: 2px solid var(--color-border-default);
   border-radius: 0.4rem;
   position: relative;
   cursor: pointer;
@@ -69,7 +69,7 @@
 
 /* Gradient background that covers full width */
 .sub-slot-stars::before {
-  content: '';
+  content: "";
   position: absolute;
   bottom: 0;
   left: 0;
@@ -92,26 +92,27 @@
 /* ========== Active slot glow ========== */
 .sub-slot.active-slot {
   border-color: var(--color-primary-accent) !important;
-  box-shadow: 0 0 8px 2px rgba(255, 255, 255, 0.25) !important;
+  /* box-shadow: 0 0 8px 2px rgba(255, 255, 255, 0.25) !important; */
+  box-shadow: 0 0 8px 2px rgba(255, 255, 255, 0.5) !important;
 }
 
 /* ========== Advancement border ========== */
 .sub-slot.uw-advancement-blue {
   border: 2px solid !important;
   border-color: #2175bb !important;
-  box-shadow: 0 0 10px rgba(59, 130, 246, 0.5) !important;
+  /* box-shadow: 0 0 10px rgba(59, 130, 246, 0.5) !important; */
 }
 
 .sub-slot.uw-advancement-purple {
   border: 2px solid !important;
   border-color: #ae4f99 !important;
-  box-shadow: 0 0 10px rgba(152, 69, 148, 0.478) !important;
+  /* box-shadow: 0 0 10px rgba(152, 69, 148, 0.478) !important; */
 }
 
 .sub-slot.uw-advancement-red {
   border: 2px solid !important;
   border-color: #cc2615 !important;
-  box-shadow: 0 0 10px rgba(239, 68, 68, 0.5) !important;
+  /* box-shadow: 0 0 10px rgba(239, 68, 68, 0.5) !important; */
 }
 
 /* ========== Advancement icon ========== */
@@ -149,5 +150,3 @@
   text-align: center;
   overflow: hidden;
 }
-
-

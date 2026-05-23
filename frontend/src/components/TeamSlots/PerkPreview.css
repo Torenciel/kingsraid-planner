@@ -19,7 +19,8 @@
 
 .perk-preview.perk-preview-active {
   border-color: var(--color-primary-accent);
-  box-shadow: 0 0 8px 2px rgba(255, 255, 255, 0.2);
+  /* box-shadow: 0 0 8px 2px rgba(255, 255, 255, 0.25); */
+  box-shadow: 0 0 8px 2px rgba(255, 255, 255, 0.5);
 }
 
 /* ========== Perk row ========== */

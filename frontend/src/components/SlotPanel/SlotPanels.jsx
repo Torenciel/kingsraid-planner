@@ -488,14 +488,22 @@ export const ArtifactPanel = ({
 
   return (
     <div className="sp-panel">
-      <div className="artifact-search-container">
-        <FaSearch className="artifact-search-icon" />
-        <input
-          className="artifact-search-input"
-          type="text"
-          placeholder="Search artifacts"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
+      <div className="artifact-top-row">
+        <div className="artifact-search-container">
+          <FaSearch className="artifact-search-icon" />
+          <input
+            className="artifact-search-input"
+            type="text"
+            placeholder="Search artifacts"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </div>
+        <StarRating
+          value={selectedStars}
+          onChange={handleStarsChange}
+          maxStars={5}
+          showZeroOption
         />
       </div>
       {loading && allArtifacts.length === 0 ? (
@@ -524,14 +532,6 @@ export const ArtifactPanel = ({
           )}
         </>
       )}
-      <div className="sp-section">
-        <StarRating
-          value={selectedStars}
-          onChange={handleStarsChange}
-          maxStars={5}
-          showZeroOption
-        />
-      </div>
     </div>
   );
 };
@@ -670,7 +670,7 @@ export const GearSetPanel = ({ teamSlotIndex, subSlotIndex, currentItem }) => {
         </div>
       )}
 
-      <div className="sp-grid sp-grid-wide">
+      <div className="sp-grid sp-grid-wide sp-grid-no-scroll">
         {sorted.map((gs) => {
           const isSel = selectedSets.includes(gs.slug);
           const isDisabled = selectedSets.length >= 2 && !isSel;
@@ -1224,6 +1224,7 @@ export const PerksPanel = ({ hero, teamSlotIndex }) => {
       >
         Points used: <span>{usedPoints}</span> / {maxPoints}
       </div>
+      <div className="perk-modal-grid-wrapper">
       <div className="perk-modal-grid">
         {perkLayout.map((row, rowIndex) => (
           <div key={rowIndex} className="perk-modal-row">
@@ -1272,6 +1273,7 @@ export const PerksPanel = ({ hero, teamSlotIndex }) => {
             })}
           </div>
         ))}
+      </div>
       </div>
     </div>
   );
