@@ -51,11 +51,12 @@
   display: grid;
   grid-template-columns: repeat(4, 56px);
   gap: 4px;
-  justify-content: start;
+  justify-content: center;
 }
 
 .sp-grid-wide {
   grid-template-columns: repeat(auto-fill, minmax(56px, 56px));
+  justify-content: center;
   max-height: 260px;
   overflow-y: auto;
   padding-right: 4px;
@@ -153,6 +154,7 @@
 .sp-uw-row {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 12px;
 }
 
