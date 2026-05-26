@@ -1,5 +1,6 @@
 import { useEffect } from "react";
-import { FaCog } from "react-icons/fa";
+import { FaArrowLeft, FaCog } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
 import { useHeroContext } from "../../contexts/HeroContext";
 import { useTeam } from "../../contexts/TeamContext";
 import { useModal } from "../../contexts/ModalContext";
@@ -13,6 +14,7 @@ const TeamBuilder = ({ autoOpenSettings = false }) => {
   const { teamName } = useTeam();
   const { loading } = useHeroContext();
   const { openModal } = useModal();
+  const navigate = useNavigate();
 
   const openTeamSettings = () => openModal("team-settings", {});
 
@@ -30,6 +32,9 @@ const TeamBuilder = ({ autoOpenSettings = false }) => {
 
   return (
     <div className="team-builder-container">
+      <button className="tb-back-btn" onClick={() => navigate("/teams/public")}>
+        <FaArrowLeft /> Back
+      </button>
       {/* Header */}
       <header className="team-builder-header">
         {/* Team Title */}

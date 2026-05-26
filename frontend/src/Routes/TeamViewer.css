@@ -1,0 +1,122 @@
+/* TeamViewer.css */
+
+.team-viewer {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+  position: relative;
+}
+
+/* ========== Back button ========== */
+.tv-back-btn {
+  position: absolute;
+  top: 2rem;
+  left: 1rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  color: var(--color-text-muted);
+  font-size: 0.875rem;
+  cursor: pointer;
+  padding: 4px 0;
+  transition: color 0.15s;
+}
+
+.tv-back-btn:hover {
+  color: var(--color-text-default);
+}
+
+/* ========== Header ========== */
+.tv-header {
+  text-align: center;
+  margin-bottom: 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.tv-title-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.tv-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--color-text-default);
+  margin: 0;
+}
+
+.tv-author {
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+}
+
+/* ========== Tags ========== */
+.tv-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  margin-top: 1rem;
+}
+
+.tv-tag {
+  cursor: default;
+  width: auto !important;
+  pointer-events: none;
+}
+
+/* ========== Stats ========== */
+.tv-stats {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 4px;
+}
+
+.tv-stat-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: color 0.15s, background 0.15s;
+}
+
+.tv-stat-btn:hover:not(:disabled) {
+  color: var(--color-item-selected);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.tv-stat-btn:disabled {
+  cursor: not-allowed;
+}
+
+.tv-stat-btn.upvoted {
+  color: #4caf50;
+}
+
+.tv-stat-btn.upvoted:hover {
+  color: #e53935;
+  background: rgba(229, 57, 53, 0.08);
+}
+
+.tv-stat-btn.bookmarked {
+  color: #4caf50;
+}
+
+.tv-stat-btn.bookmarked:hover {
+  color: #e53935;
+  background: rgba(229, 57, 53, 0.08);
+}

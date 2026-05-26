@@ -9,7 +9,7 @@
   padding-right: 1rem;
   padding-top: 2rem;
   padding-bottom: 2rem;
-  /* margin-top: 40px; Compensate for the Navbar */
+  position: relative;
 }
 
 /* ========== Loading State ========== */
@@ -24,6 +24,27 @@
 .loading-text {
   font-size: 1.25rem;
   line-height: 1.75rem;
+}
+
+/* ========== Back button ========== */
+.tb-back-btn {
+  position: absolute;
+  top: 2rem;
+  left: 1rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  color: var(--color-text-muted);
+  font-size: 0.875rem;
+  cursor: pointer;
+  padding: 4px 0;
+  transition: color 0.15s;
+}
+
+.tb-back-btn:hover {
+  color: var(--color-text-default);
 }
 
 /* ========== Header ========== */

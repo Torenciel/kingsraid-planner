@@ -3,6 +3,7 @@ import { FaBookmark, FaSearch, FaTrash } from "react-icons/fa";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import TeamList from "../components/TeamViewer/TeamList";
 import { useAuth } from "../contexts/AuthContext";
+import { TAG_GROUPS } from "../constants/tagGroups";
 import "./Teams.css";
 
 const Teams = () => {
@@ -21,186 +22,11 @@ const Teams = () => {
   const [teamCount, setTeamCount] = useState(0);
   const [showBookmarks, setShowBookmarks] = useState(false);
 
-  // Main content types with their sub-filters
-  const contentOptions = [
-    {
-      id: "wb",
-      name: "World Boss",
-      subFilters: [
-        {
-          id: "wb_mountain",
-          name: "WB1",
-          image: "/kingsraid-data/assets/bosses/Mountain Fortress.png",
-        },
-        {
-          id: "wb_protianus",
-          name: "WB2",
-          image: "/kingsraid-data/assets/bosses/Protianus.png",
-        },
-        {
-          id: "wb_xanadus",
-          name: "WB3",
-          image: "/kingsraid-data/assets/bosses/Xanadus.png",
-        },
-      ],
-    },
-    {
-      id: "raid",
-      name: "Raid",
-      subFilters: [
-        {
-          id: "raid_black",
-          name: "Black Dragon",
-          image: "/kingsraid-data/assets/bosses/Black_Dragon.png",
-        },
-        {
-          id: "raid_fire",
-          name: "Fire Dragon",
-          image: "/kingsraid-data/assets/bosses/Fire_Dragon.png",
-        },
-        {
-          id: "raid_frost",
-          name: "Frost Dragon",
-          image: "/kingsraid-data/assets/bosses/Frost_Dragon.png",
-        },
-        {
-          id: "raid_poison",
-          name: "Poison Dragon",
-          image: "/kingsraid-data/assets/bosses/Poison_Dragon.png",
-        },
-      ],
-    },
-    {
-      id: "gc",
-      name: "Guild Conquest",
-      subFilters: [
-        {
-          id: "gc_lakreil",
-          name: "Lakreil",
-          image: "/kingsraid-data/assets/bosses/Lakreil.png",
-        },
-        {
-          id: "gc_tyrfas",
-          name: "Tyrfas",
-          image: "/kingsraid-data/assets/bosses/Tyrfas.png",
-        },
-        {
-          id: "gc_velkazar",
-          name: "Velkazar",
-          image: "/kingsraid-data/assets/bosses/Velkazar.png",
-        },
-      ],
-    },
-    {
-      id: "gr",
-      name: "Guild Raid",
-      subFilters: [
-        {
-          id: "gr_gushak",
-          name: "Gushak",
-          image: "/kingsraid-data/assets/bosses/Gushak.png",
-        },
-        {
-          id: "gr_lakreil",
-          name: "Lakreil",
-          image: "/kingsraid-data/assets/bosses/Lakreil.png",
-        },
-        {
-          id: "gr_manticore",
-          name: "Manticore",
-          image: "/kingsraid-data/assets/bosses/Manticore.png",
-        },
-        {
-          id: "gr_maviel",
-          name: "Maviel",
-          image: "/kingsraid-data/assets/bosses/Maviel.png",
-        },
-        {
-          id: "gr_nordik",
-          name: "Nordik",
-          image: "/kingsraid-data/assets/bosses/Nordik.png",
-        },
-        {
-          id: "gr_nubis",
-          name: "Nubis",
-          image: "/kingsraid-data/assets/bosses/Nubis.png",
-        },
-        {
-          id: "gr_tyrfas",
-          name: "Tyrfas",
-          image: "/kingsraid-data/assets/bosses/Tyrfas.png",
-        },
-        {
-          id: "gr_Xakios",
-          name: "Xakios",
-          image: "/kingsraid-data/assets/bosses/Xakios.png",
-        },
-      ],
-    },
-    {
-      id: "trial",
-      name: "Trial",
-      subFilters: [
-        {
-          id: "trial_imet",
-          name: "Imet",
-          image: "/kingsraid-data/assets/bosses/Imet.png",
-        },
-        {
-          id: "trial_musama",
-          name: "Musama",
-          image: "/kingsraid-data/assets/bosses/Musama.png",
-        },
-        {
-          id: "trial_sekmaha",
-          name: "Sekmaha",
-          image: "/kingsraid-data/assets/bosses/Sekmaha.png",
-        },
-      ],
-    },
-    {
-      id: "shakmeh",
-      name: "Shakmeh",
-      subFilters: [
-        {
-          id: "devourer_shakmeh",
-          name: "Devourer",
-          image: "/kingsraid-data/assets/bosses/Devourer Shakmeh.png",
-        },
-        {
-          id: "otherworldly_shakmeh",
-          name: "Otherworldly",
-          image:
-            "/kingsraid-data/assets/bosses/Otherworldly Darkness Shakmeh.png",
-        },
-      ],
-    },
-    {
-      id: "story",
-      name: "Story",
-      subFilters: [
-        { id: "story_ch1", name: "Chapter 1" },
-        { id: "story_ch2", name: "Chapter 2" },
-        { id: "story_ch3", name: "Chapter 3" },
-      ],
-    },
-    {
-      id: "pvp",
-      name: "PvP",
-      subFilters: [
-        { id: "league_of_victory", name: "League of Victory" },
-        { id: "league_of_honor", name: "League of Honor" },
-      ],
-    },
-    {
-      id: "other",
-      name: "Other Content",
-      subFilters: [
-        { id: "other_farming", name: "Farming" },
-        { id: "other_event", name: "Event" },
-      ],
-    },
-  ];
+  const contentOptions = TAG_GROUPS.map((group) => ({
+    id: group.id,
+    name: group.label,
+    subFilters: group.tags.map((tag) => ({ id: tag.id, name: tag.name, image: tag.image })),
+  }));
 
   // Update tab when URL changes
   useEffect(() => {
@@ -405,7 +231,7 @@ const Teams = () => {
               );
             }).length === 0 ? (
               <div className="sub-filters-tutorial">
-                Here is a tutorial on how to use filters
+                Placeholder tutorial on how to use filters
               </div>
             ) : (
               <div className="sub-filters-container">
