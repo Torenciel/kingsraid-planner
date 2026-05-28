@@ -31,7 +31,8 @@ const allowedOrigins = [
   "http://localhost:5173",
   "http://localhost:3000",
   "https://kingsraid-planner.com",
-  "https://www.kingsraid-planner.com"
+  "https://www.kingsraid-planner.com",
+  "https://kingsraid-planner.vercel.app",
 ];
 
 app.use(
