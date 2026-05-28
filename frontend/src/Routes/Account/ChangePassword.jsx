@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { IoWarningOutline } from "react-icons/io5";
+import { API_BASE_URL } from "../../services/api";
 import "../Login.css";
 
 const ChangePassword = () => {
@@ -35,7 +36,7 @@ const ChangePassword = () => {
 
     try {
       const response = await fetch(
-        "http://localhost:3002/api/v2/users/me/password",
+        `${API_BASE_URL}/api/v2/users/me/password`,
         {
           method: "PATCH",
           headers: {

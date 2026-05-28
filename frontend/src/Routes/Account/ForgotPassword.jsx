@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { IoWarningOutline } from "react-icons/io5";
+import { API_BASE_URL } from "../../services/api";
 import "../Login.css";
 
 const ForgotPassword = () => {
@@ -17,7 +18,7 @@ const ForgotPassword = () => {
 
     try {
       const response = await fetch(
-        "http://localhost:3002/api/v2/auth/forgot-password",
+        `${API_BASE_URL}/api/v2/auth/forgot-password`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

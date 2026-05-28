@@ -1,5 +1,6 @@
 import { useLocation } from "react-router-dom";
 import { useState } from "react";
+import { API_BASE_URL } from "../../services/api";
 import "./VerifyPending.css";
 
 const VerifyPending = () => {
@@ -18,7 +19,7 @@ const VerifyPending = () => {
 
     try {
       const response = await fetch(
-        "http://localhost:3002/api/v2/auth/resend-verification",
+        `${API_BASE_URL}/api/v2/auth/resend-verification`,
         {
           method: "POST",
           headers: {

@@ -5,6 +5,7 @@ import TeamSlots from "../components/TeamSlots/TeamSlots";
 import { useAuth } from "../contexts/AuthContext";
 import { useTeam } from "../contexts/TeamContext";
 import { TAG_MAP } from "../constants/tagGroups";
+import { API_BASE_URL } from "../services/api";
 import { useToggleBookmark, useToggleUpvote } from "../hooks/useApi";
 import "./TeamViewer.css";
 
@@ -28,7 +29,7 @@ const TeamViewer = () => {
   useEffect(() => {
     const loadTeam = async () => {
       try {
-        const response = await fetch(`http://localhost:3002/api/v2/teams/${slug}`);
+        const response = await fetch(`${API_BASE_URL}/api/v2/teams/${slug}`);
         const result = await response.json();
         if (result.success) {
           setRawTeam(result.team);

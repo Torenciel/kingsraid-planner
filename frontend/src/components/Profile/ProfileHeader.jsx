@@ -1,4 +1,5 @@
 import { FaDiscord, FaYoutube, FaTwitch, FaPen } from "react-icons/fa";
+import { API_BASE_URL } from "../../services/api";
 import "./ProfileHeader.css";
 
 import { getHeroSplashUrl } from "../../utils/heroAssetResolver";
@@ -40,7 +41,7 @@ const ProfileHeader = ({
   // Handle Avatar Selection
   // ==============================
   const handleAvatarSelect = async (selection) => {
-    await fetch("http://localhost:3002/api/v2/users/me/avatar", {
+    await fetch(`${API_BASE_URL}/api/v2/users/me/avatar`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
@@ -54,7 +55,7 @@ const ProfileHeader = ({
   // Handle Banner Selection
   // ==============================
   const handleBannerSelect = async (selection) => {
-    await fetch("http://localhost:3002/api/v2/users/me/banner", {
+    await fetch(`${API_BASE_URL}/api/v2/users/me/banner`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       credentials: "include",

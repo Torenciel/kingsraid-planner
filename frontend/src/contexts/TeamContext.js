@@ -41,7 +41,11 @@ export const TeamProvider = ({ children }) => {
   const loadTeams = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`${API_BASE_URL}/api/v2/teams`);
+      const meRes = await fetch(`${API_BASE_URL}/api/v2/auth/me`, { credentials: 'include' });
+      const meData = await meRes.json();
+      const userId = meData?.user?._id || meData?.user?.id;
+      if (!userId) return [];
+      const response = await fetch(`${API_BASE_URL}/api/v2/teams?author=${userId}`, { credentials: 'include' });
       
       if (response.ok) {
         const result = await response.json();

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { IoWarningOutline } from "react-icons/io5";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
+import { API_BASE_URL } from "../services/api";
 import "./Login.css";
 
 const Login = () => {
@@ -31,7 +32,7 @@ const Login = () => {
   const handleGoogleLogin = async () => {
     try {
       setGoogleLoading(true);
-      const res = await fetch("http://localhost:3002/api/v2/oauth/google/url");
+      const res = await fetch(`${API_BASE_URL}/api/v2/oauth/google/url`);
       const data = await res.json();
       if (data.success && data.url) {
         window.location.href = data.url;
@@ -51,7 +52,7 @@ const Login = () => {
     setLoading(true);
 
     try {
-      const response = await fetch("http://localhost:3002/api/v2/auth/login", {
+      const response = await fetch(`${API_BASE_URL}/api/v2/auth/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

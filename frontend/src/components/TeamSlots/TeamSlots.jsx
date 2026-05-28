@@ -2,6 +2,7 @@ import { useEffect, useState, useMemo, useRef } from "react";
 import { useTeam } from "../../contexts/TeamContext";
 import TeamSlot from "./TeamSlot";
 import { sortTeamByPosition } from "../../utils/sortTeamByPosition";
+import { API_BASE_URL } from "../../services/api";
 import "./TeamSlots.css";
 
 const TeamSlots = ({
@@ -32,7 +33,7 @@ const TeamSlots = ({
   useEffect(() => {
     const loadHeroesData = async () => {
       try {
-        const response = await fetch("http://localhost:3002/api/v2/heroes");
+        const response = await fetch(`${API_BASE_URL}/api/v2/heroes`);
         if (!response.ok) return;
         const data = await response.json();
         const heroes = data.heroes || data;

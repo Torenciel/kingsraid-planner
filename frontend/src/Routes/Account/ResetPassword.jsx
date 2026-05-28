@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { IoWarningOutline } from "react-icons/io5";
+import { API_BASE_URL } from "../../services/api";
 import "../Login.css";
 
 const ResetPassword = () => {
@@ -31,7 +32,7 @@ const ResetPassword = () => {
 
     try {
       const response = await fetch(
-        `http://localhost:3002/api/v2/auth/reset-password/${token}`,
+        `${API_BASE_URL}/api/v2/auth/reset-password/${token}`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

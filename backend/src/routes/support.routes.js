@@ -6,7 +6,10 @@ const sanitize = (str) => String(str || '').trim().slice(0, 2000);
 
 // POST /api/v2/support/feedback
 router.post('/feedback', async (req, res) => {
-  const { name, email, category, message } = req.body;
+  const { name, email, category, message, website } = req.body;
+
+  // Honeypot: bots fill hidden fields, humans don't
+  if (website) return res.json({ success: true });
 
   if (!message || message.trim().length < 10) {
     return res.status(400).json({ success: false, error: 'Message must be at least 10 characters.' });
@@ -34,7 +37,10 @@ router.post('/feedback', async (req, res) => {
 
 // POST /api/v2/support/bug-report
 router.post('/bug-report', async (req, res) => {
-  const { name, email, title, description, steps, device } = req.body;
+  const { name, email, title, description, steps, device, website } = req.body;
+
+  // Honeypot: bots fill hidden fields, humans don't
+  if (website) return res.json({ success: true });
 
   if (!title || title.trim().length < 3) {
     return res.status(400).json({ success: false, error: 'Title is required.' });

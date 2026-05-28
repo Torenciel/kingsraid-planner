@@ -3,7 +3,7 @@ import { IoWarningOutline, IoCheckmarkCircleOutline } from "react-icons/io5";
 import "../Login.css";
 
 const BugReport = () => {
-  const [form, setForm] = useState({ name: "", email: "", title: "", description: "", steps: "", device: "" });
+  const [form, setForm] = useState({ name: "", email: "", title: "", description: "", steps: "", device: "", website: "" });
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -31,7 +31,7 @@ const BugReport = () => {
       }
 
       setSuccess(true);
-      setForm({ name: "", email: "", title: "", description: "", steps: "", device: "" });
+      setForm({ name: "", email: "", title: "", description: "", steps: "", device: "", website: "" });
     } catch {
       setError("Network error. Please try again.");
     } finally {
@@ -56,6 +56,8 @@ const BugReport = () => {
         </div>
       ) : (
         <form className="login-form" onSubmit={handleSubmit}>
+          {/* Honeypot — hidden from real users, bots will fill it */}
+          <input name="website" value={form.website} onChange={handleChange} style={{ display: "none" }} tabIndex={-1} autoComplete="off" />
           <p className="input-label">Title <span style={{ color: "var(--color-error-default)" }}>*</span></p>
           <input name="title" type="text" value={form.title} onChange={handleChange} required placeholder="Short description of the bug" />
 

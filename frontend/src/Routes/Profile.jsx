@@ -1,5 +1,6 @@
 import { Navigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
+import { API_BASE_URL } from "../services/api";
 import ProfileHeader from "../components/Profile/ProfileHeader";
 import ProfileDashboard from "../components/Profile/ProfileDashboard";
 import "./Profile.css"; // keep layout container styling here
@@ -12,7 +13,7 @@ const Profile = () => {
   }
 
   const updatePreference = async (key, value) => {
-    await fetch("http://localhost:3002/api/v2/users/me/preferences", {
+    await fetch(`${API_BASE_URL}/api/v2/users/me/preferences`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       credentials: "include",

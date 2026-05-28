@@ -5,7 +5,7 @@ import "../Login.css";
 const CATEGORIES = ["General", "Suggestion", "Praise", "Other"];
 
 const Feedback = () => {
-  const [form, setForm] = useState({ name: "", email: "", category: "General", message: "" });
+  const [form, setForm] = useState({ name: "", email: "", category: "General", message: "", website: "" });
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -33,7 +33,7 @@ const Feedback = () => {
       }
 
       setSuccess(true);
-      setForm({ name: "", email: "", category: "General", message: "" });
+      setForm({ name: "", email: "", category: "General", message: "", website: "" });
     } catch {
       setError("Network error. Please try again.");
     } finally {
@@ -58,6 +58,8 @@ const Feedback = () => {
         </div>
       ) : (
         <form className="login-form" onSubmit={handleSubmit}>
+          {/* Honeypot — hidden from real users, bots will fill it */}
+          <input name="website" value={form.website} onChange={handleChange} style={{ display: "none" }} tabIndex={-1} autoComplete="off" />
           <p className="input-label">Category</p>
           <select
             name="category"

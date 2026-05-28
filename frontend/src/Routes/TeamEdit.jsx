@@ -1,5 +1,6 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useRef } from "react";
+import { API_BASE_URL } from "../services/api";
 
 import ModalManager from "../components/Modals/ModalManager";
 import TeamBuilder from "../components/TeamBuilder/TeamBuilder";
@@ -68,7 +69,7 @@ useEffect(() => {
     try {
 
       const res = await fetch(
-        `http://localhost:3002/api/v2/teams/${slug}`
+        `${API_BASE_URL}/api/v2/teams/${slug}`
       );
 
       const data = await res.json();

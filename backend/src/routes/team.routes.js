@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 
-const { requireAuth } = require("../middlewares/auth.middleware");
+const { requireAuth, optionalAuth } = require("../middlewares/auth.middleware");
 
 let Team, teamConverter, User;
 try {
@@ -62,7 +62,7 @@ router.post("/", requireAuth, async (req, res) => {
 });
 
 // Get team by id or slug
-router.get("/:identifier", async (req, res) => {
+router.get("/:identifier", optionalAuth, async (req, res) => {
   try {
     const { identifier } = req.params;
 
@@ -80,6 +80,14 @@ router.get("/:identifier", async (req, res) => {
       return res.status(404).json({
         success: false,
         error: "Team not found",
+      });
+    }
+
+    // Block access to private teams unless the requester is the author
+    if (!team.isPublic && (!req.user || req.user.id !== team.author.toString())) {
+      return res.status(403).json({
+        success: false,
+        error: "This team is private",
       });
     }
 
@@ -161,7 +169,7 @@ router.patch("/:slug", requireAuth, async (req, res) => {
 });
 
 // List teams with filtering
-router.get("/", async (req, res) => {
+router.get("/", optionalAuth, async (req, res) => {
   try {
     const { isPublic, createdBy, author, bookmarkedBy, limit: limitParam, sortBy } = req.query;
     console.log("Teams query:", { isPublic, createdBy, author, bookmarkedBy });
@@ -178,8 +186,11 @@ router.get("/", async (req, res) => {
       const bookmarkedIds = user.bookmarkedTeams.map((b) => b.teamId);
       filter._id = { $in: bookmarkedIds };
     } else if (author) {
-      // If author ID is specified, show all teams by that user (both public and private)
       filter.author = author;
+      // Only show private teams if the requester is the author themselves
+      if (!req.user || req.user.id !== author) {
+        filter.isPublic = true;
+      }
     } else if (createdBy) {
       // Fallback to createdBy for backwards compatibility
       filter.createdBy = createdBy;

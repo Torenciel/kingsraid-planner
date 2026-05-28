@@ -21,7 +21,7 @@ const TeamSettingsModal = ({ data, onClose }) => {
   const { isNewTeam, isSaveMode } = data || {};
 
   const [localName, setLocalName] = useState(teamName || "New Team");
-  const [localPublic, setLocalPublic] = useState(isPublic ?? false);
+  const [localPublic, setLocalPublic] = useState(isPublic ?? true);
   const [localSize, setLocalSize] = useState(teamSize);
   const [localTags, setLocalTags] = useState(tags || []);
   const [isSaving, setIsSaving] = useState(false);
@@ -93,16 +93,16 @@ const TeamSettingsModal = ({ data, onClose }) => {
         <label className="tsm-label">Visibility</label>
         <div className="tsm-toggle-row">
           <button
-            className={`tsm-toggle-btn ${!localPublic ? "active" : ""}`}
-            onClick={() => setLocalPublic(false)}
-          >
-            Private
-          </button>
-          <button
             className={`tsm-toggle-btn ${localPublic ? "active" : ""}`}
             onClick={() => setLocalPublic(true)}
           >
             Public
+          </button>
+          <button
+            className={`tsm-toggle-btn ${!localPublic ? "active" : ""}`}
+            onClick={() => setLocalPublic(false)}
+          >
+            Private
           </button>
         </div>
       </div>

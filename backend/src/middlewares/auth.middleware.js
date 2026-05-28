@@ -28,6 +28,25 @@ function requireAuth(req, res, next) {
   }
 }
 
+// Decodes token if present but never blocks the request
+function optionalAuth(req, res, next) {
+  try {
+    const token = req.cookies?.accessToken;
+    if (token) {
+      const decoded = verifyAccessToken(token);
+      req.user = {
+        id: decoded.sub,
+        role: decoded.role,
+        displayName: decoded.displayName,
+      };
+    }
+  } catch {
+    // Invalid token — treat as unauthenticated
+  }
+  next();
+}
+
 module.exports = {
   requireAuth,
+  optionalAuth,
 };

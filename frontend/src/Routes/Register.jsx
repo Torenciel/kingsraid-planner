@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { IoWarningOutline } from "react-icons/io5";
+import { API_BASE_URL } from "../services/api";
 import "./Register.css";
 
 const Register = () => {
@@ -114,7 +115,7 @@ const Register = () => {
     setLoading(true);
 
     try {
-      const response = await fetch("http://localhost:3002/api/v2/auth/register", {
+      const response = await fetch(`${API_BASE_URL}/api/v2/auth/register`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

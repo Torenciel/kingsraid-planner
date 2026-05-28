@@ -1,7 +1,7 @@
 // src/services/api.js
 
 // Configurable base URL
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3002';
+export const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3002';
 const API_BASE = '/api'; // Relative API path
 
 class ApiService {

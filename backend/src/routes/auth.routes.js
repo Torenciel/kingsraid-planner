@@ -1,5 +1,6 @@
 const express = require("express");
 const bcrypt = require("bcrypt");
+const rateLimit = require("express-rate-limit");
 const User = require("../models/User");
 const { requireAuth } = require("../middlewares/auth.middleware");
 const {
@@ -12,6 +13,25 @@ const { sendEmail } = require("../utils/mailer");
 const crypto = require("crypto");
 
 const router = express.Router();
+
+const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:3000";
+const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:3002";
+
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 10,
+  message: { success: false, message: "Too many login attempts, please try again later" },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+const authLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: 10,
+  message: { success: false, message: "Too many requests, please try again later" },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -27,7 +47,7 @@ function isStrongPassword(password) {
 
 
 // ================= REGISTER ================= POST /api/v2/auth/register
-router.post("/register", async (req, res) => {
+router.post("/register", authLimiter, async (req, res) => {
   try {
     const { email, password, confirmPassword, displayName } = req.body;
 
@@ -69,7 +89,7 @@ router.post("/register", async (req, res) => {
     });
 
     // Build verification link
-    const verificationLink = `http://localhost:3002/api/v2/auth/verify-email?token=${verificationToken}`;
+    const verificationLink = `${BACKEND_URL}/api/v2/auth/verify-email?token=${verificationToken}`;
 
     // Send email
     await sendEmail({
@@ -126,7 +146,7 @@ router.get("/verify-email", async (req, res) => {
 });
 
 // ========= RESEND EMAIL VERIFICATION ========= POST /api/v2/auth/resend-verification
-router.post("/resend-verification", async (req, res) => {
+router.post("/resend-verification", authLimiter, async (req, res) => {
   try {
     const { email } = req.body;
 
@@ -197,7 +217,7 @@ router.post("/resend-verification", async (req, res) => {
 });
 
 // ================ LOGIN (JWT) ================ POST /api/v2/auth/login
-router.post("/login", async (req, res) => {
+router.post("/login", loginLimiter, async (req, res) => {
   try {
     const { email, password } = req.body;
 
@@ -252,14 +272,14 @@ router.post("/login", async (req, res) => {
     res.cookie("accessToken", accessToken, {
       httpOnly: true,
       sameSite: "lax",
-      secure: false,
+      secure: process.env.NODE_ENV === "production",
       maxAge: 60 * 60 * 1000,
     });
 
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
       sameSite: "lax",
-      secure: false,
+      secure: process.env.NODE_ENV === "production",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
@@ -304,7 +324,7 @@ router.post("/refresh", async (req, res) => {
     res.cookie("accessToken", newAccessToken, {
       httpOnly: true,
       sameSite: "lax",
-      secure: false,
+      secure: process.env.NODE_ENV === "production",
       maxAge: 60 * 60 * 1000, // 1h (matches your jwt setting)
     });
 
@@ -349,7 +369,7 @@ router.post("/logout", (req, res) => {
 });
 
 // ============= FORGOT PASSWORD ============= POST /api/v2/auth/forgot-password
-router.post("/forgot-password", async (req, res) => {
+router.post("/forgot-password", authLimiter, async (req, res) => {
   try {
     const { email } = req.body;
 

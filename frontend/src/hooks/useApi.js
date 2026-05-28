@@ -10,6 +10,7 @@ const DEFAULT_OPTIONS = {
   headers: {
     'Content-Type': 'application/json',
   },
+  credentials: 'include',
   timeout: 10000,
   useCache: true,
   refresh: false,
