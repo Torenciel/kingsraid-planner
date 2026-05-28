@@ -25,8 +25,6 @@ export const GearSetProvider = ({ children }) => {
     error: null,
   });
 
-  const ASSETS_BASE_URL = process.env.REACT_APP_ASSETS_URL || API_BASE_URL;
-
   const getGearSetImageUrl = useCallback(
     (gearSet) => {
       if (!gearSet) return "";
@@ -36,20 +34,20 @@ export const GearSetProvider = ({ children }) => {
           !gearSet.thumbnail.startsWith("http") &&
           !gearSet.thumbnail.startsWith("/")
         ) {
-          return `${ASSETS_BASE_URL}/kingsraid-data/assets/${gearSet.thumbnail}`;
+          return `/kingsraid-data/assets/${gearSet.thumbnail}`;
         }
         return gearSet.thumbnail;
       }
 
       if (gearSet.slug) {
-        return `${ASSETS_BASE_URL}/kingsraid-data/assets/gearsets/${gearSet.slug}.png`;
+        return `/kingsraid-data/assets/gearsets/${gearSet.slug}.png`;
       }
 
       const formattedName =
         gearSet.name?.toLowerCase().replace(/\s+/g, "_") || "unknown";
-      return `${ASSETS_BASE_URL}/kingsraid-data/assets/gearsets/${formattedName}.png`;
+      return `/kingsraid-data/assets/gearsets/${formattedName}.png`;
     },
-    [ASSETS_BASE_URL],
+    [],
   );
 
   const loadGearSets = async () => {
@@ -89,7 +87,7 @@ export const GearSetProvider = ({ children }) => {
 
       try {
         const fallbackResponse = await fetch(
-          `${ASSETS_BASE_URL}/kingsraid-data/table-data/gearsets.json`,
+          `/kingsraid-data/table-data/gearsets.json`,
         );
 
         if (fallbackResponse.ok) {

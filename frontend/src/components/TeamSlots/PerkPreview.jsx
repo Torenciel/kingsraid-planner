@@ -41,7 +41,7 @@ const perkIndices = useMemo(() => {
       const T1_PERKS = [
         { name: "ATK Up", file: "ATK Up.png", tier: "t1", index: globalIndex },
         { name: "HP Up", file: "HP Up.png", tier: "t1", index: globalIndex },
-        { name: "DEF up", file: "DEF up.png", tier: "t1", index: globalIndex },
+        { name: "DEF Up", file: "DEF Up.png", tier: "t1", index: globalIndex },
         { name: "Crit Resist Up", file: "Crit Resist Up.png", tier: "t1", index: globalIndex },
         { name: "Monster Hunting", file: "Monster Hunting.png", tier: "t1", index: globalIndex },
       ];

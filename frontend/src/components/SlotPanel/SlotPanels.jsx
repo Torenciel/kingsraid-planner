@@ -792,7 +792,7 @@ export const PerksPanel = ({ hero, teamSlotIndex }) => {
       const T1 = [
         { name: "ATK Up", file: "ATK Up.png", tier: "t1", index: globalIndex },
         { name: "HP Up", file: "HP Up.png", tier: "t1", index: globalIndex },
-        { name: "DEF up", file: "DEF up.png", tier: "t1", index: globalIndex },
+        { name: "DEF Up", file: "DEF Up.png", tier: "t1", index: globalIndex },
         {
           name: "Crit Resist Up",
           file: "Crit Resist Up.png",
