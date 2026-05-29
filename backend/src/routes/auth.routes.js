@@ -192,7 +192,7 @@ router.post("/resend-verification", authLimiter, async (req, res) => {
 
     await user.save();
 
-    const verificationLink = `${FRONTEND_URL}/verify-email?token=${verificationToken}`;
+    const verificationLink = `${BACKEND_URL}/api/v2/auth/verify-email?token=${verificationToken}`;
 
     await sendEmail({
       to: user.email,
