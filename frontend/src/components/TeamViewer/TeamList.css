@@ -1,3 +1,27 @@
+.team-list-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 60px 0;
+  color: var(--color-text-muted);
+  font-size: 0.95rem;
+}
+
+.team-list-spinner {
+  width: 36px;
+  height: 36px;
+  border: 3px solid var(--color-border-default);
+  border-top-color: var(--color-primary-accent);
+  border-radius: 50%;
+  animation: team-list-spin 0.8s linear infinite;
+}
+
+@keyframes team-list-spin {
+  to { transform: rotate(360deg); }
+}
+
 .team-list {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));

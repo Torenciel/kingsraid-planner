@@ -31,10 +31,28 @@
 }
 
 .sp-loading {
-  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
   color: var(--color-text-muted);
   font-size: 0.875rem;
   padding: 1.5rem 0;
+}
+
+.sp-loading::before {
+  content: "";
+  width: 28px;
+  height: 28px;
+  border: 3px solid var(--color-border-default);
+  border-top-color: var(--color-primary-accent);
+  border-radius: 50%;
+  animation: sp-spin 0.8s linear infinite;
+}
+
+@keyframes sp-spin {
+  to { transform: rotate(360deg); }
 }
 
 .sp-empty {

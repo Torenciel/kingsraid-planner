@@ -116,7 +116,12 @@ const TeamList = ({ tab = "public", searchQuery = "", onCountChange, selectedCon
     refetch();
   }, [refetch]);
 
-  if (loading) return <div>Loading teams...</div>;
+  if (loading) return (
+    <div className="team-list-loading">
+      <div className="team-list-spinner" />
+      <span>Loading teams...</span>
+    </div>
+  );
 
   if (error && shouldFetch) {
     console.error("Error loading teams:", error);
@@ -127,10 +132,14 @@ const TeamList = ({ tab = "public", searchQuery = "", onCountChange, selectedCon
     ? "No bookmarked teams yet"
     : tab === "private"
     ? "No private teams yet"
-    : "No public teams yet";
+    : "No teams match these filters";
 
   if (!filteredTeams || filteredTeams.length === 0) {
-    return <div>{emptyMessage}</div>;
+    return (
+      <div className="team-list-loading">
+        <span>{emptyMessage}</span>
+      </div>
+    );
   }
 
   return (
