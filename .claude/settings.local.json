@@ -3,7 +3,8 @@
     "allow": [
       "Bash(Get-ChildItem -Path \"d:\\\\Dev\\\\Projects\\\\kingsraid-planner\" -Directory)",
       "Bash(Select-Object Name)",
-      "Bash(git checkout *)"
+      "Bash(git checkout *)",
+      "Bash(npm install *)"
     ]
   }
 }
