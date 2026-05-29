@@ -333,21 +333,17 @@
   align-items: center;
   justify-content: center;
   font-size: 1.6rem;
-  color: #e53935;
+  color: var(--color-error-default);
   cursor: pointer;
   border-radius: 4px;
-  border: 1px solid transparent;
-  transition: background 0.15s, color 0.15s;
-  user-select: none;
+  transition: all 0.1s;
+  position: relative;
+  top: -2px;
 }
 
 .advancement-zero:hover {
-  background: rgba(229, 57, 53, 0.15);
-}
-
-.advancement-zero.selected {
-  border-color: #e53935;
-  background: rgba(229, 57, 53, 0.15);
+  transform: scale(1.1);
+  color: var(--color-error-default);
 }
 
 .advancement-option {
