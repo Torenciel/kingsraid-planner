@@ -181,7 +181,14 @@ export const UWPanel = ({
       <div className="sp-section">
         <h5 className="sp-section-title">Soul Weapon</h5>
         <div className="advancement-options">
-          {advOptions.map((adv) => (
+          <span
+            className={`advancement-zero${selectedAdvancement === "null" ? " selected" : ""}`}
+            onClick={() => handleAdvancementChange("null")}
+            title="None"
+          >
+            ×
+          </span>
+          {advOptions.filter(adv => adv.value !== "null").map((adv) => (
             <div
               key={adv.value}
               className={`advancement-option ${selectedAdvancement === adv.value ? "selected" : ""}`}
