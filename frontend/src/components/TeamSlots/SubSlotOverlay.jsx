@@ -401,6 +401,8 @@ const SubSlotOverlay = ({
      RENDER
   ========================= */
 
+  const needsHeroDetails = subSlotIndex === 0 || subSlotIndex === 1;
+  if (needsHeroDetails && !heroDetails) return null;
   if (!overlayInfo) return null;
 
   const borderClass = getBorderClassForOverlay();
