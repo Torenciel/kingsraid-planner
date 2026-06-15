@@ -1,4 +1,5 @@
 import { useSlotPanel } from "../../contexts/SlotPanelContext";
+import { useArtifacts } from "../../contexts/ArtifactContext";
 import "./SubSlot.css";
 
 const SubSlot = ({
@@ -14,6 +15,7 @@ const SubSlot = ({
   slotRef,
 }) => {
   const { activeSlot, openSlotPanel } = useSlotPanel();
+  const { getArtifactPublicUrl, getArtifactBySlug } = useArtifacts();
   const isActive =
     activeSlot?.teamSlotIndex === teamSlotIndex &&
     activeSlot?.subSlotIndex === subSlotIndex;
@@ -83,14 +85,6 @@ const SubSlot = ({
 const getItemImageUrl = () => {
   if (!item || typeof item !== "object") return "";
 
-  const formatSlugToFolder = (slug) => {
-    if (!slug) return "";
-    return slug
-      .split("-")
-      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-      .join(" ");
-  };
-
   switch (subSlotIndex) {
 
     /* ===============================
@@ -112,32 +106,23 @@ const getItemImageUrl = () => {
     }
 
     /* ===============================
-   ARTIFACT
-=============================== */
-case 2: {
+       ARTIFACT
+    =============================== */
+    case 2: {
+      const slug = item.artifactSlug;
+      if (!slug) return "";
 
-  // Builder metadata version (already correct filename)
-  if (item.artifactInfo?.thumbnail) {
-    const filename = item.artifactInfo.thumbnail.split("/").pop();
-    return `/kingsraid-data/assets/artifacts/${encodeURIComponent(filename)}`;
-  }
+      const artifact = getArtifactBySlug(slug);
+      if (artifact) return getArtifactPublicUrl(artifact);
 
-  // Viewer slug → convert kebab-case to real filename
-  if (item.artifactSlug) {
-    const filename =
-      item.artifactSlug
-        .split("-")
-        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-        .join(" ");
+      // Fallback: use cached thumbnail from builder metadata
+      if (item.artifactInfo?.thumbnail) {
+        const filename = item.artifactInfo.thumbnail.split("/").pop();
+        return `/kingsraid-data/assets/artifacts/${encodeURIComponent(filename)}`;
+      }
 
-    // IMPORTANT: manually restore apostrophe for common pattern
-    const fixed = filename.replace("Years", "Year's");
-
-    return `/kingsraid-data/assets/artifacts/${encodeURIComponent(fixed)}.png`;
-  }
-
-  return "";
-}
+      return "";
+    }
 
 
 
