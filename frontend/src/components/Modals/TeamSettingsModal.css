@@ -1,6 +1,34 @@
 .team-settings-modal {
   width: 480px;
   max-width: 100%;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  flex: 1;
+}
+
+.tsm-scrollable {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
+  padding-right: 4px;
+}
+
+.tsm-scrollable::-webkit-scrollbar {
+  width: 6px;
+}
+
+.tsm-scrollable::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.tsm-scrollable::-webkit-scrollbar-thumb {
+  background: var(--color-scrollbar-thumb-default);
+  border-radius: 3px;
+}
+
+.tsm-scrollable::-webkit-scrollbar-thumb:hover {
+  background: var(--color-scrollbar-thumb-hover);
 }
 
 /* Fields */

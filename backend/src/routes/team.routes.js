@@ -84,7 +84,10 @@ router.get("/:identifier", optionalAuth, async (req, res) => {
     }
 
     // Block access to private teams unless the requester is the author
-    if (!team.isPublic && (!req.user || req.user.id !== team.author.toString())) {
+    if (
+      !team.isPublic &&
+      (!req.user || req.user.id !== team.author.toString())
+    ) {
       return res.status(403).json({
         success: false,
         error: "This team is private",
@@ -171,7 +174,14 @@ router.patch("/:slug", requireAuth, async (req, res) => {
 // List teams with filtering
 router.get("/", optionalAuth, async (req, res) => {
   try {
-    const { isPublic, createdBy, author, bookmarkedBy, limit: limitParam, sortBy } = req.query;
+    const {
+      isPublic,
+      createdBy,
+      author,
+      bookmarkedBy,
+      limit: limitParam,
+      sortBy,
+    } = req.query;
     console.log("Teams query:", { isPublic, createdBy, author, bookmarkedBy });
 
     // Build filter object
@@ -208,7 +218,9 @@ router.get("/", optionalAuth, async (req, res) => {
     const startTime = Date.now();
 
     const sortField = sortBy === "updatedAt" ? "updatedAt" : "createdAt";
-    const resultLimit = limitParam ? Math.min(parseInt(limitParam, 10), 50) : 50;
+    const resultLimit = limitParam
+      ? Math.min(parseInt(limitParam, 10), 50)
+      : 50;
 
     const teams = await Team.find(filter)
       .sort({ [sortField]: -1 })
@@ -216,7 +228,9 @@ router.get("/", optionalAuth, async (req, res) => {
       .lean();
 
     const queryTime = Date.now() - startTime;
-    console.log(`Query completed in ${queryTime}ms, found ${teams.length} teams`);
+    console.log(
+      `Query completed in ${queryTime}ms, found ${teams.length} teams`,
+    );
 
     res.json({
       success: true,
@@ -249,10 +263,16 @@ router.get("/", optionalAuth, async (req, res) => {
 router.delete("/:id", requireAuth, async (req, res) => {
   try {
     const team = await Team.findById(req.params.id);
-    if (!team) return res.status(404).json({ success: false, error: "Team not found" });
+    if (!team)
+      return res.status(404).json({ success: false, error: "Team not found" });
 
     if (team.author.toString() !== req.user.id) {
-      return res.status(403).json({ success: false, error: "You are not allowed to delete this team" });
+      return res
+        .status(403)
+        .json({
+          success: false,
+          error: "You are not allowed to delete this team",
+        });
     }
 
     await Team.findByIdAndDelete(req.params.id);
@@ -267,16 +287,17 @@ router.delete("/:id", requireAuth, async (req, res) => {
 router.post("/:id/bookmark", requireAuth, async (req, res) => {
   try {
     const team = await Team.findById(req.params.id);
-    if (!team) return res.status(404).json({ success: false, error: "Team not found" });
+    if (!team)
+      return res.status(404).json({ success: false, error: "Team not found" });
 
     const user = await User.findById(req.user.id);
     const alreadyBookmarked = user.bookmarkedTeams.some(
-      (b) => b.teamId.toString() === team._id.toString()
+      (b) => b.teamId.toString() === team._id.toString(),
     );
 
     if (alreadyBookmarked) {
       user.bookmarkedTeams = user.bookmarkedTeams.filter(
-        (b) => b.teamId.toString() !== team._id.toString()
+        (b) => b.teamId.toString() !== team._id.toString(),
       );
       team.bookmarks = Math.max(0, (team.bookmarks || 0) - 1);
     } else {
@@ -286,7 +307,11 @@ router.post("/:id/bookmark", requireAuth, async (req, res) => {
 
     await Promise.all([user.save(), team.save()]);
 
-    res.json({ success: true, bookmarked: !alreadyBookmarked, bookmarks: team.bookmarks });
+    res.json({
+      success: true,
+      bookmarked: !alreadyBookmarked,
+      bookmarks: team.bookmarks,
+    });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
   }
@@ -296,7 +321,8 @@ router.post("/:id/bookmark", requireAuth, async (req, res) => {
 router.post("/:id/upvote", requireAuth, async (req, res) => {
   try {
     const team = await Team.findById(req.params.id);
-    if (!team) return res.status(404).json({ success: false, error: "Team not found" });
+    if (!team)
+      return res.status(404).json({ success: false, error: "Team not found" });
 
     const user = await User.findById(req.user.id);
     const alreadyUpvoted = user.upvotedTeams
@@ -305,7 +331,7 @@ router.post("/:id/upvote", requireAuth, async (req, res) => {
 
     if (alreadyUpvoted) {
       user.upvotedTeams = user.upvotedTeams.filter(
-        (id) => id.toString() !== team._id.toString()
+        (id) => id.toString() !== team._id.toString(),
       );
       team.upvotes = Math.max(0, (team.upvotes || 0) - 1);
     } else {
@@ -316,7 +342,11 @@ router.post("/:id/upvote", requireAuth, async (req, res) => {
 
     await Promise.all([user.save(), team.save()]);
 
-    res.json({ success: true, upvoted: !alreadyUpvoted, upvotes: team.upvotes });
+    res.json({
+      success: true,
+      upvoted: !alreadyUpvoted,
+      upvotes: team.upvotes,
+    });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
   }

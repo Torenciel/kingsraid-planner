@@ -4,7 +4,7 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   plugins: [
     react({
-      include: '**/*.{js,jsx}', // Inclut les .js et .jsx
+      include: '**/*.{js,jsx}', // Include .js and .jsx files
     })
   ],
   server: {

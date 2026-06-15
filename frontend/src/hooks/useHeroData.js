@@ -12,16 +12,16 @@ export const useHeroData = (heroSlug) => {
 
 const getHeroImageUrl = (heroName) => {
   if (!heroName) return '';
-  
-  // Nettoyer le nom (supprimer les accents, caractères spéciaux si nécessaire)
+
+  // Clean the name (remove accents, special characters if needed)
   let cleanedName = heroName.trim();
-  
-  // Option 1: Utiliser encodeURIComponent pour tout gérer
+
+  // Option 1: Use encodeURIComponent to handle everything
   const encodedName = encodeURIComponent(cleanedName);
-  
-  // Option 2: Remplacer seulement les espaces (si les autres caractères sont déjà valides)
+
+  // Option 2: Replace only spaces (if other characters are already valid)
   // const encodedName = cleanedName.replace(/\s+/g, '%20');
-  
+
   return `${ASSETS_BASE_URL}/kingsraid-data/assets/heroes/${encodedName}/ico.png`;
 };
 
@@ -36,26 +36,26 @@ const getHeroImageUrl = (heroName) => {
         setLoading(true);
         setError(null);
 
-        console.log(`🔄 Chargement héros: ${heroSlug}`);
-        
-        // ESSAIER D'ABORD LE NOUVEAU BACKEND (API v2)
+        console.log(`Loading hero: ${heroSlug}`);
+
+        // TRY THE NEW BACKEND FIRST (API v2)
         try {
-          console.log("📡 Tentative de chargement depuis API v2...");
-          
+          console.log("Attempting to load from API v2...");
+
           const response = await fetch(`${API_BASE_URL}/api/v2/heroes/${heroSlug}`);
-          
+
           if (response.ok) {
             const result = await response.json();
-            
-            console.log('📦 API v2 response:', result);
-            
+
+            console.log('API v2 response:', result);
+
             if (result.success && result.hero) {
               const hero = result.hero;
               const heroName = hero.infos?.name || hero.name || heroSlug;
-              
-              // 🔥 FORMAT CORRIGÉ : Compatible avec le nouveau système
+
+              // FORMAT: Compatible with the new system
               const formattedData = {
-                // Données de base
+                // Base data
                 id: hero._id || hero.id,
                 slug: hero.slug,
                 name: heroName,
@@ -65,13 +65,13 @@ const getHeroImageUrl = (heroName) => {
                 image: hero.infos?.thumbnail || hero.thumbnail || getHeroImageUrl(hero.infos?.name || hero.name || heroSlug),
                 rarity: 5,
                 releaseOrder: hero.releaseOrder || 999,
-                
-                // Métadonnées
+
+                // Metadata
                 hasUW: !!hero.uw?.name,
                 hasSW: !!hero.sw?.requirement,
                 utsCount: hero.uts ? Object.keys(hero.uts).length : 0,
-                
-                // Données complètes
+
+                // Full data
                 infos: hero.infos || {},
                 skills: hero.skills || {},
                 uw: hero.uw || {},
@@ -80,65 +80,65 @@ const getHeroImageUrl = (heroName) => {
                 perks: hero.perks || {},
                 books: hero.books || {},
                 splashart: hero.splashart,
-                
-                // Données brutes
+
+                // Raw data
                 rawData: hero
               };
-              
+
               setHeroData(formattedData);
               setSource("mongodb");
-              console.log(`✅ Héros chargé depuis API v2: ${heroName}`);
+              console.log(`Hero loaded from API v2: ${heroName}`);
               return;
             }
           }
         } catch (mongoError) {
-          console.log("⚠️  API v2 non disponible:", mongoError.message);
+          console.log("API v2 unavailable:", mongoError.message);
         }
 
-        // FALLBACK: Ancien système JSON
+        // FALLBACK: Old JSON system
         try {
-          console.log("📄 Chargement depuis JSON local...");
-          
-          // Essayer différentes sources JSON
+          console.log("Loading from local JSON...");
+
+          // Try different JSON sources
           const sources = [
             `/kingsraid-data/table-data/heroes/${heroSlug}.json`,
             `/kingsraid-data/table-data/heroes/${heroSlug.toLowerCase()}.json`,
             `/kingsraid-data/table-data/heroes.json`
           ];
-          
+
           let jsonData = null;
-          
+
           for (const source of sources) {
             try {
               const response = await fetch(source);
               if (response.ok) {
                 const data = await response.json();
-                
-                // Si c'est un tableau de héros, trouver le bon
+
+                // If it's an array of heroes, find the right one
                 if (Array.isArray(data)) {
-                  jsonData = data.find(h => 
-                    h.slug === heroSlug || 
+                  jsonData = data.find(h =>
+                    h.slug === heroSlug ||
                     h.name?.toLowerCase() === heroSlug.toLowerCase() ||
                     h.infos?.name?.toLowerCase() === heroSlug.toLowerCase()
                   );
                 } else {
                   jsonData = data;
                 }
-                
+
                 if (jsonData) break;
               }
             } catch (e) {
               continue;
             }
           }
-          
+
           if (!jsonData) {
-            throw new Error(`Héros "${heroSlug}" non trouvé dans les fichiers JSON`);
+            throw new Error(`Hero "${heroSlug}" not found in JSON files`);
           }
-          
+
           const heroName = jsonData.infos?.name || jsonData.name || heroSlug;
-          
-          // Format pour compatibilité
+
+          // Format for compatibility
           const formattedData = {
             id: jsonData._id || jsonData.id || heroSlug,
             slug: jsonData.slug || heroSlug,
@@ -148,8 +148,8 @@ const getHeroImageUrl = (heroName) => {
             position: jsonData.infos?.position || jsonData.position || 'Unknown',
             image: getHeroImageUrl(heroName),
             rarity: 5,
-            
-            // Données complètes
+
+            // Full data
             infos: jsonData.infos || {},
             skills: jsonData.skills || {},
             uw: jsonData.uw || {},
@@ -158,25 +158,25 @@ const getHeroImageUrl = (heroName) => {
             perks: jsonData.perks || {},
             books: jsonData.books || {},
             splashart: jsonData.splashart,
-            
-            // Données brutes
+
+            // Raw data
             rawData: jsonData
           };
-          
+
           setHeroData(formattedData);
           setSource("json");
-          console.log(`✅ Héros chargé depuis JSON: ${heroName}`);
-          
+          console.log(`Hero loaded from JSON: ${heroName}`);
+
         } catch (jsonError) {
-          console.log("⚠️  JSON non disponible:", jsonError.message);
-          throw new Error(`Impossible de charger le héros "${heroSlug}"`);
+          console.log("JSON unavailable:", jsonError.message);
+          throw new Error(`Unable to load hero "${heroSlug}"`);
         }
 
       } catch (err) {
-        console.error("❌ Erreur chargement:", err);
+        console.error("Load error:", err);
         setError(err.message);
-        
-        // Données de test en dernier recours
+
+        // Test data as last resort
         const testData = getTestHeroData(heroSlug);
         if (testData) {
           setHeroData(testData);
@@ -190,7 +190,7 @@ const getHeroImageUrl = (heroName) => {
     loadData();
   }, [heroSlug, API_BASE_URL, ASSETS_BASE_URL]);
 
-  // Données de test pour le fallback
+  // Fallback test data
   const getTestHeroData = (slug) => {
     const testHeroes = {
       'kasel': {
@@ -230,37 +230,37 @@ const getHeroImageUrl = (heroName) => {
         }
       }
     };
-    
+
     return testHeroes[slug] || null;
   };
 
-  // Fonction pour récupérer les données d'une UT spécifique
+  // Get data for a specific UT
   const getUTData = (utNumber) => {
     if (!heroData?.uts) return null;
-    
+
     if (typeof heroData.uts === 'object' && !Array.isArray(heroData.uts)) {
-      // Format Map/object avec clés "1", "2", etc.
+      // Map/object format with keys "1", "2", etc.
       return heroData.uts[utNumber] || heroData.uts[utNumber.toString()];
     }
-    
+
     return null;
   };
 
-  // Fonction pour récupérer les données d'une skill spécifique
+  // Get data for a specific skill
   const getSkillData = (skillNumber) => {
     if (!heroData?.skills) return null;
-    
+
     if (typeof heroData.skills === 'object' && !Array.isArray(heroData.skills)) {
       return heroData.skills[skillNumber] || heroData.skills[skillNumber.toString()];
     }
-    
+
     return null;
   };
 
-  // Fonction pour récupérer les perks T3 d'une skill
+  // Get T3 perk data for a skill
   const getT3PerkData = (skillNumber, side = 'light') => {
     if (!heroData?.perks?.t3) return null;
-    
+
     const t3Perks = heroData.perks.t3;
     if (typeof t3Perks === 'object') {
       const skillPerks = t3Perks[skillNumber] || t3Perks[skillNumber.toString()];
@@ -268,17 +268,17 @@ const getHeroImageUrl = (heroName) => {
         return skillPerks[side];
       }
     }
-    
+
     return null;
   };
 
   return {
-    // Données principales (format normalisé)
+    // Main data (normalized format)
     heroData,
     loading,
     error,
-    
-    // Données formatées pour compatibilité
+
+    // Formatted data for compatibility
     hero: heroData ? {
       id: heroData.id,
       slug: heroData.slug,
@@ -293,8 +293,8 @@ const getHeroImageUrl = (heroName) => {
       hasSW: heroData.hasSW,
       utsCount: heroData.utsCount
     } : null,
-    
-    // Données détaillées
+
+    // Detailed data
     infos: heroData?.infos,
     skills: heroData?.skills,
     uw: heroData?.uw,
@@ -303,22 +303,22 @@ const getHeroImageUrl = (heroName) => {
     perks: heroData?.perks,
     books: heroData?.books,
     splashart: heroData?.splashart,
-    
-    // Données brutes
+
+    // Raw data
     rawData: heroData?.rawData,
-    
-    // Fonctions utilitaires
+
+    // Utility functions
     getUTData,
     getSkillData,
     getT3PerkData,
-    
+
     // Source
     source,
     isFromMongoDB: source === "mongodb",
     isFromJSON: source === "json",
     isTestData: source === "test",
-    
-    // URL de l'API pour référence
+
+    // API URL for reference
     apiBaseUrl: API_BASE_URL
   };
 };

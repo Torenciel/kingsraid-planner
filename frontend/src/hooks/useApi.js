@@ -16,21 +16,21 @@ const DEFAULT_OPTIONS = {
   refresh: false,
 };
 
-// Cache simple en mémoire
+// Simple in-memory cache
 const cache = new Map();
 
 /**
- * Fonction utilitaire pour extraire les données du format de réponse standard
+ * Utility function to extract data from the standard response format
  */
 const extractData = (result, endpoint) => {
-  // Le backend retourne { success, data/heroes/artifacts, count, error }
+  // Backend returns { success, data/heroes/artifacts, count, error }
   if (!result) return null;
-  
+
   if (!result.success) {
     throw new Error(result.error || `API request failed for ${endpoint}`);
   }
-  
-  // Différents endpoints retournent des données sous différentes clés
+
+  // Different endpoints return data under different keys
   if (result.data !== undefined) return result.data;
   if (result.heroes !== undefined) return result.heroes;
   if (result.artifacts !== undefined) return result.artifacts;
@@ -45,12 +45,12 @@ const extractData = (result, endpoint) => {
   if (result.classes !== undefined) return result.classes;
   if (result.positions !== undefined) return result.positions;
   
-  // Si le backend retourne directement les données (pour compatibilité)
+  // If the backend returns data directly (for compatibility)
   return result;
 };
 
 /**
- * Hook personnalisé pour effectuer des requêtes API v2
+ * Custom hook for making API v2 requests
  */
 export function useApi(endpoint, options = {}) {
   const [data, setData] = useState(null);
@@ -64,14 +64,14 @@ export function useApi(endpoint, options = {}) {
   const fetchData = useCallback(async (forceRefresh = false) => {
     console.log(`fetchData called for ${endpoint}, forceRefresh=${forceRefresh}`);
 
-    // Annuler la requête précédente si elle existe
+    // Cancel the previous request if one exists
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
     }
 
     abortControllerRef.current = new AbortController();
 
-    // Vérifier le cache
+    // Check cache
     if (options.useCache !== false && cache.has(cacheKey.current) && !forceRefresh) {
       const cached = cache.get(cacheKey.current);
       console.log(`Using cache for ${endpoint}`);
@@ -92,7 +92,7 @@ export function useApi(endpoint, options = {}) {
         signal: abortControllerRef.current.signal,
       };
 
-      // Ajouter le body si présent
+      // Add body if present
       if (options.body) {
         mergedOptions.body = JSON.stringify(options.body);
       }
@@ -125,10 +125,10 @@ if (mergedOptions.timeout) {
 
       console.log(`API Response for ${endpoint}:`, result);
 
-      // Extraire les données du format standard
+      // Extract data from the standard format
       const extractedData = extractData(result, endpoint);
 
-      // Mettre en cache si GET
+      // Cache if GET
       if (mergedOptions.method === 'GET' && options.useCache !== false) {
         cache.set(cacheKey.current, {
           data: extractedData,
@@ -168,19 +168,19 @@ if (mergedOptions.timeout) {
     };
   }, [endpoint, options.refresh]);
 
-  // Recharger manuellement
+  // Manual reload
   const refetch = useCallback(() => {
     fetchData(true);
   }, [fetchData]);
 
-  return { 
-    data,           // Données extraites
-    raw: rawResponse, // Réponse brute du backend
-    loading, 
-    error, 
+  return {
+    data,           // Extracted data
+    raw: rawResponse, // Raw backend response
+    loading,
+    error,
     refetch,
-    
-    // Métadonnées de la réponse
+
+    // Response metadata
     success: rawResponse?.success || false,
     count: rawResponse?.count || 0,
     message: rawResponse?.message
@@ -188,7 +188,7 @@ if (mergedOptions.timeout) {
 }
 
 /**
- * Hook spécialisé pour les héros
+ * Specialized hook for heroes
  */
 export function useHeroes(filters = {}) {
   const { class: className, name, position, search, ...otherFilters } = filters;
@@ -222,7 +222,7 @@ export function useHeroes(filters = {}) {
 }
 
 /**
- * Hook spécialisé pour un héros spécifique
+ * Specialized hook for a specific hero
  */
 export function useHero(slug) {
   return useApi(slug ? `/heroes/${slug}` : null, {
@@ -231,30 +231,30 @@ export function useHero(slug) {
 }
 
 /**
- * Hook spécialisé pour les classes de héros
+ * Specialized hook for hero classes
  */
 export function useHeroClasses() {
   return useApi('/heroes/classes');
 }
 
 /**
- * Hook spécialisé pour les positions de héros
+ * Specialized hook for hero positions
  */
 export function useHeroPositions() {
   return useApi('/heroes/positions');
 }
 
 /**
- * Hook spécialisé pour la recherche de héros
+ * Specialized hook for hero search
  */
 export function useHeroSearch(term) {
   return useApi(term ? `/heroes/search/${term}` : null, {
-    useCache: false, // Ne pas cacher les résultats de recherche
+    useCache: false, // Don't cache search results
   });
 }
 
 /**
- * Hook spécialisé pour les perks
+ * Specialized hook for perks
  */
 export function usePerks(tier, filters = {}) {
   const { class: className, heroSlug, ...otherFilters } = filters;
@@ -280,28 +280,28 @@ export function usePerks(tier, filters = {}) {
 }
 
 /**
- * Hook spécialisé pour toutes les perks
+ * Specialized hook for all perks
  */
 export function useAllPerks() {
   return useApi('/perks');
 }
 
 /**
- * Hook spécialisé pour les perks d'un héros (T3/T5)
+ * Specialized hook for a hero's perks (T3/T5)
  */
 export function useHeroPerks(heroSlug) {
   return useApi(heroSlug ? `/perks/hero/${heroSlug}` : null);
 }
 
 /**
- * Hook spécialisé pour les perks de classe (T1/T2)
+ * Specialized hook for class perks (T1/T2)
  */
 export function useClassPerks(className) {
   return useApi(className ? `/perks/class/${className}` : null);
 }
 
 /**
- * Hook spécialisé pour la recherche de perks
+ * Specialized hook for perk search
  */
 export function usePerkSearch(term) {
   return useApi(term ? `/perks/search/${term}` : null, {
@@ -310,7 +310,7 @@ export function usePerkSearch(term) {
 }
 
 /**
- * Hook spécialisé pour les artifacts
+ * Specialized hook for artifacts
  */
 export function useArtifacts(filters = {}) {
   const { search, ...otherFilters } = filters;
@@ -335,7 +335,7 @@ export function useArtifacts(filters = {}) {
 }
 
 /**
- * Hook spécialisé pour un artifact spécifique
+ * Specialized hook for a specific artifact
  */
 export function useArtifact(slug) {
   return useApi(slug ? `/artifacts/${slug}` : null, {
@@ -344,7 +344,7 @@ export function useArtifact(slug) {
 }
 
 /**
- * Hook spécialisé pour la recherche d'artifacts
+ * Specialized hook for artifact search
  */
 export function useArtifactSearch(term) {
   return useApi(term ? `/artifacts/search/${term}` : null, {
@@ -353,7 +353,7 @@ export function useArtifactSearch(term) {
 }
 
 /**
- * Hook spécialisé pour les gear sets
+ * Specialized hook for gear sets
  */
 export function useGearSets(filters = {}) {
   const { search, ...otherFilters } = filters;
@@ -378,7 +378,7 @@ export function useGearSets(filters = {}) {
 }
 
 /**
- * Hook spécialisé pour un gear set spécifique
+ * Specialized hook for a specific gear set
  */
 export function useGearSet(slug) {
   return useApi(slug ? `/gearsets/${slug}` : null, {
@@ -387,7 +387,7 @@ export function useGearSet(slug) {
 }
 
 /**
- * Hook spécialisé pour la recherche de gear sets
+ * Specialized hook for gear set search
  */
 export function useGearSetSearch(term) {
   return useApi(term ? `/gearsets/search/${term}` : null, {
@@ -396,7 +396,7 @@ export function useGearSetSearch(term) {
 }
 
 /**
- * Hook pour les équipes
+ * Hook for teams
  */
 export function useTeams(filters = {}) {
   const isNull = filters === null;
@@ -430,14 +430,14 @@ export function useTeams(filters = {}) {
 }
 
 /**
- * Hook pour une équipe spécifique
+ * Hook for a specific team
  */
 export function useTeam(id) {
   return useApi(id ? `/teams/${id}` : null);
 }
 
 /**
- * Hook pour créer une équipe
+ * Hook for creating a team
  */
 export function useCreateTeam() {
   const [loading, setLoading] = useState(false);
@@ -482,7 +482,7 @@ export function useCreateTeam() {
 }
 
 /**
- * Hook pour mettre à jour une équipe
+ * Hook for updating a team
  */
 export function useUpdateTeam(id) {
   const [loading, setLoading] = useState(false);
@@ -531,7 +531,7 @@ export function useUpdateTeam(id) {
 }
 
 /**
- * Hook pour supprimer une équipe
+ * Hook for deleting a team
  */
 export function useDeleteTeam(id) {
   const [loading, setLoading] = useState(false);
@@ -577,12 +577,12 @@ export function useDeleteTeam(id) {
 }
 
 /**
- * Hook pour vérifier la santé de l'API
+ * Hook for checking API health
  */
 export function useApiHealth() {
   return useApi('/health', {
     useCache: false,
-    timeout: 5000, // Timeout plus court pour la santé
+    timeout: 5000, // Shorter timeout for health checks
   });
 }
 
@@ -621,9 +621,9 @@ export function useToggleUpvote() {
 }
 
 /**
- * Nettoyer le cache
+ * Clear the cache
  */
 export function clearApiCache() {
   cache.clear();
-  console.log('🧹 API cache cleared');
+  console.log('API cache cleared');
 }

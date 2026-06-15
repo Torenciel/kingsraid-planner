@@ -41,8 +41,13 @@ const TeamSlots = ({
         // Wrap into { infos: { position, class } } to match what sortTeamByPosition expects
         const map = {};
         heroes.forEach((hero) => {
-          const slug = hero.slug || hero.name?.toLowerCase().replace(/\s+/g, "-");
-          if (slug) map[slug] = { ...hero, infos: { position: hero.position, class: hero.class } };
+          const slug =
+            hero.slug || hero.name?.toLowerCase().replace(/\s+/g, "-");
+          if (slug)
+            map[slug] = {
+              ...hero,
+              infos: { position: hero.position, class: hero.class },
+            };
         });
         setHeroesData(map);
       } catch {}
@@ -54,31 +59,25 @@ const TeamSlots = ({
 
   const isHeroMetaReady = useMemo(() => {
     const validHeroes = team.filter(Boolean);
-    return validHeroes.every(hero => {
+    return validHeroes.every((hero) => {
       const heroSlug =
-        hero.slug ||
-        hero.name?.toLowerCase().replace(/\s+/g, "-");
+        hero.slug || hero.name?.toLowerCase().replace(/\s+/g, "-");
       return heroMap[heroSlug];
     });
   }, [team, heroMap]);
 
   const hydratedTeam = useMemo(() => {
-    return team.map(hero => {
+    return team.map((hero) => {
       if (!hero) return null;
 
       const heroSlug =
-        hero.slug ||
-        hero.name?.toLowerCase().replace(/\s+/g, "-");
+        hero.slug || hero.name?.toLowerCase().replace(/\s+/g, "-");
 
       const meta = heroMap[heroSlug];
 
       return {
         ...hero,
-        role:
-          meta?.infos?.class ||
-          meta?.class ||
-          hero?.role ||
-          null,
+        role: meta?.infos?.class || meta?.class || hero?.role || null,
       };
     });
   }, [team, heroMap]);
@@ -92,16 +91,14 @@ const TeamSlots = ({
       .map((hero, index) => {
         if (!hero) return null;
         return {
-          heroSlug:
-            hero.slug ||
-            hero.name?.toLowerCase().replace(/\s+/g, "-"),
+          heroSlug: hero.slug || hero.name?.toLowerCase().replace(/\s+/g, "-"),
           slotPosition: index,
         };
       })
       .filter(Boolean);
 
     const sorted = sortTeamByPosition(teamWithMeta, heroMap);
-    return sorted.map(item => item.slotPosition);
+    return sorted.map((item) => item.slotPosition);
   }, [hydratedTeam, heroMap, team, isHeroMetaReady]);
 
   /* ===============================
@@ -129,7 +126,7 @@ const TeamSlots = ({
       }
     };
 
-    images.forEach(img => {
+    images.forEach((img) => {
       if (img.complete) {
         check();
       } else {
@@ -137,7 +134,6 @@ const TeamSlots = ({
         img.addEventListener("error", check);
       }
     });
-
   }, [isHeroMetaReady, sortedIndexes]);
 
   return (
@@ -152,7 +148,7 @@ const TeamSlots = ({
         ref={gridRef}
         className={`team-slots-grid ${imagesReady ? "visible" : "hidden"}`}
       >
-        {sortedIndexes.map(originalIndex => {
+        {sortedIndexes.map((originalIndex) => {
           const hero = hydratedTeam[originalIndex];
           if (!hero) return null;
 

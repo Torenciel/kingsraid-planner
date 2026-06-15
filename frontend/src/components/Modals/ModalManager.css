@@ -30,7 +30,7 @@
 }
 
 .modal {
-  z-index: 9999 !important; /* Force un z-index très élevé */
+  z-index: 9999 !important;
 }
 
 /* ========== Styles pour les modales ========== */
@@ -67,6 +67,9 @@
   max-width: 800px;
   width: auto;
   max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 /* SubSlotModal overrides — no extra padding, full bleed layout */

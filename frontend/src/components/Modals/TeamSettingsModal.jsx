@@ -73,76 +73,78 @@ const TeamSettingsModal = ({ data, onClose }) => {
     <div className="team-settings-modal">
       <h3 className="modal-title">Team Settings</h3>
 
-      {/* Team Name */}
-      <div className="tsm-field">
-        <label className="tsm-label">Team Name</label>
-        <input
-          className={`modal-input ${localName.trim() ? "valid" : "invalid"}`}
-          value={localName}
-          onChange={(e) => setLocalName(e.target.value)}
-          placeholder="Team name"
-          autoFocus
-        />
-        {!localName.trim() && (
-          <span className="tsm-error">Team name is required</span>
-        )}
-      </div>
-
-      {/* Visibility */}
-      <div className="tsm-field">
-        <label className="tsm-label">Visibility</label>
-        <div className="tsm-toggle-row">
-          <button
-            className={`tsm-toggle-btn ${localPublic ? "active" : ""}`}
-            onClick={() => setLocalPublic(true)}
-          >
-            Public
-          </button>
-          <button
-            className={`tsm-toggle-btn ${!localPublic ? "active" : ""}`}
-            onClick={() => setLocalPublic(false)}
-          >
-            Private
-          </button>
+      <div className="tsm-scrollable">
+        {/* Team Name */}
+        <div className="tsm-field">
+          <label className="tsm-label">Team Name</label>
+          <input
+            className={`modal-input ${localName.trim() ? "valid" : "invalid"}`}
+            value={localName}
+            onChange={(e) => setLocalName(e.target.value)}
+            placeholder="Team name"
+            autoFocus
+          />
+          {!localName.trim() && (
+            <span className="tsm-error">Team name is required</span>
+          )}
         </div>
-      </div>
 
-      {/* Team Size */}
-      <div className="tsm-field">
-        <label className="tsm-label">Team Size</label>
-        <div className="tsm-size-row">
-          {[4, 5, 6, 7, 8].map((s) => (
+        {/* Visibility */}
+        <div className="tsm-field">
+          <label className="tsm-label">Visibility</label>
+          <div className="tsm-toggle-row">
             <button
-              key={s}
-              className={`tsm-size-btn ${localSize === s ? "active" : ""}`}
-              onClick={() => setLocalSize(s)}
+              className={`tsm-toggle-btn ${localPublic ? "active" : ""}`}
+              onClick={() => setLocalPublic(true)}
             >
-              {s}
+              Public
             </button>
-          ))}
+            <button
+              className={`tsm-toggle-btn ${!localPublic ? "active" : ""}`}
+              onClick={() => setLocalPublic(false)}
+            >
+              Private
+            </button>
+          </div>
         </div>
-      </div>
 
-      {/* Tags */}
-      <div className="tsm-field">
-        <label className="tsm-label">Tags</label>
-        <div className="tsm-tag-groups">
-          {TAG_GROUPS.map((group) => (
-            <div key={group.label} className="tsm-tag-group">
-              <span className="tsm-tag-group-label">{group.label}</span>
-              <div className="tsm-tag-list">
-                {group.tags.map((tag) => (
-                  <button
-                    key={tag.id}
-                    className={`tsm-tag ${localTags.includes(tag.id) ? "active" : ""}`}
-                    onClick={() => toggleTag(tag.id)}
-                  >
-                    {tag.name}
-                  </button>
-                ))}
+        {/* Team Size */}
+        <div className="tsm-field">
+          <label className="tsm-label">Team Size</label>
+          <div className="tsm-size-row">
+            {[4, 5, 6, 7, 8].map((s) => (
+              <button
+                key={s}
+                className={`tsm-size-btn ${localSize === s ? "active" : ""}`}
+                onClick={() => setLocalSize(s)}
+              >
+                {s}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Tags */}
+        <div className="tsm-field">
+          <label className="tsm-label">Tags</label>
+          <div className="tsm-tag-groups">
+            {TAG_GROUPS.map((group) => (
+              <div key={group.label} className="tsm-tag-group">
+                <span className="tsm-tag-group-label">{group.label}</span>
+                <div className="tsm-tag-list">
+                  {group.tags.map((tag) => (
+                    <button
+                      key={tag.id}
+                      className={`tsm-tag ${localTags.includes(tag.id) ? "active" : ""}`}
+                      onClick={() => toggleTag(tag.id)}
+                    >
+                      {tag.name}
+                    </button>
+                  ))}
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       </div>
 

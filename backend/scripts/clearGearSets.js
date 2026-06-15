@@ -2,33 +2,33 @@
 const mongoose = require('mongoose');
 const path = require('path');
 
-// Charger le .env depuis le bon chemin
-require('dotenv').config({ 
-  path: path.join(__dirname, '..', '.env') 
+// Load .env from the correct path
+require('dotenv').config({
+  path: path.join(__dirname, '..', '.env')
 });
 
 async function clearGearSets() {
   try {
-    console.log('🗑️  VIDAGE COMPLET DE LA COLLECTION GEARSETS');
+    console.log('CLEARING GEARSETS COLLECTION');
     console.log('='.repeat(60));
-    
-    // Utiliser votre URI
+
+    // Use your URI
     const mongoURI = process.env.MONGODB_URI;
-    console.log(`🔗 Connexion à: ${mongoURI}`);
-    
+    console.log(`Connecting to: ${mongoURI}`);
+
     await mongoose.connect(mongoURI, {
       useNewUrlParser: true,
       useUnifiedTopology: true,
     });
-    
-    console.log('✅ Connecté à MongoDB');
-    
-    // Vérifier si le modèle existe déjà
+
+    console.log('Connected to MongoDB');
+
+    // Check if the model already exists
     let GearSet;
     try {
       GearSet = mongoose.model('GearSet');
     } catch (e) {
-      // Créer un modèle temporaire si nécessaire
+      // Create a temporary model if needed
       const GearSetSchema = new mongoose.Schema({
         slug: String,
         name: String,
@@ -39,35 +39,35 @@ async function clearGearSets() {
       });
       GearSet = mongoose.model('GearSet', GearSetSchema);
     }
-    
-    // Supprimer TOUS les documents
+
+    // Delete ALL documents
     const deleteResult = await GearSet.deleteMany({});
-    console.log(`✅ ${deleteResult.deletedCount} gear sets supprimés`);
-    
-    // Essayer de supprimer les indexes
+    console.log(`${deleteResult.deletedCount} gear sets deleted`);
+
+    // Try to drop indexes
     try {
       await GearSet.collection.dropIndexes();
-      console.log('✅ Indexes supprimés');
+      console.log('Indexes dropped');
     } catch (indexError) {
-      console.log('ℹ️  Note sur les indexes:', indexError.message);
+      console.log('Note on indexes:', indexError.message);
     }
-    
+
     await mongoose.disconnect();
-    console.log('\n🎉 Opération terminée !');
-    console.log('Vous pouvez maintenant exécuter: node backend/scripts/importGearSets.js');
-    
+    console.log('\nOperation complete!');
+    console.log('You can now run: node backend/scripts/importGearSets.js');
+
   } catch (error) {
-    console.error('❌ Erreur:', error.message);
+    console.error('Error:', error.message);
     if (error.message.includes('ECONNREFUSED')) {
-      console.error('\n💡 MongoDB n\'est pas démarré !');
-      console.error('Démarrez MongoDB avec: mongod --dbpath ./data/db');
-      console.error('Ou utilisez MongoDB Compass pour vérifier la connexion.');
+      console.error('\nMongoDB is not running!');
+      console.error('Start MongoDB with: mongod --dbpath ./data/db');
+      console.error('Or use MongoDB Compass to check the connection.');
     }
     process.exit(1);
   }
 }
 
-// Exécuter si appelé directement
+// Run if called directly
 if (require.main === module) {
   clearGearSets();
 }

@@ -168,7 +168,7 @@ export const GearSetProvider = ({ children }) => {
     await loadGearSets();
   };
 
-  // Fonctions pour la sauvegarde multiple
+  // Functions for saving multiple gear sets
   const createSingleGearSetForSave = useCallback(
     (gearSet, pieces = 4) => {
       if (!gearSet) return null;
@@ -182,7 +182,7 @@ export const GearSetProvider = ({ children }) => {
           bonus4P: gearSet.bonus4P,
         },
         pieces: pieces,
-        sets: [gearSet.slug || gearSet.id], // Pour compatibilité avec la récupération
+        sets: [gearSet.slug || gearSet.id], // For compatibility with retrieval
       };
     },
     [getGearSetImageUrl],
@@ -193,17 +193,17 @@ export const GearSetProvider = ({ children }) => {
       if (!gearSet1 || !gearSet2) return null;
 
       return {
-        isMultiSet: true, // Flag CRITIQUE pour identifier les multi-sets
+        isMultiSet: true, // CRITICAL flag to identify multi-sets
         sets: [gearSet1.slug || gearSet1.id, gearSet2.slug || gearSet2.id],
-        gearSetSlug: gearSet1.slug || gearSet1.id, // Premier pour compatibilité
+        gearSetSlug: gearSet1.slug || gearSet1.id, // First set for compatibility
         gearSetInfo: {
           name: `${gearSet1.name} + ${gearSet2.name}`,
           thumbnail: getGearSetImageUrl(gearSet1),
           bonus2P: "Multiple sets selected",
           bonus4P: "Not applicable for multiple sets",
         },
-        pieces: 2, // 2 pieces par set
-        // Stocker les infos de chaque set pour l'overlay
+        pieces: 2, // 2 pieces per set
+        // Store info for each set for the overlay
         set1Info: {
           name: gearSet1.name,
           slug: gearSet1.slug || gearSet1.id,
@@ -219,7 +219,7 @@ export const GearSetProvider = ({ children }) => {
     [getGearSetImageUrl],
   );
 
-  // Fonction intelligente qui gère les deux cas
+  // Smart function that handles both single and multi-set cases
   const createGearSetForSave = useCallback(
     (selectedSets) => {
       if (!selectedSets || selectedSets.length === 0) return null;
@@ -241,18 +241,18 @@ export const GearSetProvider = ({ children }) => {
     [getGearSetBySlug, createSingleGearSetForSave, createMultiGearSetForSave],
   );
 
-  // Fonction pour convertir les données de la DB vers le frontend
+  // Convert DB gear set data to frontend format
   const convertDBGearSetToFrontend = useCallback(
     (dbGearSet) => {
       if (!dbGearSet) return null;
 
-      // Vérifier si c'est un multi-set
+      // Check if it's a multi-set
       if (
         dbGearSet.isMultiSet &&
         dbGearSet.sets &&
         Array.isArray(dbGearSet.sets)
       ) {
-        // Récupérer les infos complètes pour chaque set
+        // Retrieve full info for each set
         const set1 = getGearSetBySlug(dbGearSet.sets[0]);
         const set2 = getGearSetBySlug(dbGearSet.sets[1]);
 
@@ -301,19 +301,19 @@ export const GearSetProvider = ({ children }) => {
               }
             : null),
         pieces: dbGearSet.pieces || 4,
-        sets: dbGearSet.sets || [dbGearSet.gearSetSlug], // Pour compatibilité
+        sets: dbGearSet.sets || [dbGearSet.gearSetSlug], // For compatibility
       };
     },
     [getGearSetBySlug, getGearSetImageUrl],
   );
 
-  // Fonction pour analyser et valider les données de gear set
+  // Parse and validate gear set data
   const parseGearSetData = useCallback((data) => {
     if (!data) return null;
 
-    // Si c'est déjà un objet formaté
+    // If it's already a formatted object
     if (typeof data === "object") {
-      // Vérifier si c'est un multi-set
+      // Check if it's a multi-set
       if (data.isMultiSet && data.sets) {
         return {
           type: "multi",
@@ -322,7 +322,7 @@ export const GearSetProvider = ({ children }) => {
         };
       }
 
-      // Sinon c'est un single set
+      // Otherwise it's a single set
       return {
         type: "single",
         sets: data.sets ? data.sets : [data.gearSetSlug],
@@ -330,7 +330,7 @@ export const GearSetProvider = ({ children }) => {
       };
     }
 
-    // Si c'est une chaîne JSON (ancien format)
+    // If it's a JSON string (old format)
     if (typeof data === "string") {
       try {
         const parsed = JSON.parse(data);
@@ -349,7 +349,7 @@ export const GearSetProvider = ({ children }) => {
     return null;
   }, []);
 
-  // Fonction utilitaire pour obtenir les noms des sets
+  // Utility function to get set names
   const getGearSetNames = useCallback(
     (gearSetData) => {
       const parsed = parseGearSetData(gearSetData);
@@ -368,45 +368,45 @@ export const GearSetProvider = ({ children }) => {
   }, []);
 
   const value = {
-    // Données
+    // Data
     allGearSets: state.allGearSets,
     loading: state.loading,
     error: state.error,
 
-    // Statistiques
+    // Stats
     count: state.allGearSets.length,
 
-    // Fonctions de recherche
+    // Search functions
     refreshGearSets,
     getGearSetBySlug,
     getGearSetById,
     searchGearSets,
     getGearSetImageUrl,
 
-    // Fonctions pour la sauvegarde
+    // Save functions
     createGearSetForSave,
     createSingleGearSetForSave,
     createMultiGearSetForSave,
 
-    // Fonctions pour la conversion
+    // Conversion functions
     convertDBGearSetToFrontend,
     parseGearSetData,
     getGearSetNames,
 
-    // Fonction utilitaire pour la validation
+    // Validation utility
     validateGearSetSelection: (selectedSets) => {
       if (!selectedSets || !Array.isArray(selectedSets)) return false;
-      if (selectedSets.length === 0) return true; // Vide est valide
+      if (selectedSets.length === 0) return true; // Empty is valid
       if (selectedSets.length > 2) return false; // Max 2 sets
 
-      // Vérifier que tous les slugs existent
+      // Check that all slugs exist
       return selectedSets.every((slug) => {
         const set = getGearSetBySlug(slug);
         return set !== undefined && set !== null;
       });
     },
 
-    // Fonction pour formater l'affichage
+    // Display formatting function
     formatGearSetDisplay: (gearSetData) => {
       const parsed = parseGearSetData(gearSetData);
       if (!parsed) return "No gear set";
