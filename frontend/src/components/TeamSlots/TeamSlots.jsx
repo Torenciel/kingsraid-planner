@@ -83,11 +83,13 @@ const TeamSlots = ({
   }, [team, heroMap]);
 
   const sortedIndexes = useMemo(() => {
+    const allIndexes = team.map((_, index) => index);
+
     if (!isHeroMetaReady) {
-      return team.map((_, index) => index);
+      return allIndexes;
     }
 
-    const teamWithMeta = hydratedTeam
+    const filledSlots = hydratedTeam
       .map((hero, index) => {
         if (!hero) return null;
         return {
@@ -97,8 +99,15 @@ const TeamSlots = ({
       })
       .filter(Boolean);
 
-    const sorted = sortTeamByPosition(teamWithMeta, heroMap);
-    return sorted.map((item) => item.slotPosition);
+    if (filledSlots.length === 0) {
+      return allIndexes;
+    }
+
+    const sorted = sortTeamByPosition(filledSlots, heroMap);
+    const sortedFilledIndexes = sorted.map((item) => item.slotPosition);
+    const filledSet = new Set(sortedFilledIndexes);
+    const emptyIndexes = allIndexes.filter((i) => !filledSet.has(i));
+    return [...sortedFilledIndexes, ...emptyIndexes];
   }, [hydratedTeam, heroMap, team, isHeroMetaReady]);
 
   /* ===============================
@@ -150,7 +159,6 @@ const TeamSlots = ({
       >
         {sortedIndexes.map((originalIndex) => {
           const hero = hydratedTeam[originalIndex];
-          if (!hero) return null;
 
           return (
             <TeamSlot
@@ -160,7 +168,7 @@ const TeamSlots = ({
               subSlots={subSlots[originalIndex]}
               subStars={subStars[originalIndex]}
               advancement={advancements[originalIndex] ?? null}
-              perks={hero.role ? perks[originalIndex] || [] : []}
+              perks={hero?.role ? perks[originalIndex] || [] : []}
               readOnly={readOnly}
               onRemoveHero={readOnly ? null : removeHeroFromTeam}
             />
