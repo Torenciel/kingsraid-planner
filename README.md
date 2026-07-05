@@ -1,70 +1,188 @@
-# Getting Started with Create React App
+# King's Raid Planner
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+A full-stack web application for planning and sharing hero team compositions in the game **King's Raid**. Players can build teams, configure hero loadouts, and browse strategies shared by the community.
+
+**Live:** [kingsraid-planner.com](https://kingsraid-planner.com)
+
+---
+
+## Features
+
+**Team Builder**
+
+- Create teams of variable size (up to 8 heroes)
+- Configure each hero's Unique Weapon, Unique Treasure, Artifact, Gear Set, Perks, and Soul Weapon advancement
+- Save, edit, and delete teams
+- Public/private visibility toggle per team
+
+**Team Browser**
+
+- Browse and search public teams
+- Filter by game content: World Bosses, Raids, Guild Conquest, Guild Raids, Trials
+- Upvote and bookmark favorite teams
+
+**Authentication**
+
+- Email/password registration with email verification
+- Google OAuth login
+- JWT-based session management (access + refresh tokens)
+- Password reset via email link
+
+**Account**
+
+- Profile page with public team showcase
+- Avatar and banner customization
+- Preferences for team visibility/profil visibility/color theme
+
+---
+
+## Tech Stack
+
+| Layer    | Technology                                      |
+| -------- | ----------------------------------------------- |
+| Frontend | React 19, React Router 7, Tailwind CSS          |
+| Backend  | Node.js, Express 4                              |
+| Database | MongoDB (Mongoose 8)                            |
+| Auth     | JWT (access + refresh tokens), Google OAuth 2.0 |
+| Email    | Resend API                                      |
+| Hosting  | Vercel (frontend), Railway (backend)            |
+
+---
+
+## Project Structure
+
+```
+kingsraid-planner/
+├── frontend/          # React app (port 3000)
+│   ├── public/
+│   │   └── kingsraid-data/    # Game assets (hero images, artifacts, gear sets, perks)
+│   └── src/
+│       ├── components/    # UI components (TeamBuilder, TeamSlots, SlotPanel, HeroGrid...)
+│       ├── Routes/        # Page components
+│       ├── contexts/      # React Context (Auth, Team, Hero, Artifact, GearSet, Perks...)
+│       ├── hooks/         # Custom hooks (useApi, useHeroData...)
+│       └── services/      # API service wrappers
+│
+└── backend/           # Express API (port 3002)
+    └── src/
+        ├── models/        # Mongoose schemas (User, Team, Hero, Artifact, GearSet, Perk)
+        ├── routes/        # REST endpoints (/auth, /teams, /heroes, /artifacts...)
+        ├── middlewares/   # JWT auth middleware
+        ├── services/      # Game data services
+        └── utils/         # JWT helpers, mailer, team data converter
+```
+
+---
+
+## Getting Started
+
+### Prerequisites
+
+- Node.js 18+
+- MongoDB instance (local or [MongoDB Atlas](https://www.mongodb.com/atlas))
+- [Resend](https://resend.com) account for email (optional for local dev)
+- Google OAuth credentials (optional for local dev)
+
+### Installation
+
+```bash
+# Clone the repo
+git clone https://github.com/your-username/kingsraid-planner.git
+cd kingsraid-planner
+
+# Install all dependencies (root + frontend + backend)
+npm run install:all
+```
+
+### Environment Variables
+
+Create a `.env` file in the `backend/` directory:
+
+```env
+NODE_ENV=development
+SERVER_PORT=3002
+FRONTEND_URL=http://localhost:3000
+BACKEND_URL=http://localhost:3002
+
+# MongoDB
+MONGODB_URI=mongodb://localhost:27017/kingsraid-planner
+
+# JWT — use strong random strings in production
+ACCESS_TOKEN_SECRET=your_access_token_secret
+REFRESH_TOKEN_SECRET=your_refresh_token_secret
+
+# Email (Resend)
+RESEND_API_KEY=your_resend_api_key
+EMAIL_FROM="KingsRaid Planner <noreply@yourdomain.com>"
+
+# Google OAuth
+GOOGLE_CLIENT_ID=your_google_client_id
+GOOGLE_CLIENT_SECRET=your_google_client_secret
+GOOGLE_REDIRECT_URI=http://localhost:3000/oauth/google/callback
+```
+
+### Running Locally
+
+```bash
+# Start both frontend and backend
+npm run dev
+```
+
+| Service     | URL                   |
+| ----------- | --------------------- |
+| Frontend    | http://localhost:3000 |
+| Backend API | http://localhost:3002 |
+
+### Importing Game Data
+
+The first time you run the app locally, populate the database with game data:
+
+```bash
+cd backend
+npm run import-all
+```
+
+---
 
 ## Available Scripts
 
-In the project directory, you can run:
+**Root:**
 
-### `npm start`
+| Script                | Description                           |
+| --------------------- | ------------------------------------- |
+| `npm run dev`         | Start frontend + backend concurrently |
+| `npm run install:all` | Install all dependencies              |
+| `npm run build`       | Build frontend for production         |
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+**Backend (`/backend`):**
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+| Script               | Description                       |
+| -------------------- | --------------------------------- |
+| `npm run dev`        | Start with nodemon (auto-reload)  |
+| `npm run import-all` | Import all game data into MongoDB |
+| `npm run backup-db`  | Backup the database               |
+| `npm run test-mongo` | Test MongoDB connection           |
 
-### `npm test`
+---
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+## API Overview
 
-### `npm run build`
+All endpoints are prefixed with `/api/v2`.
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+| Resource  | Endpoints                                                                                                                                    |
+| --------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| Auth      | `POST /auth/register`, `/auth/login`, `/auth/logout`, `/auth/refresh`, `/auth/verify-email`, `/auth/forgot-password`, `/auth/reset-password` |
+| OAuth     | `GET /oauth/google`, `GET /oauth/google/callback`                                                                                            |
+| Teams     | `GET/POST /teams`, `GET/PATCH/DELETE /teams/:slug`                                                                                           |
+| Heroes    | `GET /heroes`                                                                                                                                |
+| Artifacts | `GET /artifacts`                                                                                                                             |
+| Gear Sets | `GET /gearsets`                                                                                                                              |
+| Perks     | `GET /perks`                                                                                                                                 |
+| Users     | `GET /users/:id`, `PUT /users/:id`                                                                                                           |
+| Support   | `POST /support/feedback`, `/support/bug`, `/support/contact`                                                                                 |
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+---
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+## License
 
-### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
-
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
-
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+This is a fan-made project. King's Raid is owned by MasangGames. All game assets and intellectual property belong to their respective owners. This project is not affiliated with or endorsed by MasangGames.

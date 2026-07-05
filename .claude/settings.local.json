@@ -6,7 +6,9 @@
       "Bash(git checkout *)",
       "Bash(npm install *)",
       "Bash(Get-ChildItem -Path \"d:\\\\Dev\\\\Projects\\\\kingsraid-planner\" -Recurse -Directory)",
-      "Bash(Select-Object FullName)"
+      "Bash(Select-Object FullName)",
+      "Bash(Get-ChildItem -Path \"d:\\\\Dev\\\\Projects\\\\kingsraid-planner\" -Force)",
+      "Bash(Select-Object Name, Mode)"
     ]
   }
 }
