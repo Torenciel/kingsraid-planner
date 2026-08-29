@@ -16,7 +16,7 @@
 **Team Builder**
 
 - Create teams of 4 to 8 heroes
-- Configure each hero's Unique Weapon, Unique Treasure, Artifact, Gear Set, Perks, and Soul Weapon advancement
+- Configure each hero's Unique Weapon, Unique Treasure, Artifact, Gear Set, Perks (T1/T2/T3/T5), and Soul Weapon advancement
 - Save, edit, and delete teams with public/private visibility
 
 **Team Browser**
@@ -64,6 +64,60 @@ database  (MongoDB Atlas)
 ```
 
 The frontend communicates with the backend via a REST API (`/api/v2/`) using cookie-based authentication. State is managed through 9 React Contexts covering auth, team data, heroes, artifacts, gear sets, perks, modals, overlays, and slot panels.
+
+---
+
+## Project Structure
+
+```
+kingsraid-planner/
+├── frontend/
+│   └── src/
+│       ├── components/
+│       │   ├── TeamBuilder/       # Create/edit team UI, save button
+│       │   ├── TeamSlots/         # Team grid, hero slots, sub-slots, item overlays, perk preview
+│       │   ├── SlotPanel/         # Inline item selector panels (UW, UT, Artifact, Gear Set, Perks)
+│       │   ├── HeroGrid/          # Hero selection grid with class/role filters
+│       │   ├── Modals/            # Modal manager, team settings, confirmation dialogs
+│       │   ├── Profile/           # Public profile page components
+│       │   └── UI/                # Navbar, footer, layout
+│       ├── contexts/              # 9 React Contexts (auth, team, heroes, artifacts, gear sets, perks, modals, overlays, slot panel)
+│       ├── hooks/                 # useApi, useHeroData, useOverlayTrigger
+│       ├── services/              # Base fetch wrapper, artifact service, image cache
+│       ├── utils/                 # Team converter (DB ↔ frontend), perk converter, sort helpers
+│       ├── constants/             # Game content tags and boss groups
+│       └── Routes/                # Page-level components
+│
+└── backend/
+    └── src/
+        ├── models/                # Mongoose schemas (User, Team, Hero, Artifact, GearSet, Perk)
+        ├── routes/                # Express route handlers
+        ├── middlewares/           # JWT auth middleware (requireAuth, optionalAuth)
+        ├── services/              # Hero, artifact, gear set, perk business logic
+        └── utils/                 # JWT helpers, mailer, team data converter
+    └── tests/                     # Jest + Supertest integration tests (22 tests)
+    └── scripts/                   # Game data import scripts (heroes, artifacts, gear sets, perks)
+```
+
+---
+
+## API Overview
+
+All routes are prefixed `/api/v2/`.
+
+| Resource              | Methods            | Notes                                                   |
+| --------------------- | ------------------ | ------------------------------------------------------- |
+| `/auth/*`             | POST               | Register, login, logout, refresh, OAuth, reset password |
+| `/auth/me`            | GET                | Current authenticated user                              |
+| `/heroes`             | GET                | All heroes; `/:slug` for single                         |
+| `/artifacts`          | GET                | All artifacts; `/:slug` for single                      |
+| `/gearsets`           | GET                | All gear sets; `/:slug` for single                      |
+| `/perks`              | GET                | By tier, hero, or class                                 |
+| `/teams`              | GET, POST          | List (filterable) / Create                              |
+| `/teams/:id`          | GET, PATCH, DELETE | Lookup by slug or ObjectId                              |
+| `/teams/:id/upvote`   | POST               | Auth required                                           |
+| `/teams/:id/bookmark` | POST               | Auth required                                           |
+| `/users/:id`          | GET, PUT           | Public profile / Update account                         |
 
 ---
 
