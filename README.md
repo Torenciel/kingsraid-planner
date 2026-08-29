@@ -7,9 +7,7 @@
 
 ---
 
-<!-- GIF PLACEHOLDER — record a short screen capture showing: selecting heroes, configuring a loadout, browsing public teams -->
-<!-- Suggested tool: ScreenToGif (free, Windows) or LICEcap -->
-<!-- Replace this comment with: ![Demo](./demo.gif) -->
+![Demo](./demo.gif)
 
 ---
 
