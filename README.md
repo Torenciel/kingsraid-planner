@@ -1,38 +1,40 @@
 # King's Raid Planner
 
-A full-stack web application for planning and sharing hero team compositions in the game **King's Raid**. Players can build teams, configure hero loadouts, and browse strategies shared by the community.
+> A full-stack team builder and community sharing platform for the game **King's Raid**.
+> Build hero compositions, configure loadouts, and browse strategies from other players.
 
-**Live:** [kingsraid-planner vercel app](https://kingsraid-planner.vercel.app)
+**Live app:** [kingsraid-planner.vercel.app](https://kingsraid-planner.vercel.app)
+
+---
+
+<!-- GIF PLACEHOLDER — record a short screen capture showing: selecting heroes, configuring a loadout, browsing public teams -->
+<!-- Suggested tool: ScreenToGif (free, Windows) or LICEcap -->
+<!-- Replace this comment with: ![Demo](./demo.gif) -->
 
 ---
 
 ## Features
 
 **Team Builder**
-
-- Create teams of variable size (up to 8 heroes)
-- Configure each hero's Unique Weapon, Unique Treasure, Artifact, Gear Set, Perks, and Soul Weapon advancement
-- Save, edit, and delete teams
-- Public/private visibility toggle per team
+- Create teams of 4 to 8 heroes
+- Configure each hero's Unique Weapon, Unique Treasure, Artifact, Gear Set, Perks (T1/T2/T3/T5), and Soul Weapon advancement
+- Save, edit, and delete teams with public/private visibility
 
 **Team Browser**
-
-- Browse and search public teams
+- Browse and search public teams from the community
 - Filter by game content: World Bosses, Raids, Guild Conquest, Guild Raids, Trials
 - Upvote and bookmark favorite teams
 
 **Authentication**
-
 - Email/password registration with email verification
 - Google OAuth login
-- JWT-based session management (access + refresh tokens)
-- Password reset via email link
+- JWT access + refresh token flow stored in HTTP-only cookies
+- Password reset via email
 
 **Account**
-
-- Profile page with public team showcase
 - Avatar and banner customization
-- Preferences for team visibility/profil visibility/color theme
+- Preferences for default team visibility and color theme
+- Username, email, and password management
 
 ---
 
@@ -45,144 +47,51 @@ A full-stack web application for planning and sharing hero team compositions in 
 | Database | MongoDB (Mongoose 8)                            |
 | Auth     | JWT (access + refresh tokens), Google OAuth 2.0 |
 | Email    | Resend API                                      |
+| Testing  | Jest, Supertest (22 backend tests)              |
+| CI       | GitHub Actions                                  |
 | Hosting  | Vercel (frontend), Railway (backend)            |
 
 ---
 
-## Project Structure
+## Architecture
 
 ```
-kingsraid-planner/
-├── frontend/          # React app (port 3000)
-│   ├── public/
-│   │   └── kingsraid-data/    # Game assets (hero images, artifacts, gear sets, perks)
-│   └── src/
-│       ├── components/    # UI components (TeamBuilder, TeamSlots, SlotPanel, HeroGrid...)
-│       ├── Routes/        # Page components
-│       ├── contexts/      # React Context (Auth, Team, Hero, Artifact, GearSet, Perks...)
-│       ├── hooks/         # Custom hooks (useApi, useHeroData...)
-│       └── services/      # API service wrappers
-│
-└── backend/           # Express API (port 3002)
-    └── src/
-        ├── models/        # Mongoose schemas (User, Team, Hero, Artifact, GearSet, Perk)
-        ├── routes/        # REST endpoints (/auth, /teams, /heroes, /artifacts...)
-        ├── middlewares/   # JWT auth middleware
-        ├── services/      # Game data services
-        └── utils/         # JWT helpers, mailer, team data converter
+frontend/ (React 19 + Tailwind)   →  Vercel       port 3000
+backend/  (Node.js + Express 4)   →  Railway      port 3002
+database  (MongoDB Atlas)
 ```
+
+The frontend communicates with the backend via a REST API (`/api/v2/`) using cookie-based authentication. State is managed through 9 React Contexts covering auth, team data, heroes, artifacts, gear sets, perks, modals, overlays, and slot panels.
 
 ---
 
-## Getting Started
+## Development
 
-### Prerequisites
+<details>
+<summary>Run locally</summary>
 
-- Node.js 18+
-- MongoDB instance (local or [MongoDB Atlas](https://www.mongodb.com/atlas))
-- [Resend](https://resend.com) account for email (optional for local dev)
-- Google OAuth credentials (optional for local dev)
-
-### Installation
+**Prerequisites:** Node.js 18+, MongoDB instance, Resend API key (optional), Google OAuth credentials (optional)
 
 ```bash
-# Clone the repo
-git clone https://github.com/your-username/kingsraid-planner.git
+git clone https://github.com/Torenciel/kingsraid-planner.git
 cd kingsraid-planner
-
-# Install all dependencies (root + frontend + backend)
 npm run install:all
 ```
 
-### Environment Variables
-
-Create a `.env` file in the `backend/` directory:
-
-```env
-NODE_ENV=development
-SERVER_PORT=3002
-FRONTEND_URL=http://localhost:3000
-BACKEND_URL=http://localhost:3002
-
-# MongoDB
-MONGODB_URI=mongodb://localhost:27017/kingsraid-planner
-
-# JWT — use strong random strings in production
-ACCESS_TOKEN_SECRET=your_access_token_secret
-REFRESH_TOKEN_SECRET=your_refresh_token_secret
-
-# Email (Resend)
-RESEND_API_KEY=your_resend_api_key
-EMAIL_FROM="KingsRaid Planner <noreply@yourdomain.com>"
-
-# Google OAuth
-GOOGLE_CLIENT_ID=your_google_client_id
-GOOGLE_CLIENT_SECRET=your_google_client_secret
-GOOGLE_REDIRECT_URI=http://localhost:3000/oauth/google/callback
-```
-
-### Running Locally
+Create `backend/.env` (see `backend/.env.example` for all variables), then:
 
 ```bash
-# Start both frontend and backend
-npm run dev
-```
+npm run dev          # starts frontend (3000) + backend (3002)
 
-| Service     | URL                   |
-| ----------- | --------------------- |
-| Frontend    | http://localhost:3000 |
-| Backend API | http://localhost:3002 |
-
-### Importing Game Data
-
-The first time you run the app locally, populate the database with game data:
-
-```bash
 cd backend
-npm run import-all
+npm run import-all   # populate DB with game data (first run only)
+npm test             # run backend test suite
 ```
 
----
-
-## Available Scripts
-
-**Root:**
-
-| Script                | Description                           |
-| --------------------- | ------------------------------------- |
-| `npm run dev`         | Start frontend + backend concurrently |
-| `npm run install:all` | Install all dependencies              |
-| `npm run build`       | Build frontend for production         |
-
-**Backend (`/backend`):**
-
-| Script               | Description                       |
-| -------------------- | --------------------------------- |
-| `npm run dev`        | Start with nodemon (auto-reload)  |
-| `npm run import-all` | Import all game data into MongoDB |
-| `npm run backup-db`  | Backup the database               |
-| `npm run test-mongo` | Test MongoDB connection           |
-
----
-
-## API Overview
-
-All endpoints are prefixed with `/api/v2`.
-
-| Resource  | Endpoints                                                                                                                                    |
-| --------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
-| Auth      | `POST /auth/register`, `/auth/login`, `/auth/logout`, `/auth/refresh`, `/auth/verify-email`, `/auth/forgot-password`, `/auth/reset-password` |
-| OAuth     | `GET /oauth/google`, `GET /oauth/google/callback`                                                                                            |
-| Teams     | `GET/POST /teams`, `GET/PATCH/DELETE /teams/:slug`                                                                                           |
-| Heroes    | `GET /heroes`                                                                                                                                |
-| Artifacts | `GET /artifacts`                                                                                                                             |
-| Gear Sets | `GET /gearsets`                                                                                                                              |
-| Perks     | `GET /perks`                                                                                                                                 |
-| Users     | `GET /users/:id`, `PUT /users/:id`                                                                                                           |
-| Support   | `POST /support/feedback`, `/support/bug`, `/support/contact`                                                                                 |
+</details>
 
 ---
 
 ## License
 
-This is a fan-made project. King's Raid is owned by MasangGames. All game assets and intellectual property belong to their respective owners. This project is not affiliated with or endorsed by MasangGames.
+Fan-made project. King's Raid is owned by MasangGames. All game assets belong to their respective owners. Not affiliated with or endorsed by MasangGames.
