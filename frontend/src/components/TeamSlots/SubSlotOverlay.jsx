@@ -379,18 +379,21 @@ const SubSlotOverlay = ({
   ========================= */
 
   useLayoutEffect(() => {
-    if (!slotRef?.current || !overlayInfo) return;
+    if (!slotRef?.current || !overlayInfo || !overlayRef?.current) return;
 
     const rect = slotRef.current.getBoundingClientRect();
+    const overlayHeight = overlayRef.current.getBoundingClientRect().height;
     const margin = 10;
 
     let x = rect.left + rect.width / 2;
     let y = rect.top - margin;
     let transform = "translateX(-50%) translateY(-100%)";
 
-    if (y < 0) {
-      y = rect.bottom + margin;
-      transform = "translateX(-50%)";
+    if (y - overlayHeight < 0) {
+      // Not enough space above — show to the left of the slot
+      x = rect.left - margin;
+      y = rect.top + rect.height / 2;
+      transform = "translateX(-100%) translateY(-50%)";
     }
 
     setPosition({ x, y, transform });

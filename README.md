@@ -1,7 +1,7 @@
 # King's Raid Planner
 
 > A full-stack team builder and community sharing platform for the game **King's Raid**.
-> Build hero compositions, configure loadouts, and browse strategies from other players.
+> Build hero compositions, configure loadouts, and browse teams from other players.
 
 **Live app:** [kingsraid-planner.vercel.app](https://kingsraid-planner.vercel.app)
 
@@ -16,22 +16,26 @@
 ## Features
 
 **Team Builder**
+
 - Create teams of 4 to 8 heroes
 - Configure each hero's Unique Weapon, Unique Treasure, Artifact, Gear Set, Perks (T1/T2/T3/T5), and Soul Weapon advancement
 - Save, edit, and delete teams with public/private visibility
 
 **Team Browser**
+
 - Browse and search public teams from the community
 - Filter by game content: World Bosses, Raids, Guild Conquest, Guild Raids, Trials
 - Upvote and bookmark favorite teams
 
 **Authentication**
+
 - Email/password registration with email verification
 - Google OAuth login
 - JWT access + refresh token flow stored in HTTP-only cookies
 - Password reset via email
 
 **Account**
+
 - Avatar and banner customization
 - Preferences for default team visibility and color theme
 - Username, email, and password management
