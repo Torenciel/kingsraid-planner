@@ -2,7 +2,7 @@
 
 A full-stack web application for planning and sharing hero team compositions in the game **King's Raid**. Players can build teams, configure hero loadouts, and browse strategies shared by the community.
 
-**Live:** [kingsraid-planner.com](https://kingsraid-planner.com)
+**Live:** [kingsraid-planner vercel app](https://kingsraid-planner.vercel.app)
 
 ---
 

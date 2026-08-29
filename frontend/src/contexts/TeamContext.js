@@ -100,8 +100,6 @@ export const TeamProvider = ({ children }) => {
         ...overrides,
       };
 
-      console.log("Complete data sent:", teamData);
-
       const isEditing = !!currentTeamId;
 
       const url = isEditing
@@ -120,8 +118,6 @@ export const TeamProvider = ({ children }) => {
           teamData,
         }),
       });
-
-      console.log("Response status:", response.status);
 
       if (response.ok) {
         const result = await response.json();
@@ -558,25 +554,17 @@ export const TeamProvider = ({ children }) => {
 
   // Update Advancement
   const updateAdvancement = (slotIndex, advancement) => {
-    console.log("[TeamContext] updateAdvancement called:", {
-      slotIndex,
-      advancement,
-      type: typeof advancement,
-    });
-
     // Validate value
     let validatedAdvancement = null;
     if ([null, 0, 1, 2].includes(advancement)) {
       validatedAdvancement = advancement;
     } else {
-      console.warn("invalid advancement value, convert to null:", advancement);
       validatedAdvancement = null;
     }
 
     setAdvancements((current) => {
       const newAdvancements = [...current];
       newAdvancements[slotIndex] = validatedAdvancement;
-      console.log("Advancement updated:", newAdvancements);
       return newAdvancements;
     });
     setIsDirty(true);
