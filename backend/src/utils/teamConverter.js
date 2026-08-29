@@ -3,8 +3,6 @@ const convertTeamContextToDB = (
   teamName = "My Team",
   createdBy = "anonymous"
 ) => {
-  console.log("INSIDE CONVERTER teamContext.isPublic:", teamContext.isPublic);
-
   const {
     team = [],
     subSlots = [],
