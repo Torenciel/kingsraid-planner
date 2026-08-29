@@ -16,7 +16,7 @@
 **Team Builder**
 
 - Create teams of 4 to 8 heroes
-- Configure each hero's Unique Weapon, Unique Treasure, Artifact, Gear Set, Perks (T1/T2/T3/T5), and Soul Weapon advancement
+- Configure each hero's Unique Weapon, Unique Treasure, Artifact, Gear Set, Perks, and Soul Weapon advancement
 - Save, edit, and delete teams with public/private visibility
 
 **Team Browser**
